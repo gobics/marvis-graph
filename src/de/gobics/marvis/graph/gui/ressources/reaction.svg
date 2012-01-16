@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg xmlns:svg="http://www.w3.org/2000/svg" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape" version="1.0" width="248" height="276" id="svg2">
+  <defs id="defs4">
+    <linearGradient id="linearGradient3245">
+      <stop id="stop3247" style="stop-color: rgb(255, 255, 255); stop-opacity: 1;" offset="0"/>
+      <stop id="stop3249" style="stop-color: rgb(255, 254, 191); stop-opacity: 1;" offset="1"/>
+    </linearGradient>
+    <linearGradient id="linearGradient3232">
+      <stop id="stop3234" style="stop-color: rgb(255, 255, 0); stop-opacity: 1;" offset="0"/>
+      <stop id="stop3236" style="stop-color: rgb(255, 164, 0); stop-opacity: 1;" offset="1"/>
+    </linearGradient>
+    <linearGradient id="linearGradient3206">
+      <stop id="stop3208" style="stop-color: rgb(175, 175, 175); stop-opacity: 1;" offset="0"/>
+      <stop id="stop3210" style="stop-color: rgb(86, 86, 86); stop-opacity: 1;" offset="1"/>
+    </linearGradient>
+    <linearGradient id="linearGradient3194">
+      <stop id="stop3196" style="stop-color: rgb(255, 217, 186); stop-opacity: 1;" offset="0"/>
+      <stop id="stop3198" style="stop-color: rgb(230, 108, 8); stop-opacity: 1;" offset="1"/>
+    </linearGradient>
+    <filter height="1.2234519" y="-0.11172594" width="1.1915073" x="-0.095753647" id="filter3473">
+      <feGaussianBlur id="feGaussianBlur3475" stdDeviation="1.4416473" inkscape:collect="always"/>
+    </filter>
+    <radialGradient cx="101.5" cy="123.36218" r="42" fx="101.5" fy="123.36218" id="radialGradient2746" xlink:href="#linearGradient3232" gradientUnits="userSpaceOnUse" gradientTransform="matrix(1.18279, -0.0605048, 0.0554628, 1.08422, -31.3835, -22.4392)"/>
+    <radialGradient cx="137.38756" cy="74.453094" r="12.631579" fx="137.38756" fy="74.453094" id="radialGradient2759" xlink:href="#linearGradient3206" gradientUnits="userSpaceOnUse" gradientTransform="matrix(1.375, 0, 0, 1.375, -158.68, -67.3803)"/>
+    <radialGradient cx="137.38756" cy="74.453094" r="12.631579" fx="137.38756" fy="74.453094" id="radialGradient2762" xlink:href="#linearGradient3194" gradientUnits="userSpaceOnUse" gradientTransform="matrix(1.375, 0, 0, 1.375, -144.68, -81.3803)"/>
+    <radialGradient cx="103.33483" cy="121.69099" r="18.284269" fx="103.33483" fy="121.69099" id="radialGradient3617" xlink:href="#linearGradient3245" gradientUnits="userSpaceOnUse" gradientTransform="matrix(1, 0, 0, 0.85874, 0, 17.1901)"/>
+  </defs>
+  <path d="M 67.069627,24.992661 C 67.069627,34.105361 59.682337,41.492661 50.569626,41.492661 C 41.456926,41.492661 34.069626,34.105361 34.069626,24.992661 C 34.069626,15.879971 41.456926,8.4926609 50.569626,8.4926609 C 59.682337,8.4926609 67.069627,15.879971 67.069627,24.992661 z" id="proton" style="fill: url(&quot;#radialGradient2762&quot;) rgb(0, 0, 0); stroke: rgb(92, 63, 0); stroke-linecap: butt;"/>
+  <path d="M 53.069626,38.992658 C 53.069626,48.105356 45.682329,55.492658 36.569626,55.492658 C 27.456924,55.492658 20.069626,48.105356 20.069626,38.992658 C 20.069626,29.879959 27.456924,22.492658 36.569626,22.492658 C 45.682329,22.492658 53.069626,29.879959 53.069626,38.992658 z" id="neutron" style="fill: url(&quot;#radialGradient2759&quot;) rgb(0, 0, 0); stroke: rgb(0, 0, 0); stroke-linecap: butt;"/>
+  <use transform="translate(128, 2)" id="use2652" xlink:href="#neutron"/>
+  <use transform="translate(106, -4)" id="use2584" xlink:href="#proton"/>
+  <use transform="translate(106, -4)" id="use2650" xlink:href="#neutron"/>
+  <use transform="translate(16, 200)" id="use2658" xlink:href="#neutron"/>
+  <use transform="translate(129, 153)" id="use2588" xlink:href="#proton"/>
+  <use transform="translate(144, 162)" id="use2656" xlink:href="#neutron"/>
+  <use transform="translate(129, 127)" id="use2654" xlink:href="#neutron"/>
+  <use transform="translate(111, 163)" id="use2578" xlink:href="#proton"/>
+  <text x="-0.93037" y="275.493" id="n + 14.1 MeV" xml:space="preserve" style="font-size: 12px; text-anchor: start; font-family: Bitstream Vera Sans;"><tspan x="-0.93037" y="275.493" id="tspan3266" style="font-size: 20px; font-family: Bitstream Vera Sans;">n + 14.1 MeV</tspan></text>
+  <path d="M 52.561512,96.491991 L 79.724161,89.148421 L 76.122115,62.285585 L 98.866546,84.001153 L 116.27631,59.045634 L 112.05652,92.466141 L 143.99172,90.832511 L 113.92365,106.94853 L 134.22103,131.65225 L 107.4737,118.78994 L 99.584546,150.0264 L 91.03572,122.00257 L 58.401768,133.15899 L 76.740786,109.97688 L 52.561512,96.491991 z" id="path3303" style="fill: url(&quot;#radialGradient2746&quot;) rgb(0, 0, 0); stroke: rgb(248, 240, 83); stroke-width: 3; stroke-linecap: round; stroke-miterlimit: 6; stroke-opacity: 0.527778;"/>
+  <path d="M 101.32265,147.32951 L 97.869023,128.15661 L 82.702375,137.86185 L 93.442454,123.0694 L 75.917323,117.93897 L 95.829795,117.03462 L 90.515463,102.39897 L 104.15909,115.93365 L 114.12176,101.24432 L 108.95101,117.75104 L 128.08074,117.53226 L 110.55663,123.24827 L 120.96704,139.08564 L 106.12382,128.5045 L 101.32265,147.32951 z" transform="matrix(1.23469, -0.0631601, 0.0664687, 1.29937, -36.9685, -50.6174)" id="path3241" style="fill: url(&quot;#radialGradient3617&quot;) rgb(0, 0, 0); filter: url(&quot;#filter3473&quot;);"/>
+  <path d="M 53.918917,51.3902 L 52.310064,52.55548 L 68.277574,74.465375 C 67.086783,75.132579 65.735872,75.493962 64.310256,75.48694 L 73.470602,81.589913 L 73.53631,81.700743 L 73.566254,81.691803 L 75.919918,83.239333 L 75.145163,80.535463 L 72.102914,69.800891 C 71.653488,71.162487 70.843218,72.348203 69.847543,73.279091 L 53.918917,51.3902 z" id="arr1"/>
+  <path d="M 145.10975,54.33037 L 122.4535,76.98662 C 121.61593,75.916934 121.04196,74.639397 120.8285,73.23662 L 116.2035,83.236623 L 116.10975,83.330373 L 116.141,83.361623 L 114.9535,85.924123 L 117.54725,84.736623 L 117.5785,84.705373 L 127.641,80.049123 C 126.22867,79.817033 124.96408,79.229463 123.891,78.392873 L 146.54725,55.73662 L 145.10975,54.33037 z" id="arr2"/>
+  <path d="M 115.13008,124.83312 L 113.59685,126.13696 L 136.33772,152.23779 C 135.2113,152.98954 133.89926,153.47862 132.48909,153.58714 L 142.06202,158.89713 L 142.19817,159.04378 L 142.2582,159.00803 L 144.70826,160.36267 L 143.73137,157.73991 L 143.72908,157.70875 L 139.795,147.28247 C 139.45881,148.67373 138.78479,149.92583 137.87095,150.93394 L 115.13008,124.83312 z" id="arr3"/>
+  <path d="M 82.94591,130.21494 L 62.550795,204.62372 C 61.294846,204.10898 60.162333,203.27392 59.283109,202.16191 L 60.227723,213.15296 L 60.190889,213.27643 L 60.222106,213.27782 L 60.471763,216.07312 L 62.106774,213.80054 L 62.108178,213.76931 L 68.58438,204.7074 C 67.234967,205.20784 65.820004,205.34811 64.466683,205.14783 L 84.861801,130.73907 L 82.94591,130.21494 z" id="arr4"/>
+  <g transform="translate(-17.9304, -22.8695)" id="2H">
+    <text x="35.435" y="39.6655" id="text3244" xml:space="preserve" style="font-size: 12px; text-anchor: start; font-family: Bitstream Vera Sans;"><tspan x="35.435" y="39.6655" id="tspan3246" style="font-size: 20px; font-family: Bitstream Vera Sans;">H</tspan></text>
+    <text x="28.5045" y="32.1999" id="text3485" xml:space="preserve" style="font-size: 12px; stroke: rgb(0, 0, 0); stroke-width: 0.4; stroke-linecap: butt; font-family: Bitstream Vera Serif;"><tspan x="28.5045" y="32.1999" id="tspan3487" style="font-size: 12px; stroke: rgb(0, 0, 0); stroke-width: 0.4; font-family: Bitstream Vera Sans;">2</tspan></text>
+  </g>
+  <g transform="translate(-9.93037, -22.8695)" id="3H">
+    <text x="194.223" y="45.9214" id="text3489" xml:space="preserve" style="font-size: 12px; text-anchor: start; font-family: Bitstream Vera Sans;"><tspan x="194.223" y="45.9214" id="tspan3491" style="font-size: 20px; font-family: Bitstream Vera Sans;">H</tspan></text>
+    <text x="187.292" y="38.4558" id="text3493" xml:space="preserve" style="font-size: 12px; stroke: rgb(0, 0, 0); stroke-width: 0.4; stroke-linecap: butt; font-family: Bitstream Vera Serif;"><tspan x="187.292" y="38.4558" id="tspan3495" style="font-size: 12px; stroke: rgb(0, 0, 0); stroke-width: 0.4; font-family: Bitstream Vera Sans;">3</tspan></text>
+  </g>
+  <g transform="translate(-85.234, 190.091)" id="4He + 3.5 MeV">
+    <text x="194.223" y="45.9214" id="text3511" xml:space="preserve" style="font-size: 12px; text-anchor: start; font-family: Bitstream Vera Sans;"><tspan x="194.223" y="45.9214" id="tspan3513" style="font-size: 20px; font-family: Bitstream Vera Sans;">He + 3.5 MeV</tspan></text>
+    <text x="187.292" y="38.4558" id="text3515" xml:space="preserve" style="font-size: 12px; stroke: rgb(0, 0, 0); stroke-width: 0.4; stroke-linecap: butt; font-family: Bitstream Vera Serif;"><tspan x="187.292" y="38.4558" id="tspan3517" style="font-size: 12px; stroke: rgb(0, 0, 0); stroke-width: 0.4; font-family: Bitstream Vera Sans;">4</tspan></text>
+  </g>
+</svg>

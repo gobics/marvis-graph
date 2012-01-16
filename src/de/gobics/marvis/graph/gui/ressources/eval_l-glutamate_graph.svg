@@ -1,0 +1,361 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:xlink="http://www.w3.org/1999/xlink"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   width="744.09448819"
+   height="1052.3622047"
+   id="svg2"
+   version="1.1"
+   inkscape:version="0.48.0 r9654"
+   sodipodi:docname="eval_l-glutamate_graph.svg">
+  <defs
+     id="defs4" />
+  <sodipodi:namedview
+     id="base"
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1.0"
+     inkscape:pageopacity="0.0"
+     inkscape:pageshadow="2"
+     inkscape:zoom="0.82"
+     inkscape:cx="461.03343"
+     inkscape:cy="514.05502"
+     inkscape:document-units="px"
+     inkscape:current-layer="layer1"
+     showgrid="false"
+     inkscape:window-width="1280"
+     inkscape:window-height="978"
+     inkscape:window-x="0"
+     inkscape:window-y="0"
+     inkscape:window-maximized="1" />
+  <metadata
+     id="metadata7">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+        <dc:title></dc:title>
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <g
+     inkscape:label="Layer 1"
+     inkscape:groupmode="layer"
+     id="layer1">
+    <image
+       y="109.79681"
+       x="-126.50146"
+       id="image3044"
+       xlink:href="file:///home/manuel/Studium/marvis-graph-bericht/images/eval_l-glutamate.png"
+       height="832"
+       width="922" />
+    <g
+       id="g3821"
+       transform="translate(467.02128,184.04255)">
+      <rect
+         y="393.7197"
+         x="-121.75298"
+         height="19.737019"
+         width="113.76159"
+         id="rect3051"
+         style="fill:#ffffff;stroke:#333333;stroke-width:0.68275625;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none" />
+      <text
+         sodipodi:linespacing="125%"
+         id="text3047"
+         y="408.74515"
+         x="-120.21277"
+         style="font-size:40px;font-style:normal;font-weight:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:Bitstream Vera Sans"
+         xml:space="preserve"><tspan
+           style="font-size:14px"
+           y="408.74515"
+           x="-120.21277"
+           id="tspan3049"
+           sodipodi:role="line">2-Oxoglutarate</tspan></text>
+    </g>
+    <g
+       id="g3821-4"
+       transform="translate(475.51049,105.15695)">
+      <rect
+         y="396.84958"
+         x="-121.81458"
+         height="16.668715"
+         width="90.480522"
+         id="rect3051-6"
+         style="fill:#ffffff;stroke:#333333;stroke-width:0.55957162;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none" />
+      <text
+         sodipodi:linespacing="125%"
+         id="text3047-6"
+         y="408.74515"
+         x="-120.21277"
+         style="font-size:40px;font-style:normal;font-weight:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:Bitstream Vera Sans"
+         xml:space="preserve"><tspan
+           style="font-size:14px"
+           y="408.74515"
+           x="-120.21277"
+           id="tspan3049-3"
+           sodipodi:role="line">L-Glutamate</tspan></text>
+    </g>
+    <g
+       id="g3821-4-1"
+       transform="translate(396.78709,-145.37495)">
+      <rect
+         y="396.84958"
+         x="-121.81458"
+         height="16.668715"
+         width="90.480522"
+         id="rect3051-6-5"
+         style="fill:#ffffff;stroke:#333333;stroke-width:0.55957162;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none" />
+      <text
+         sodipodi:linespacing="125%"
+         id="text3047-6-2"
+         y="408.74515"
+         x="-120.21277"
+         style="font-size:40px;font-style:normal;font-weight:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:Bitstream Vera Sans"
+         xml:space="preserve"><tspan
+           style="font-size:14px"
+           y="408.74515"
+           x="-120.21277"
+           id="tspan3049-3-6"
+           sodipodi:role="line">L-Glutamine</tspan></text>
+    </g>
+    <g
+       id="g3821-2"
+       transform="translate(823.38282,445.58249)">
+      <rect
+         y="393.50406"
+         x="-121.96861"
+         height="19.357027"
+         width="69.705246"
+         id="rect3051-2"
+         style="fill:#ffffff;stroke:#333333;stroke-width:0.52927226;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none" />
+      <text
+         sodipodi:linespacing="125%"
+         id="text3047-4"
+         y="408.74515"
+         x="-120.21277"
+         style="font-size:40px;font-style:normal;font-weight:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:Bitstream Vera Sans"
+         xml:space="preserve"><tspan
+           style="font-size:14px"
+           y="408.74515"
+           x="-120.21277"
+           sodipodi:role="line"
+           id="tspan3907">Fumarate</tspan></text>
+    </g>
+    <g
+       id="g3821-40"
+       transform="translate(811.6807,301.96547)">
+      <rect
+         y="393.7197"
+         x="-121.75298"
+         height="19.737019"
+         width="72.490601"
+         id="rect3051-4"
+         style="fill:#ffffff;stroke:#333333;stroke-width:0.54501534;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none" />
+      <text
+         sodipodi:linespacing="125%"
+         id="text3047-7"
+         y="408.74515"
+         x="-120.21277"
+         style="font-size:40px;font-style:normal;font-weight:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:Bitstream Vera Sans"
+         xml:space="preserve"><tspan
+           style="font-size:14px"
+           y="408.74515"
+           x="-120.21277"
+           id="tspan3049-8"
+           sodipodi:role="line">Succinate</tspan></text>
+    </g>
+    <path
+       style="fill:none;stroke:#ca5700;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+       d="m 775.53191,458.74516 c -63.82979,0 -111.29395,17.43168 -145.74468,54.25532 -28.72341,37.23405 -46.8085,71.27659 -49.99999,128.7234 1.06383,32.97872 20.21276,53.19149 44.68085,52.12766 47.87233,1.06383 119.14893,-1.06383 160.63829,-37.23404 29.48726,-58.15709 70.79474,-193.17809 -9.57447,-197.87234 z"
+       id="path3955"
+       inkscape:connector-curvature="0"
+       sodipodi:nodetypes="cccccc" />
+    <g
+       id="g3821-40-3"
+       transform="translate(762.10343,33.880355)">
+      <rect
+         y="394.06552"
+         x="-121.40715"
+         height="37.130459"
+         width="198.39468"
+         id="rect3051-4-1"
+         style="fill:#ffffff;stroke:#333333;stroke-width:1.23667979;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none" />
+      <text
+         sodipodi:linespacing="125%"
+         id="text3047-7-4"
+         y="408.74515"
+         x="-119.14894"
+         style="font-size:40px;font-style:normal;font-weight:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:Bitstream Vera Sans"
+         xml:space="preserve"><tspan
+           style="font-size:14px"
+           y="408.74515"
+           x="-119.14894"
+           id="tspan3049-8-9"
+           sodipodi:role="line">Diterpenoid biosynthesis &amp;</tspan><tspan
+           style="font-size:14px"
+           y="426.24515"
+           x="-119.14894"
+           sodipodi:role="line"
+           id="tspan3984">Gibberellin derivatives</tspan></text>
+    </g>
+    <g
+       id="g3821-40-3-7"
+       transform="translate(151.99705,-28.353682)">
+      <rect
+         y="394.06552"
+         x="-121.40715"
+         height="21.31937"
+         width="198.39468"
+         id="rect3051-4-1-3"
+         style="fill:#ffffff;stroke:#333333;stroke-width:0.93708569;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none" />
+      <text
+         sodipodi:linespacing="125%"
+         id="text3047-7-4-6"
+         y="408.74515"
+         x="-119.14894"
+         style="font-size:40px;font-style:normal;font-weight:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:Bitstream Vera Sans"
+         xml:space="preserve"><tspan
+           style="font-size:14px"
+           y="408.74515"
+           x="-119.14894"
+           sodipodi:role="line"
+           id="tspan4038">Biosynthesis of amino acids</tspan></text>
+    </g>
+    <path
+       style="fill:none;stroke:#ca5700;stroke-width:1.13655818px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+       d="M 188.74271,149.67381 C 122.75117,132.39443 56.256625,226.6414 23.005855,269.72562 -23.005141,334.73788 -65.739313,511.52946 -34.039368,628.34875 12.488261,799.8104 163.34867,751.98738 240.0464,719.95838 380.68624,657.72853 299.48344,517.02184 329.99002,415.78883 340.42265,381.16919 368.61999,352.94439 361.82607,312.09362 349.63987,238.81999 251.10767,166.0036 188.74271,149.67381 z"
+       id="path3955-1"
+       inkscape:connector-curvature="0"
+       sodipodi:nodetypes="scscass" />
+    <g
+       id="g3821-4-1-2"
+       transform="translate(306.36156,-178.35367)">
+      <rect
+         y="396.84958"
+         x="-121.81458"
+         height="16.668715"
+         width="85.376709"
+         id="rect3051-6-5-9"
+         style="fill:#ffffff;stroke:#333333;stroke-width:0.54356045;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none" />
+      <text
+         sodipodi:linespacing="125%"
+         id="text3047-6-2-9"
+         y="409.80899"
+         x="-120.21277"
+         style="font-size:40px;font-style:normal;font-weight:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:Bitstream Vera Sans"
+         xml:space="preserve"><tspan
+           style="font-size:14px"
+           y="409.80899"
+           x="-120.21277"
+           id="tspan3049-3-6-2"
+           sodipodi:role="line">Chorismate</tspan></text>
+    </g>
+    <g
+       id="g3821-4-1-2-9"
+       transform="translate(171.67942,176.96548)">
+      <rect
+         y="396.84958"
+         x="-121.81458"
+         height="16.668715"
+         width="77.148453"
+         id="rect3051-6-5-9-7"
+         style="fill:#ffffff;stroke:#333333;stroke-width:0.5167039;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none" />
+      <text
+         sodipodi:linespacing="125%"
+         id="text3047-6-2-9-5"
+         y="409.80899"
+         x="-120.21277"
+         style="font-size:40px;font-style:normal;font-weight:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:Bitstream Vera Sans"
+         xml:space="preserve"><tspan
+           style="font-size:14px"
+           y="409.80899"
+           x="-120.21277"
+           id="tspan3049-3-6-2-9"
+           sodipodi:role="line">L-Cysteine</tspan></text>
+    </g>
+    <g
+       id="g3821-4-1-2-9-3"
+       transform="translate(313.02759,5.6888836)">
+      <rect
+         y="396.84958"
+         x="-121.81458"
+         height="16.668715"
+         width="89.108932"
+         id="rect3051-6-5-9-7-8"
+         style="fill:#ffffff;stroke:#333333;stroke-width:0.55531418;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none" />
+      <text
+         sodipodi:linespacing="125%"
+         id="text3047-6-2-9-5-7"
+         y="409.80899"
+         x="-120.21277"
+         style="font-size:40px;font-style:normal;font-weight:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:Bitstream Vera Sans"
+         xml:space="preserve"><tspan
+           style="font-size:14px"
+           y="409.80899"
+           x="-120.21277"
+           id="tspan3049-3-6-2-9-7"
+           sodipodi:role="line">L-Isoleucine</tspan></text>
+    </g>
+    <g
+       id="g3821-4-1-2-9-8"
+       transform="translate(283.24036,326.96548)">
+      <rect
+         y="396.84958"
+         x="-121.81458"
+         height="16.668715"
+         width="68.792816"
+         id="rect3051-6-5-9-7-3"
+         style="fill:#ffffff;stroke:#333333;stroke-width:0.48792118;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none" />
+      <text
+         sodipodi:linespacing="125%"
+         id="text3047-6-2-9-5-3"
+         y="409.80899"
+         x="-120.21277"
+         style="font-size:40px;font-style:normal;font-weight:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:Bitstream Vera Sans"
+         xml:space="preserve"><tspan
+           style="font-size:14px"
+           y="409.80899"
+           x="-120.21277"
+           id="tspan3049-3-6-2-9-6"
+           sodipodi:role="line">L-Alanine</tspan></text>
+    </g>
+    <g
+       id="g3821-40-3-2"
+       transform="translate(394.55023,-315.58771)">
+      <rect
+         y="394.06552"
+         x="-121.40715"
+         height="37.130459"
+         width="176.46062"
+         id="rect3051-4-1-1"
+         style="fill:#ffffff;stroke:#333333;stroke-width:1.16631579;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none" />
+      <text
+         sodipodi:linespacing="125%"
+         id="text3047-7-4-9"
+         y="408.74515"
+         x="-119.14894"
+         style="font-size:40px;font-style:normal;font-weight:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:Bitstream Vera Sans"
+         xml:space="preserve"><tspan
+           style="font-size:14px"
+           y="408.74515"
+           x="-119.14894"
+           sodipodi:role="line"
+           id="tspan3984-1">Ribose 5-phosphate</tspan><tspan
+           style="font-size:14px"
+           y="426.24515"
+           x="-119.14894"
+           sodipodi:role="line"
+           id="tspan4267">&amp; Ribulose-5-phosphate</tspan></text>
+    </g>
+  </g>
+</svg>
