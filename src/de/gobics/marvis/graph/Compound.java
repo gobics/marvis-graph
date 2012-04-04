@@ -58,10 +58,5 @@ public class Compound extends GraphObject {
 	public boolean hasInchi(){
 		return inchi != null && ! inchi.isEmpty();
 	}
-	
-	@Override
-	public String toString(){
-		return "Compound{id="+getId()+";mass="+getMass()+";name='"+getName()+"'}";
-	}
 
 }

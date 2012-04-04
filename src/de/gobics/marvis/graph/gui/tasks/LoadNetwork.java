@@ -47,7 +47,7 @@ public class LoadNetwork extends SwingWorker<MetabolicNetwork, Void> {
 		logger.info("Importing file " + filename);
 
 		getPropertyChangeSupport().firePropertyChange("description", null, "Loading network");
-		
+
 		if (filename.getAbsolutePath().toLowerCase().endsWith(".zip")) {
 			return this.loadZip(filename);
 		}
@@ -88,10 +88,10 @@ public class LoadNetwork extends SwingWorker<MetabolicNetwork, Void> {
 			temporaryMetabolicNetwork.setHasTranscripts();
 		}
 
-		logger.finer("Importing objects");
 		List<Element> children = root.getChildren();
+		logger.fine("Importing "+ children.size()+" objects");
 		int counter = 1;
-		int max = children.size() / 100; // Like to get percentages
+		int max = children.size() / 100 + 1; // Like to get percentages
 		if (max < 1) { // prevent NullPointerException if child count is < 100
 			max = 1;
 		}
@@ -99,9 +99,10 @@ public class LoadNetwork extends SwingWorker<MetabolicNetwork, Void> {
 			if (e.getName().equals("IntensityConfiguration")) {
 				continue;
 			}
-
+			
+			logger.info("Importing object ("+ counter +"/"+ children.size()+"):" + e.getName());
 			this.create_object_from_element(e);
-			setProgress(counter++ / max);
+			setProgress(Math.min(counter++ / max, 100));
 
 			if (this.isCancelled()) {
 				return null;
