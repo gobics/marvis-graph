@@ -6,7 +6,6 @@ package de.gobics.marvis.graph.gui.tasks;
 
 import de.gobics.marvis.graph.*;
 import de.gobics.marvis.graph.MetabolicNetwork;
-import de.gobics.marvis.graph.Relation.RelationshipType;
 import java.util.Collection;
 import java.util.logging.Logger;
 import javax.swing.SwingWorker;

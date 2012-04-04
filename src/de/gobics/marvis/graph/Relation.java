@@ -1,26 +1,28 @@
 package de.gobics.marvis.graph;
-import java.io.*;
 
-public class Relation implements Comparable<Relation>, Externalizable {
-	public enum RelationshipType {
-		MARKER_ANNOTATION_COMPOUND, 
-		REACTION_HAS_SUBSTRATE, 
-		REACTION_HAS_PRODUCT, 
-		REACTION_NEEDS_ENZYME, 
-		GENE_ENCODES_ENZYME, 
-		TRANSCRIPT_ISFROM_GENE, 
-		REACTION_HAPPENSIN_PATHWAY, 
-		ENZYME_USEDIN_PATHWAY
-	}
+/**
+ * A relation is the association of one graph object to another. There are are
+ * only some relations allowed: {@link RelationshipType}
+ *
+ * @author Manuel Landesfeind &lt;manuel@gobics.de&gt;
+ */
+public class Relation implements Comparable<Relation> {
 
 	protected RelationshipType relation_type;
 	protected GraphObject start;
 	protected GraphObject end;
 
-	public Relation(){
-		
-	}
-
+	/**
+	 * Create a new relation object of the given type to the start and end
+	 * points. It is not necessary to construct relations by one self. It is
+	 * prefered to call functions in the {@link MetabolicNetwork}, e.g {@link MetabolicNetwork#annotates(de.gobics.marvis.graph.Marker, de.gobics.marvis.graph.Compound)}.
+	 *
+	 * @see RelationshipType
+	 * @see GraphObject
+	 * @param type the type of relation
+	 * @param start a corresponding start point
+	 * @param end a corresponding end point
+	 */
 	public Relation(RelationshipType type, GraphObject start, GraphObject end) {
 		this.relation_type = type;
 		this.start = start;
@@ -29,87 +31,123 @@ public class Relation implements Comparable<Relation>, Externalizable {
 
 	@Override
 	public String toString() {
-		return Relation.class.getSimpleName() + "[" + this.getStart().getId() +" =" + this.relation_type.toString() +"=> " + this.getEnd().getId() +"]";
+		return Relation.class.getSimpleName() + "[" + this.getStart().getId() + " =" + this.relation_type.
+				toString() + "=> " + this.getEnd().getId() + "]";
 	}
 
+	/**
+	 * Returns the type of the relation.
+	 *
+	 * @return the type
+	 */
 	public RelationshipType getType() {
 		return this.relation_type;
 	}
 
+	/**
+	 * Returns the start object of this relation
+	 *
+	 * @return the graph object from with this relation starts
+	 */
 	public GraphObject getStart() {
 		return this.start;
 	}
 
+	/**
+	 * Returns the end point of this relation.
+	 *
+	 * @return the graph object that this relation ends in
+	 */
 	public GraphObject getEnd() {
 		return this.end;
 	}
 
-	public boolean contains(GraphObject object){
+	/**
+	 * Returns true if the given object is either the start or the end point of
+	 * this relation.
+	 *
+	 * @param object an object to test
+	 * @return true iff object equals the start or end
+	 */
+	public boolean contains(GraphObject object) {
 		return getStart().equals(object) || getEnd().equals(object);
 	}
 
-	public GraphObject getOther(GraphObject other) {
-		if (this.start.equals(other))
+	/**
+	 * If the given object is the start of this relation it will return the end
+	 * and vice-versa.
+	 *
+	 * @throws IllegalArgumentException if this relation does not contain the
+	 * given object
+	 * @param first the object that should not be returned
+	 * @return an object in this relation that is not {@code first}
+	 */
+	public GraphObject getOther(GraphObject first) {
+		if (this.start.equals(first)) {
 			return this.end;
-		
-		if (this.end.equals(other))
+		}
+
+		if (this.end.equals(first)) {
 			return this.start;
-		
+		}
+
 		throw new IllegalArgumentException("Given node is not part of this relation");
 	}
 
-	@Override
-	public boolean equals(Object other){
-		if( !(other instanceof Relation))
+	/**
+	 * Returns true if this relation equals the other. That is if the type, start
+	 * and end equal.
+	 * @param other the testee
+	 * @return true if this and other relation are equal
+	 */
+	public boolean equals(Relation other) {
+		if (!this.getType().equals(other.getType())) {
 			return false;
-		
-		if( ! this.getType().equals( ((Relation)other).getType()))
+		}
+		if (!this.getStart().equals(other.getStart())) {
 			return false;
-		if( ! this.getStart().equals( ((Relation)other).getStart()))
+		}
+		if (!this.getEnd().equals(other.getEnd())) {
 			return false;
-		if( ! this.getEnd().equals( ((Relation)other).getEnd()))
-			return false;
-		
+		}
+
 		return true;
-		
+
 	}
-	public boolean equals(RelationshipType type, GraphObject from, GraphObject to){		
-		if( ! this.getType().equals(type))
+
+	/**
+	 * Returns true if the given type, start and end equal the internal type, start
+	 * end end.
+	 */
+	public boolean equals(RelationshipType type, GraphObject start, GraphObject end) {
+		if (!this.getType().equals(type)) {
 			return false;
-		if( ! this.getStart().equals(from) )
+		}
+		if (!this.getStart().equals(start)) {
 			return false;
-		if( ! this.getEnd().equals(to) )
+		}
+		if (!this.getEnd().equals(end)) {
 			return false;
-		
+		}
+
 		return true;
 	}
 
+	/**
+	 * {@inheritDoc }
+	 */
 	@Override
 	public int compareTo(Relation arg0) {
-		int c = getType().compareTo( arg0.getType() );
-		if( c != 0 )
+		int c = getType().compareTo(arg0.getType());
+		if (c != 0) {
 			return c;
-		
+		}
+
 		c = getStart().compareTo(arg0.getStart());
-		if( c!=0)
+		if (c != 0) {
 			return c;
-		
+		}
+
 		return getEnd().compareTo(arg0.getEnd());
 	}
-
-	@Override
-	public void writeExternal(ObjectOutput oo) throws IOException {
-		oo.writeObject(relation_type);
-		oo.writeObject(start);
-		oo.writeObject(end);
-	}
-
-	@Override
-	public void readExternal(ObjectInput oi) throws IOException, ClassNotFoundException {
-		relation_type = (RelationshipType) oi.readObject();
-		start = (GraphObject) oi.readObject();
-		end = (GraphObject) oi.readObject();
-	}
-
-	
 }

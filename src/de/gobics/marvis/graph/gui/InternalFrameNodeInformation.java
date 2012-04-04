@@ -151,11 +151,11 @@ public class InternalFrameNodeInformation extends JInternalFrame {
 		addTextfield("Formula", c.getFormula());
 		addTextfield("Num. Reactions", Integer.toString(
 				graph.countRelations(displayObject,
-				Relation.RelationshipType.REACTION_HAS_PRODUCT,
-				Relation.RelationshipType.REACTION_HAS_SUBSTRATE)));
+				RelationshipType.REACTION_HAS_PRODUCT,
+				RelationshipType.REACTION_HAS_SUBSTRATE)));
 		addTextfield("Num. Annotations", Integer.toString(
 				graph.countRelations(displayObject,
-				Relation.RelationshipType.MARKER_ANNOTATION_COMPOUND)));
+				RelationshipType.MARKER_ANNOTATION_COMPOUND)));
 		addTextArea("Description", c.getDescription());
 	}
 

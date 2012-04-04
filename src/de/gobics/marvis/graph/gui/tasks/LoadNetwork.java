@@ -5,7 +5,6 @@
 package de.gobics.marvis.graph.gui.tasks;
 
 import de.gobics.marvis.graph.*;
-import de.gobics.marvis.graph.Relation.RelationshipType;
 import java.util.logging.Logger;
 import java.io.*;
 import java.util.*;
@@ -146,10 +145,6 @@ public class LoadNetwork extends SwingWorker<MetabolicNetwork, Void> {
 			Marker m = this.temporaryMetabolicNetwork.createMarker(id);
 			if (o.getAttributeValue("mass") != null) {
 				m.setMass(new Double(o.getAttributeValue("mass")));
-			}
-
-			if (o.getAttribute("correctionfactor") != null) {
-				m.setCorrectionfactor(o.getAttributeValue("correctionfactor"));
 			}
 
 			if (o.getAttribute("weight") != null) {

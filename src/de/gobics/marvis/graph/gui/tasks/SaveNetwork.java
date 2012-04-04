@@ -137,10 +137,6 @@ public class SaveNetwork extends SwingWorker<Void, Void> {
 			if (((Marker) o).getMass() != null) {
 				e.setAttribute("mass", ((Marker) o).getMass().toString());
 			}
-			if (((Marker) o).getCorrectionfactor() != null) {
-				e.setAttribute("correctionfactor", ((Marker) o).
-						getCorrectionfactor());
-			}
 			if (((Marker) o).getRetentionTime() >= 0) {
 				e.setAttribute("retentiontime", Float.toString(((Marker) o).
 						getRetentionTime()));

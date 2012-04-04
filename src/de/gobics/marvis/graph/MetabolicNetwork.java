@@ -1,7 +1,6 @@
 package de.gobics.marvis.graph;
 
 import java.util.*;
-import de.gobics.marvis.graph.Relation.RelationshipType;
 import java.util.logging.Logger;
 
 public class MetabolicNetwork {
@@ -881,35 +880,35 @@ public class MetabolicNetwork {
 
 		// Extract compounds and corresponding marker
 		for (Compound s : getSubstrates(reaction)) {
-			rels.add(new Relation(Relation.RelationshipType.REACTION_HAS_SUBSTRATE, reaction, s));
+			rels.add(new Relation(RelationshipType.REACTION_HAS_SUBSTRATE, reaction, s));
 			for (Marker m : getAnnotatingMarker(s)) {
-				rels.add(new Relation(Relation.RelationshipType.MARKER_ANNOTATION_COMPOUND, m, s));
+				rels.add(new Relation(RelationshipType.MARKER_ANNOTATION_COMPOUND, m, s));
 			}
 		}
 
 		for (Compound p : getProducts(reaction)) {
-			rels.add(new Relation(Relation.RelationshipType.REACTION_HAS_PRODUCT, reaction, p));
+			rels.add(new Relation(RelationshipType.REACTION_HAS_PRODUCT, reaction, p));
 			for (Marker m : getAnnotatingMarker(p)) {
-				rels.add(new Relation(Relation.RelationshipType.MARKER_ANNOTATION_COMPOUND, m, p));
+				rels.add(new Relation(RelationshipType.MARKER_ANNOTATION_COMPOUND, m, p));
 			}
 		}
 
 		// Extract pathways
 		for (Pathway p : getPathways(reaction)) {
-			rels.add(new Relation(Relation.RelationshipType.REACTION_HAPPENSIN_PATHWAY, reaction, p));
+			rels.add(new Relation(RelationshipType.REACTION_HAPPENSIN_PATHWAY, reaction, p));
 		}
 
 		// Extract enzymes, ...
 		for (Enzyme e : getEnzymes(reaction)) {
-			rels.add(new Relation(Relation.RelationshipType.REACTION_NEEDS_ENZYME, reaction, e));
+			rels.add(new Relation(RelationshipType.REACTION_NEEDS_ENZYME, reaction, e));
 
 			// ... genes,
 			for (Gene g : encodedByGenes(e)) {
-				rels.add(new Relation(Relation.RelationshipType.GENE_ENCODES_ENZYME, g, e));
+				rels.add(new Relation(RelationshipType.GENE_ENCODES_ENZYME, g, e));
 
 				// ... and transcripts
 				for (Transcript t : getTranscripts(g)) {
-					rels.add(new Relation(Relation.RelationshipType.TRANSCRIPT_ISFROM_GENE, t, g));
+					rels.add(new Relation(RelationshipType.TRANSCRIPT_ISFROM_GENE, t, g));
 				}
 			}
 

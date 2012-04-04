@@ -17,8 +17,8 @@ class EdgeArrowTransfomer implements Predicate<Context<edu.uci.ics.jung.graph.Gr
 
 	@Override
 	public boolean evaluate(Context<edu.uci.ics.jung.graph.Graph<GraphObject, Relation>, Relation> t) {
-		if( t.element.getType().equals(Relation.RelationshipType.REACTION_HAS_PRODUCT)
-				|| t.element.getType().equals(Relation.RelationshipType.REACTION_HAS_SUBSTRATE) )
+		if( t.element.getType().equals(RelationshipType.REACTION_HAS_PRODUCT)
+				|| t.element.getType().equals(RelationshipType.REACTION_HAS_SUBSTRATE) )
 			return true;
 		return false;
 	}

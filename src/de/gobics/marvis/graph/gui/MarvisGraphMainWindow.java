@@ -7,7 +7,7 @@ package de.gobics.marvis.graph.gui;
 import de.gobics.marvis.graph.GraphObject;
 import de.gobics.marvis.graph.MetabolicNetwork;
 import de.gobics.marvis.graph.Relation;
-import de.gobics.marvis.graph.Relation.RelationshipType;
+import de.gobics.marvis.graph.RelationshipType;
 import de.gobics.marvis.graph.gui.actions.*;
 import de.gobics.marvis.graph.gui.tasks.*;
 import de.gobics.marvis.graph.sort.AbstractGraphSort;
