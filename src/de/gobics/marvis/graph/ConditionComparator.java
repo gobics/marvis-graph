@@ -1,13 +1,17 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
 package de.gobics.marvis.graph;
 import java.util.Comparator;
-import java.util.regex.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
+/**
+ * Compare the names of conditions. 
+ * @author Manuel Landesfeind &lt;manuel@gobics.de&gt;
+ */
 public class ConditionComparator implements Comparator<String> {
 
+	/**
+	 * {@inheritDoc }
+	 */
 	@Override
 	public int compare(String t1, String t2) {
 		String[] t1_token = t1.split("_");

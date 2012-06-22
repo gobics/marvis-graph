@@ -99,7 +99,7 @@ public class LoadNetwork extends SwingWorker<MetabolicNetwork, Void> {
 				continue;
 			}
 			
-			logger.info("Importing object ("+ counter +"/"+ children.size()+"):" + e.getName());
+			//logger.info("Importing object ("+ counter +"/"+ children.size()+"):" + e.getName());
 			this.create_object_from_element(e);
 			setProgress(Math.min(counter++ / max, 100));
 

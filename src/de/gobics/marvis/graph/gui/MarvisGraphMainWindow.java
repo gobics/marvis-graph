@@ -15,20 +15,16 @@ import de.gobics.marvis.utils.LoggingUtils;
 import de.gobics.marvis.utils.swing.Statusbar;
 import de.gobics.marvis.utils.swing.Statusdialog;
 import de.gobics.marvis.utils.swing.filechooser.ChooserAbstract;
-import de.gobics.marvis.utils.swing.filechooser.ChooserCsv;
 import de.gobics.marvis.utils.swing.filechooser.ChooserExcel;
 import de.gobics.marvis.utils.swing.filechooser.FileFilterCef;
-import de.gobics.marvis.utils.swing.filechooser.FileFilterCsv;
 import java.awt.*;
 import java.awt.event.*;
 import java.beans.*;
 import java.io.File;
 import java.util.Arrays;
-import java.util.concurrent.ExecutionException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.*;
-import sun.net.NetworkClient;
 
 public class MarvisGraphMainWindow extends JFrame {
 
