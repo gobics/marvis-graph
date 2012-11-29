@@ -22,7 +22,7 @@ public class ActionSortSubnetworks extends AbstractMarvisAction {
 	
 	@Override
 	public void actionPerformed(ActionEvent e) {
-		getMainWindow().sortSubnetworks();
+		getMainWindow().sort_subnetworks();
 	}
 	
 }

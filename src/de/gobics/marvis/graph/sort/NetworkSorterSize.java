@@ -11,7 +11,7 @@ import de.gobics.marvis.graph.MetabolicNetwork;
  *
  * @author manuel
  */
-public class NetworkSorterSize extends AbstractGraphSort {
+public class NetworkSorterSize extends AbstractGraphScore {
 
 	public NetworkSorterSize(MetabolicNetwork p) {
 		super(p);

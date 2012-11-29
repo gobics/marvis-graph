@@ -25,6 +25,7 @@ public class InternalFrameGraph extends JInternalFrame {
 
 	/**
 	 * Create a new MetabolicNetworkViewer InternalFrame
+	 *
 	 * @param parent The main GUI instance
 	 * @param view The view to display
 	 */
@@ -88,6 +89,7 @@ public class InternalFrameGraph extends JInternalFrame {
 
 	/**
 	 * Get the view instance
+	 *
 	 * @return the view which is actually be displayed
 	 */
 	public MetabolicNetwork getMetabolicNetwork() {
@@ -96,6 +98,7 @@ public class InternalFrameGraph extends JInternalFrame {
 
 	/**
 	 * Select a specified vertex within the view.
+	 *
 	 * @param obj
 	 */
 //	public void selectVertex(GraphObject obj) {
@@ -209,7 +212,7 @@ public class InternalFrameGraph extends JInternalFrame {
 		logger.finer("Creating graph viewer for view: " + graph_view);
 		JPanel panel = new JPanel(new BorderLayout());
 
-		VisualizationViewerGraph viewer = new VisualizationViewerGraph(graph_view);
+		VisualizationViewerGraph viewer = new VisualizationViewerGraph(main_window, graph_view);
 		GraphZoomScrollPane graphZoom = new GraphZoomScrollPane(viewer);
 		graphZoom.setPreferredSize(new Dimension(400, 400));
 
@@ -252,17 +255,11 @@ public class InternalFrameGraph extends JInternalFrame {
 
 class ToolbarView extends JToolBar {
 
-	private final JButton view_reactions = new JButton();
-	private final VisualizationViewerGraph viewer;
-
 	public ToolbarView(final InternalFrameGraph parent, final VisualizationViewerGraph viewer) {
 		super("Viewer toolbar");
-		this.viewer = viewer;
-
 		JButton button = new JButton(new ViewerActionRedraw(viewer));
 		add(button);
 		button.setHideActionText(true);
-
 	}
 }
 

@@ -1,11 +1,12 @@
 package de.gobics.marvis.graph.gui.tasks;
-import java.io.*;
-import jxl.*;
-import de.gobics.marvis.graph.*;
+import de.gobics.marvis.graph.Gene;
+import de.gobics.marvis.graph.MetabolicNetwork;
+import de.gobics.marvis.graph.Transcript;
+import java.io.File;
 import java.util.logging.Logger;
-import javax.swing.SwingWorker;
+import jxl.*;
 
-public class ImportTranscriptomicsExcel extends SwingWorker<MetabolicNetwork, Void> {
+public class ImportTranscriptomicsExcel extends AbstractTask<MetabolicNetwork, Void> {
 
 	private static final Logger logger = Logger.getLogger(ImportTranscriptomicsExcel.class.
 			getName());
@@ -44,12 +45,12 @@ public class ImportTranscriptomicsExcel extends SwingWorker<MetabolicNetwork, Vo
 	}
 
 	public MetabolicNetwork importTranscripts() throws Exception {
+		sendDescription("Importing transcriptomic data");
 		Workbook workbook = Workbook.getWorkbook(this.transcriptomicsFile);
 
 		logger.finer("Try to open the excel file");
 		Sheet sheet = workbook.getSheet(0);
-		int current = 1;
-		int max = sheet.getRows();
+		setProgressMax(sheet.getRows()-start_row);
 
 		logger.finer("Preparing intensity configuration");
 		int minCol = id_column;
@@ -59,7 +60,6 @@ public class ImportTranscriptomicsExcel extends SwingWorker<MetabolicNetwork, Vo
 
 
 		logger.finer("Importing data");
-		getPropertyChangeSupport().firePropertyChange("description", null, "Importing transcriptomic data");
 		for (int row = this.start_row; row < sheet.getRows(); row++) {
 			String transcript_id = "t" + (row - start_row);
 			if (id_column >= 0) {
@@ -67,7 +67,7 @@ public class ImportTranscriptomicsExcel extends SwingWorker<MetabolicNetwork, Vo
 			}
 			String gene_id = sheet.getCell(this.gene_id_column, row).getContents();
 
-			if (gene_id.equals("NA")) {
+			if (gene_id.equals("NA") || gene_id.equals("empty")) {
 				continue;
 			}
 
@@ -97,20 +97,20 @@ public class ImportTranscriptomicsExcel extends SwingWorker<MetabolicNetwork, Vo
 			}
 			transcript.setIntensity(condition_names, intensity_data);
 
-			setProgress(row / max);
+			incrementProgress();
 			if (isCancelled()) {
 				return null;
 			}
 
 		}
-		logger.finer("Imported " + (current - 1) + " transcripts. Closing excel file");
+		logger.finer("Imported transcripts");
 		workbook.close();
 
 		return network;
 	}
 
 	@Override
-	protected MetabolicNetwork doInBackground() throws Exception {
+	protected MetabolicNetwork performTask() throws Exception {
 		return importTranscripts();
 	}
 }

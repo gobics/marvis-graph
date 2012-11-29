@@ -15,7 +15,7 @@ import org.jdom.input.SAXBuilder;
  * 
  * @author manuel
  */
-public class ImportMetabolicMarkerCef extends SwingWorker<MetabolicNetwork, Void> {
+public class ImportMetabolicMarkerCef extends AbstractTask<MetabolicNetwork, Void> {
 
 	private static final Logger logger = Logger.getLogger(ImportMetabolicMarkerCef.class.
 			getName());
@@ -55,10 +55,8 @@ public class ImportMetabolicMarkerCef extends SwingWorker<MetabolicNetwork, Void
 		logger.finer("Importing objects");
 		List<Element> children = root.getChildren("Compound");
 		int counter = 1;
-		int max = children.size() / 100; // Like to get percentages
-		if (max < 1) { // prevent NullPointerException if child count is < 100
-			max = 1;
-		}
+		setProgressMax(children.size());
+		
 		for (Element e : children) {
 			Marker marker = network.createMarker("m"+counter);
 			
@@ -76,7 +74,7 @@ public class ImportMetabolicMarkerCef extends SwingWorker<MetabolicNetwork, Void
 			
 			//FIXME: Ich brauch intensitaeten
 			
-			setProgress(counter++ / max);
+			incrementProgress();
 		}
 
 		setProgress(100);
@@ -95,7 +93,7 @@ public class ImportMetabolicMarkerCef extends SwingWorker<MetabolicNetwork, Void
 	}
 
 	@Override
-	protected MetabolicNetwork doInBackground() throws Exception {
+	protected MetabolicNetwork performTask() throws Exception {
 		return importMarker();
 	}
 }

@@ -39,8 +39,8 @@ public class DialogImportMetabolicsOptions extends DialogAbstract implements Doc
 			startline = new JTextField("1"), separator = new JTextField(","),
 			marker_correction = new JTextField("0.0"),
 			intensity_firstcolumn = new JTextField("4"),
-			intensity_lastcolumn = new JTextField("76"),
-			annotation_range = new JTextField("0.005");
+			intensity_lastcolumn = new JTextField("75"),
+			weight_column = new JTextField("76");
 	private final MarvisGraphMainWindow parent;
 
 	public DialogImportMetabolicsOptions(MarvisGraphMainWindow parent, File filename) {
@@ -64,11 +64,15 @@ public class DialogImportMetabolicsOptions extends DialogAbstract implements Doc
 		main.setOpaque(true);
 
 		JPanel optionPanel = new JPanel(new SpringLayout());
+		optionPanel.add(new JLabel("Separator:"));
+		optionPanel.add(this.separator);
+		this.separator.setPreferredSize(defaultPreferredTextfieldDimension);
+		this.separator.getDocument().addDocumentListener(this);
 		optionPanel.add(new JLabel("ID column:"));
 		optionPanel.add(this.column_id);
 		this.column_id.setPreferredSize(defaultPreferredTextfieldDimension);
 		this.column_id.selectAll();
-		optionPanel.add(new JLabel("Retentiontime column:"));
+		optionPanel.add(new JLabel("Retention-time column:"));
 		optionPanel.add(this.column_rt);
 		this.column_rt.setPreferredSize(defaultPreferredTextfieldDimension);
 		this.column_rt.selectAll();
@@ -76,19 +80,15 @@ public class DialogImportMetabolicsOptions extends DialogAbstract implements Doc
 		optionPanel.add(this.column_mass);
 		this.column_mass.setPreferredSize(defaultPreferredTextfieldDimension);
 		this.column_mass.selectAll();
-		optionPanel.add(new JLabel("Separator:"));
-		optionPanel.add(this.separator);
-		this.separator.setPreferredSize(defaultPreferredTextfieldDimension);
-		this.separator.getDocument().addDocumentListener(this);
+		optionPanel.add(new JLabel("Weight Column:"));
+		optionPanel.add(this.weight_column);
+		this.weight_column.setPreferredSize(defaultPreferredTextfieldDimension);
 		optionPanel.add(new JLabel("Header line:"));
 		optionPanel.add(this.startline);
 		this.startline.setPreferredSize(defaultPreferredTextfieldDimension);
 		optionPanel.add(new JLabel("Mass correction:"));
 		optionPanel.add(this.marker_correction);
 		this.marker_correction.setPreferredSize(defaultPreferredTextfieldDimension);
-		optionPanel.add(new JLabel("Mass annotation range:"));
-		optionPanel.add(this.annotation_range);
-		this.annotation_range.setPreferredSize(defaultPreferredTextfieldDimension);
 		optionPanel.add(new JLabel("First intensity column:"));
 		optionPanel.add(this.intensity_firstcolumn);
 		this.intensity_firstcolumn.setPreferredSize(defaultPreferredTextfieldDimension);
@@ -108,22 +108,25 @@ public class DialogImportMetabolicsOptions extends DialogAbstract implements Doc
 		ImportMetabolicMarkerCSV process = new ImportMetabolicMarkerCSV(network);
 		process.setIdColumn(getIdColumn());
 		process.setMassColumn(getMassColumn());
+		process.setWeightColumn(getWeightColumn());
 		process.setCorrectionfactor(getCorrectionfactor());
 		process.setHeaderRow(getHeaderRow());
 		process.setSeparator(getSeparator());
 		process.setFirstIntensityColumn(getIntensityFirstColumn());
 		process.setRetentiontimeColumn(getRetentiontimeColumn());
 
+
 		// Input header names
-		int first_intensity_index = getIntensityFirstColumn() -1;
+		int first_intensity_index = getIntensityFirstColumn() - 1;
 		if (first_intensity_index < 0) {
 			return process;
 		}
 
 		String[] header_names = new String[getIntensityLastColumn() - getIntensityFirstColumn() + 1];
 
-		CsvPreviewTableModel model = (CsvPreviewTableModel) previewtable.getModel();
-		
+		CsvPreviewTableModel model = (CsvPreviewTableModel) previewtable.
+				getModel();
+
 		for (int i = 0; i < header_names.length; i++) {
 			header_names[i] = (String) model.getValueAt(getHeaderRow() - 1, i + first_intensity_index);
 		}
@@ -146,9 +149,12 @@ public class DialogImportMetabolicsOptions extends DialogAbstract implements Doc
 				doubleValue();
 	}
 
-	private double getMassrange() {
-		return new Double(this.annotation_range.getText().replace(",", ".")).
-				doubleValue();
+	private Integer getWeightColumn() {
+		if (this.weight_column.getText() == null || weight_column.getText().
+				isEmpty()) {
+			return null;
+		}
+		return new Integer(this.weight_column.getText().replace(",", "."));
 	}
 
 	public int getMassColumn() {
@@ -324,7 +330,7 @@ class CsvPreviewTableModel extends AbstractTableModel {
 			}
 		}
 		catch (Exception e) {
-			parent.showErrorBox("Can not load data from file", e);
+			parent.display_error("Can not load data from file", e);
 		}
 	}
 }

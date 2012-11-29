@@ -1,28 +1,28 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
 package de.gobics.marvis.graph.sort;
 
 import de.gobics.marvis.graph.MetabolicNetwork;
 
 /**
+ * Simple returns the names of the graphs as score. Using this algorithm the 
+ * sub-networks are simple sorted by their name.
  *
  * @author manuel
  */
-public class NetworkSorterName extends AbstractGraphSort {
+public class NetworkSorterName extends AbstractGraphScore {
 
 	public NetworkSorterName(MetabolicNetwork p) {
 		super(p);
 	}
-
+	
 	public NetworkSorterName() {
 		super();
 	}
+	
+	
 
 	@Override
 	public Comparable<String> calculateScore(MetabolicNetwork graph) {
-		return graph.getName();
+		return graph.getName() != null ? graph.getName().toLowerCase() : "Unkown";
 	}
 
 	@Override

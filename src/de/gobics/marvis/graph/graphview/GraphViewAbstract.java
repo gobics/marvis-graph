@@ -55,7 +55,7 @@ public abstract class GraphViewAbstract<E> implements Graph<GraphObject, E> {
 
 		if (allowed_gaps > 1) {
 			for (GraphObject neighbor : this.getNeighbors(o)) {
-				if (isExplainable(o, allowed_gaps - 1)) {
+				if (isExplainable(neighbor, allowed_gaps - 1)) {
 					return true;
 				}
 			}

@@ -107,7 +107,7 @@ public class TreeModelNetworks implements TreeModel {
 	private void fireTreeModelEvent(){
 		TreeModelEvent evt = new TreeModelEvent(this, new MetabolicNetwork[]{getRoot()});
 		for(TreeModelListener l : treemodel_listener){
-			logger.finer("Fire tree model event to listener: "+l);
+		//	logger.finer("Fire tree model event to listener: "+l);
 			l.treeStructureChanged(evt);
 		}
 	}

@@ -1,45 +1,45 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
 package de.gobics.marvis.graph.gui;
 
-import de.gobics.marvis.graph.GraphObject;
-import de.gobics.marvis.graph.MetabolicNetwork;
-import de.gobics.marvis.graph.Relation;
-import de.gobics.marvis.graph.RelationshipType;
+import de.gobics.marvis.graph.*;
+import de.gobics.marvis.graph.downloader.MetabolicNetworkTester;
+import de.gobics.marvis.graph.downloader.NetworkDownloaderDialog;
 import de.gobics.marvis.graph.gui.actions.*;
 import de.gobics.marvis.graph.gui.tasks.*;
-import de.gobics.marvis.graph.sort.AbstractGraphSort;
+import de.gobics.marvis.graph.sort.AbstractGraphScore;
 import de.gobics.marvis.utils.LoggingUtils;
 import de.gobics.marvis.utils.swing.Statusbar;
 import de.gobics.marvis.utils.swing.Statusdialog;
 import de.gobics.marvis.utils.swing.filechooser.ChooserAbstract;
 import de.gobics.marvis.utils.swing.filechooser.ChooserExcel;
 import de.gobics.marvis.utils.swing.filechooser.FileFilterCef;
-import java.awt.*;
-import java.awt.event.*;
-import java.beans.*;
+import java.awt.BorderLayout;
+import java.awt.Component;
+import java.awt.Dimension;
+import java.awt.event.KeyEvent;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.util.Arrays;
+import java.util.TreeSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.*;
+import javax.swing.tree.TreePath;
 
 public class MarvisGraphMainWindow extends JFrame {
 
 	private static final Logger logger = Logger.getLogger(MarvisGraphMainWindow.class.
 			getName());
 	private final Statusbar statusbar = new Statusbar();
-	private final JcbGraphSort combobox_graph_sort = new JcbGraphSort();
+	private final ComboBoxGraphSort combobox_graph_sort = new ComboBoxGraphSort();
 	private final TreeModelNetworks treemodel_networks = new TreeModelNetworks(null, new MetabolicNetwork[0]);
 	private final JTree jtree_networks = new JTree(treemodel_networks);
 	private final PanelGraphInformation panel_graph_information = new PanelGraphInformation(jtree_networks);
 	private final JDesktopPane desktop = new JDesktopPane();
+	private final Statusdialog status_dialog = new Statusdialog(this);
 
 	public MarvisGraphMainWindow() {
 		super("MarVis-Graph v0.2");
-		final MarvisGraphMainWindow main_frame = this;
 		logger.finer("Initializing new window");
 		getContentPane().setLayout(new BorderLayout());
 		JSplitPane main_split = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT);
@@ -59,6 +59,8 @@ public class MarvisGraphMainWindow extends JFrame {
 		menu.add(new JMenuItem(new ActionLoadNetwork(this)));
 		menu.add(new JMenuItem(new ActionSaveNetwork(this, jtree_networks)));
 		menu.add(new JSeparator());
+		menu.add(new JMenuItem(new ActionCreateNetwork(this)));
+		menu.add(new JSeparator());
 		menu.add(new JMenuItem(new ActionCalculateNetworks(this, treemodel_networks)));
 		menu.add(new JSeparator());
 		menu.add(new JMenuItem(new ActionExit(this)));
@@ -72,6 +74,8 @@ public class MarvisGraphMainWindow extends JFrame {
 		menu.add(new JMenuItem(new ActionImportTranscripts(this, treemodel_networks)));
 
 		getJMenuBar().add(new MenuWindows(this));
+
+
 
 		// Install Popup menu for JTree
 		new PopupMenuNetworksTree(this, jtree_networks);
@@ -123,7 +127,6 @@ public class MarvisGraphMainWindow extends JFrame {
 		}
 
 		final LoadNetwork process = new LoadNetwork(input);
-		statusbar.monitorTask(process);
 		process.addPropertyChangeListener(new PropertyChangeListener() {
 
 			@Override
@@ -136,13 +139,13 @@ public class MarvisGraphMainWindow extends JFrame {
 					catch (Throwable ex) {
 						logger.log(Level.SEVERE, "can not load network from '" + input.
 								getAbsolutePath() + "': ", ex);
-						showErrorBox("Can not load graph", ex);
+						display_error("Can not load graph", ex);
 					}
 				}
 			}
 		});
 
-		new Statusdialog(this).monitorTask(process);
+		monitorTask(process);
 
 		process.execute();
 	}
@@ -150,7 +153,7 @@ public class MarvisGraphMainWindow extends JFrame {
 	public void saveNetwork() {
 		MetabolicNetwork network = getMainNetwork();
 		if (network == null) {
-			showErrorBox("Please select a network first.");
+			display_error("Please select a network first.");
 		}
 		saveNetwork(network);
 	}
@@ -161,17 +164,17 @@ public class MarvisGraphMainWindow extends JFrame {
 			return;
 		}
 		final SaveNetwork process = new SaveNetwork(n, output_file);
-		statusbar.monitorTask(process);
-		new Statusdialog(this).monitorTask(process);
+		monitorTask(process);
 		process.execute();
 	}
 
 	/**
-	 * Create a JInternalFrame to display the graph. The internal frame will
-	 * be added to the JDesktopPane.
-	 * 
-	 * Note: This is a shortcut for @{code createNetworkVisualization(getSelectedNetwork())} 
-	 * including error checking
+	 * Create a JInternalFrame to display the graph. The internal frame will be
+	 * added to the JDesktopPane.
+	 *
+	 * Note: This is a shortcut for @{code
+	 * createNetworkVisualization(getSelectedNetwork())} including error
+	 * checking
 	 */
 	public void drawNetwork() {
 		MetabolicNetwork n = getSelectedNetwork();
@@ -237,7 +240,7 @@ public class MarvisGraphMainWindow extends JFrame {
 
 		Object o = jtree_networks.getSelectionPath().getLastPathComponent();
 		if (!(o instanceof MetabolicNetwork)) {
-			this.showErrorBox("The object in the tree is not of type MetabolicNetwork but: " + o.
+			this.display_error("The object in the tree is not of type MetabolicNetwork but: " + o.
 					getClass().getName());
 			return null;
 		}
@@ -246,17 +249,19 @@ public class MarvisGraphMainWindow extends JFrame {
 
 	/**
 	 * Set the main network to the given one.
-	 * @param new_network 
+	 *
+	 * @param new_network
 	 */
 	public void setNetwork(MetabolicNetwork new_network) {
 		for (JInternalFrame f : desktop.getAllFrames()) {
 			f.dispose();
 		}
 		treemodel_networks.setRoot(new_network);
+		jtree_networks.getSelectionModel().setSelectionPath(new TreePath(new_network));
 	}
 
 	/**
-	 * Updates the graph information. This event will be fired when a graph is 
+	 * Updates the graph information. This event will be fired when a graph is
 	 * selected in the JTree
 	 */
 	private void updateGraphInformation() {
@@ -266,10 +271,10 @@ public class MarvisGraphMainWindow extends JFrame {
 
 	/**
 	 * Initialises the process of subnetwork calculation. The user will be asked
-	 * for required options. A swingworker performing the calculation will be 
+	 * for required options. A swingworker performing the calculation will be
 	 * created. The result will be fetched asynchronous and stored in the tree
-	 * model. The statusbar and a statusdialog will monitor the applications status
-	 * and present it to the user.
+	 * model. The statusbar and a statusdialog will monitor the applications
+	 * status and present it to the user.
 	 */
 	public void calculateSubnetworks() {
 		// Fetch the main network 
@@ -303,7 +308,7 @@ public class MarvisGraphMainWindow extends JFrame {
 							treemodel_networks.setSubnetworks(networks);
 						}
 
-						sortSubnetworks();
+						sort_subnetworks();
 					}
 					catch (Exception ex) {
 						logger.log(Level.SEVERE, "Can not get calculated networks: ", ex);
@@ -313,28 +318,47 @@ public class MarvisGraphMainWindow extends JFrame {
 		});
 
 		// Initialize monitoring features
-		statusbar.monitorTask(process);
-		new Statusdialog(this).monitorTask(process);
+		monitorTask(process);
 
 		// Start the process
 		process.execute();
 
 	}
 
-	public void showErrorBox(String message) {
-		showErrorBox(message, null);
+	/**
+	 * Display the error message in a modal dialog.
+	 *
+	 * @param message
+	 */
+	public void display_error(String message) {
+		display_error(message, null);
 	}
 
-	public void showErrorBox(String message, Throwable e) {
-		new ErrorBox(this, message, e).setVisible(true);
+	/**
+	 * Display the given message and exception in an error dialog.
+	 *
+	 * @param message the message to display
+	 * @param e the exception to display
+	 */
+	public void display_error(String message, Throwable e) {
+		ErrorDialog.show(this, message, e);
 	}
 
-	public void sortSubnetworks() {
+	/**
+	 * Sort the sub-networks available.
+	 */
+	public void sort_subnetworks() {
 		MetabolicNetwork[] subnetworks = getSubnetworks();
 		logger.finer("Got " + subnetworks.length + " sub networks");
 		sortSubnetworks(subnetworks);
 	}
 
+	/**
+	 * Sort the given sub-networks. The sorting method depends on the selected
+	 * sorting algorithm.
+	 *
+	 * @param subnetworks
+	 */
 	public void sortSubnetworks(final MetabolicNetwork[] subnetworks) {
 		if (subnetworks == null || subnetworks.length == 0) {
 			return;
@@ -344,35 +368,49 @@ public class MarvisGraphMainWindow extends JFrame {
 			return;
 		}
 
-		final AbstractGraphSort sorter = combobox_graph_sort.getSorterFor(main);
-		final SortNetworksTask process = new SortNetworksTask(sorter, subnetworks);
-		statusbar.monitorTask(process);
-		process.addPropertyChangeListener(new PropertyChangeListener() {
+		final AbstractGraphScore sorter = combobox_graph_sort.getSorterFor(main);
+		final SortNetworksTask process = new SortNetworksTask(sorter, getMainNetwork(), subnetworks);
+		process.addPropertyChangeListener(new AbstractTaskListener() {
 
 			@Override
-			public void propertyChange(PropertyChangeEvent evt) {
-				if (evt.getPropertyName().equals("state")
-						&& evt.getNewValue().equals(SwingWorker.StateValue.DONE)) {
-					try {
-						logger.finer("Sorted networks are ready. Will now display the results.");
-						if (process.isCancelled()) {
-							logger.warning("Sort process is canceled.");
-						}
-						else {
-							treemodel_networks.setSubnetworks(process.get());
-						}
-					}
-					catch (Exception ex) {
-						logger.log(Level.SEVERE, "Can not get result of process", ex);
-						showErrorBox("can not get results of sorting", ex);
-					}
+			public void receiveStatusDone() {
+				logger.finer("Sorted networks are ready. Will now display the results.");
+				if (process.isCancelled()) {
+					return;
 				}
+
+				MetabolicNetwork[] networks = null;
+				try {
+					networks = process.get();
+				}
+				catch (Exception ex) {
+					logger.log(Level.SEVERE, "", ex);
+				}
+				if (networks == null) {
+					return;
+				}
+				treemodel_networks.setSubnetworks(networks);
+
+			}
+
+			@Override
+			public void receiveError(String msg) {
+				MarvisGraphMainWindow.this.display_error(msg);
+			}
+
+			@Override
+			public void receiveException(Exception ex) {
+				MarvisGraphMainWindow.this.display_error("Exception during sub-network sort", ex);
 			}
 		});
-		new Statusdialog(this).monitorTask(process);
+		monitorTask(process);
 		process.execute();
 	}
 
+	/**
+	 * Main method to import metabolites. The window will display a chooser to
+	 * select the file to import.
+	 */
 	public void importMetabolites() {
 		ChooserAbstract chooser = FileChooserMetabolicMarker.getInstance();
 		chooser.setMultiSelectionEnabled(true);
@@ -391,10 +429,20 @@ public class MarvisGraphMainWindow extends JFrame {
 		}
 	}
 
+	/**
+	 * Import the given input file.
+	 *
+	 * @param input_file
+	 */
 	public void importMetabolitesCSV(final File input_file) {
 		importMetabolitesCSV(new File[]{input_file});
 	}
 
+	/**
+	 * Import the given input files.
+	 *
+	 * @param input_files
+	 */
 	public void importMetabolitesCSV(final File[] input_files) {
 		if (input_files.length < 1) {
 			logger.warning("Can not import from an empty file list");
@@ -405,23 +453,25 @@ public class MarvisGraphMainWindow extends JFrame {
 			if (!f.exists() || !f.canRead()) {
 				logger.severe("File does not exist or is not readable: " + f.
 						getAbsolutePath());
-				showErrorBox("File does not exist or is not readable:\n" + f.
+				display_error("File does not exist or is not readable:\n" + f.
 						getAbsolutePath());
 			}
 		}
 
 		if (input_files.length > 1) {
-			JOptionPane.showMessageDialog(this, "You like to import several files at once. Please\nkeep in mind that all files have to be formated\nin the same way!", "Warning", JOptionPane.WARNING_MESSAGE);
+			JOptionPane.showMessageDialog(this, "You like to import several files at once. Please\n"
+					+ "keep in mind that all files have to be formated\n"
+					+ "in the same way!", "Warning", JOptionPane.WARNING_MESSAGE);
 		}
 
 		MetabolicNetwork network = getMainNetwork();
 		if (network == null) {
-			showErrorBox("Please load a metabolic network first");
+			display_error("Please load a metabolic network first");
 		}
 
 		// If there are markers in the network it is better to remove them!
 		if (!network.getMarkers().isEmpty()) {
-			if (JOptionPane.showConfirmDialog(this, "Network already contains marker. Remove them?\n\nWarning: If you import markers with a different number of intensities\n this can lead to serious problems.", "Warning", JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION) {
+			if (confirm("Network already contains marker. Remove them?\n\nWarning: If you import markers with a different number of intensities\n this can lead to serious problems.", "Warning")) {
 				for (GraphObject m : network.getMarkers()) {
 					network.remove(m);
 				}
@@ -440,14 +490,13 @@ public class MarvisGraphMainWindow extends JFrame {
 		}
 		process.setInputFiles(input_files);
 
-		statusbar.monitorTask(process);
-		new Statusdialog(this).monitorTask(process);
+		monitorTask(process);
 
 		// Asynchronous fetching of the result
-		process.addPropertyChangeListener(new ProcessListener() {
+		process.addPropertyChangeListener(new AbstractTaskListener() {
 
 			@Override
-			public void processDone() {
+			public void receiveStatusDone() {
 				try {
 
 					MetabolicNetwork network = process.get();
@@ -455,37 +504,47 @@ public class MarvisGraphMainWindow extends JFrame {
 						return;
 					}
 
-					if (JOptionPane.showConfirmDialog(MarvisGraphMainWindow.this, "Imported " + network.
-							getMarkers().size() + " metabolic marker. Accept?", "Import result", JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION) {
+					if (MarvisGraphMainWindow.this.confirm("Imported " + network.
+							getMarkers().size() + " metabolic marker. Accept?", "Import result")) {
 						setNetwork(network);
-						if (JOptionPane.showConfirmDialog(MarvisGraphMainWindow.this, "Perform an annotation of the metabolic marker?", "Perform annotation", JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION) {
+						if (MarvisGraphMainWindow.this.confirm("Perform an annotation of the metabolic marker?", "Perform annotation")) {
 							annotateMarker();
 						}
 					}
 
 				}
 				catch (Exception ex) {
-					showErrorBox("Can not import metabolic marker: ", ex);
+					display_error("Can not import metabolic marker: ", ex);
 					logger.log(Level.SEVERE, "Can not import metabolic marker: ", ex);
 				}
 
 			}
 
 			@Override
-			public void processError(Exception exeption) {
-				showErrorBox("Can not import metabolic marker: ", exeption);
+			public void receiveError(String msg) {
+				display_error(msg);
+			}
+
+			@Override
+			public void receiveException(Exception ex) {
+				display_error("Exception during import of metabolic data", ex);
 			}
 		});
 		process.execute();
 	}
 
+	/**
+	 * Import metabolic data from Agilent CEF files.
+	 *
+	 * @param input_files
+	 */
 	public void importMetabolitesCef(final File[] input_files) {
 		final MetabolicNetwork network = getMainNetwork();
 		if (network == null) {
-			showErrorBox("Please load a network first");
+			display_error("Please load a network first");
 			return;
 		}
-		
+
 		if (input_files.length < 1) {
 			logger.warning("Can not import from an empty file list");
 			return;
@@ -495,23 +554,20 @@ public class MarvisGraphMainWindow extends JFrame {
 			if (!f.exists() || !f.canRead()) {
 				logger.severe("File does not exist or is not readable: " + f.
 						getAbsolutePath());
-				showErrorBox("File does not exist or is not readable:\n" + f.
+				display_error("File does not exist or is not readable:\n" + f.
 						getAbsolutePath());
 			}
 		}
 
 		final ImportMetabolicMarkerCef process = new ImportMetabolicMarkerCef(network);
-
 		process.setInputFiles(input_files);
-
-		statusbar.monitorTask(process);
-		new Statusdialog(this).monitorTask(process);
+		monitorTask(process);
 
 		// Asynchronous fetching of the result
-		process.addPropertyChangeListener(new ProcessListener() {
+		process.addPropertyChangeListener(new AbstractTaskListener() {
 
 			@Override
-			public void processDone() {
+			public void receiveStatusDone() {
 				try {
 
 					MetabolicNetwork network = process.get();
@@ -519,41 +575,50 @@ public class MarvisGraphMainWindow extends JFrame {
 						return;
 					}
 
-					if (JOptionPane.showConfirmDialog(MarvisGraphMainWindow.this, "Imported " + network.
-							getMarkers().size() + " metabolic marker. Accept?", "Import result", JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION) {
+					if (MarvisGraphMainWindow.this.confirm("Imported " + network.
+							getMarkers().size() + " metabolic marker. Accept?", "Import result")) {
 						setNetwork(network);
-						if (JOptionPane.showConfirmDialog(MarvisGraphMainWindow.this, "Perform an annotation of the metabolic marker?", "Perform annotation", JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION) {
+						if (MarvisGraphMainWindow.this.confirm("Perform an annotation of the metabolic marker?")) {
 							annotateMarker();
 						}
 					}
 
 				}
 				catch (Exception ex) {
-					showErrorBox("Can not import metabolic marker: ", ex);
+					display_error("Can not import metabolic marker: ", ex);
 					logger.log(Level.SEVERE, "Can not import metabolic marker: ", ex);
 				}
 
 			}
 
 			@Override
-			public void processError(Exception exeption) {
-				showErrorBox("Can not import metabolic marker: ", exeption);
+			public void receiveError(String msg) {
+				display_error(msg);
+			}
+
+			@Override
+			public void receiveException(Exception ex) {
+				display_error("Can not import metabolic marker: ", ex);
 			}
 		});
 		process.execute();
 	}
 
+	/**
+	 * Annotate the given marker.
+	 */
 	public void annotateMarker() {
 		MetabolicNetwork network = getMainNetwork();
 		if (network == null) {
-			showErrorBox("Please load a graph first");
+			display_error("Please load a graph first");
 			return;
 		}
 
 		// Remove existing annotations
 		if (!network.getRelations(RelationshipType.MARKER_ANNOTATION_COMPOUND).
 				isEmpty()) {
-			if (JOptionPane.showConfirmDialog(this, "There are already markers annotated. This\nannotations will be removed. Accept?", "Remove existing annotation?", JOptionPane.YES_NO_OPTION) == JOptionPane.NO_OPTION) {
+			if (!confirm("There are already markers annotated. This\n"
+					+ "annotations will be removed. Accept?", "Remove existing annotation?")) {
 				return;
 			}
 			for (Relation r : network.getRelations(RelationshipType.MARKER_ANNOTATION_COMPOUND)) {
@@ -562,24 +627,29 @@ public class MarvisGraphMainWindow extends JFrame {
 		}
 
 		// Ask for range accuracy
-		DialogSpinner dialog = new DialogSpinner(this, "Mass range", true, new SpinnerNumberModel(0.005, 0, Double.MAX_VALUE, 0.001));
-		dialog.setVisible(true);
-		if (dialog.aborted()) {
-			return;
-		}
-
-		Number range = (Number) dialog.getValue();
+		JPanel dialog_panel = new JPanel();
+		dialog_panel.setLayout(new BoxLayout(dialog_panel, BoxLayout.PAGE_AXIS));
+		SpinnerNumberModel spinner_model = new SpinnerNumberModel(0.005, 0, Double.MAX_VALUE, 0.001);
+		dialog_panel.add(new JLabel("Specify the mass range (in u):"));
+		JSpinner spinner = new JSpinner(spinner_model);
+		Dimension size = spinner.getSize();
+		size.width = 50;
+		spinner.setSize(size);
+		spinner.setPreferredSize(size);
+		spinner.setMaximumSize(size);
+		dialog_panel.add(spinner);
+		JOptionPane.showMessageDialog(this, dialog_panel, "Annotate marker", JOptionPane.QUESTION_MESSAGE);
+		Number range = spinner_model.getNumber();
 
 		final AnnotateMarker annotate_process = new AnnotateMarker(network);
 		annotate_process.setMassRange(Math.abs(range.doubleValue()));
 
-		statusbar.monitorTask(annotate_process);
-		new Statusdialog(this).monitorTask(annotate_process);
+		monitorTask(annotate_process);
 		// Asynchronous fetching of the result
-		annotate_process.addPropertyChangeListener(new ProcessListener() {
+		annotate_process.addPropertyChangeListener(new AbstractTaskListener() {
 
 			@Override
-			public void processDone() {
+			public void receiveStatusDone() {
 				try {
 					MetabolicNetwork network = annotate_process.get();
 					if (network == null) {
@@ -588,19 +658,24 @@ public class MarvisGraphMainWindow extends JFrame {
 					int count_annotations = network.getRelations(RelationshipType.MARKER_ANNOTATION_COMPOUND).
 							size();
 
-					if (JOptionPane.showConfirmDialog(MarvisGraphMainWindow.this, "Found " + count_annotations + " annotations. Accept?", "Check annotations", JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION) {
+					if (confirm("Found " + count_annotations + " annotations. Accept?", "Check annotations")) {
 						setNetwork(network);
 					}
 				}
 				catch (Exception ex) {
-					showErrorBox("Can not get annotate markers: ", ex);
+					display_error("Can not get annotate markers: ", ex);
 					logger.log(Level.SEVERE, "Can not get annotate markers: ", ex);
 				}
 			}
 
 			@Override
-			public void processError(Exception exeption) {
-				showErrorBox("Can not annotate metabolic marker: ", exeption);
+			public void receiveError(String msg) {
+				display_error(msg);
+			}
+
+			@Override
+			public void receiveException(Exception ex) {
+				display_error("Can not annotate metabolic marker: ", ex);
 			}
 		});
 
@@ -618,18 +693,20 @@ public class MarvisGraphMainWindow extends JFrame {
 
 	private void importTranscripts(final File input_file) {
 		if (!input_file.exists()) {
-			showErrorBox("Input file does not exist: " + input_file.
+			display_error("Input file does not exist: " + input_file.
 					getAbsolutePath());
 			return;
 		}
 		MetabolicNetwork network = getMainNetwork();
 		if (network == null) {
-			showErrorBox("Please load a metabolic network first");
+			display_error("Please load a metabolic network first");
 		}
 
 		// If there are markers in the network it is better to remove them!
 		if (!network.getTranscripts().isEmpty()) {
-			if (JOptionPane.showConfirmDialog(this, "Network already contains transcripts. Remove them?\n\nWarning: If you import transcripts with a different number of intensities\n this can lead to serious problems.", "Warning", JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION) {
+			if (confirm("Network already contains transcripts. Remove them?\n\n"
+					+ "Warning: If you import transcripts with a different number of intensities\n"
+					+ "this can lead to serious problems.", "Warning")) {
 				for (GraphObject m : network.getTranscripts()) {
 					network.remove(m);
 				}
@@ -642,7 +719,7 @@ public class MarvisGraphMainWindow extends JFrame {
 		}
 		catch (Exception ex) {
 			logger.log(Level.SEVERE, "Can not open dialog for import options: ", ex);
-			showErrorBox("Can not open dialog for import options", ex);
+			display_error("Can not open dialog for import options", ex);
 			return;
 		}
 		dialog.setVisible(true);
@@ -655,36 +732,99 @@ public class MarvisGraphMainWindow extends JFrame {
 			return;
 		}
 
-		statusbar.monitorTask(process);
-		new Statusdialog(this).monitorTask(process);
+		monitorTask(process);
 		// Asynchronous fetching of the result
-		process.addPropertyChangeListener(new ProcessListener() {
+		process.addPropertyChangeListener(new AbstractTaskListener() {
 
 			@Override
-			public void processDone() {
-				try {
-					MetabolicNetwork network = process.get();
-
-					int count_transcripts = network.getTranscripts().size();
-					int count_mappings = network.getRelations(RelationshipType.TRANSCRIPT_ISFROM_GENE).
-							size();
-
-					if (JOptionPane.showConfirmDialog(MarvisGraphMainWindow.this, "Imported " + count_transcripts + " transcripts with " + count_mappings + " gene associations. Accept?", "Import result", JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION) {
-						setNetwork(network);
-					}
-				}
-				catch (Exception ex) {
-					showErrorBox("Can not import transcripts: ", ex);
-					logger.log(Level.SEVERE, "Can not import transcripts: ", ex);
-				}
-
+			public void receiveError(String msg) {
+				MarvisGraphMainWindow.this.display_error(msg);
 			}
 
 			@Override
-			public void processError(Exception exeption) {
-				showErrorBox("Can not import transcriptomics:", exeption);
+			public void receiveException(Exception ex) {
+				MarvisGraphMainWindow.this.display_error("Exception during transcript import", ex);
+			}
+
+			@Override
+			public void receiveStatusDone() {
+				if (process.isCancelled()) {
+					return;
+				}
+				MetabolicNetwork network = null;
+				try {
+					network = process.get();
+				}
+				catch (Exception ex) {
+					logger.log(Level.SEVERE, "Import canceled: ", ex);
+				}
+				if (network == null) {
+					return;
+				}
+
+
+				int counter_transcripts = 0;
+				int counter_annotated = 0;
+				TreeSet<Reaction> reactions = new TreeSet<Reaction>();
+				for (Transcript t : network.getTranscripts()) {
+					counter_transcripts++;
+					for (Gene g : network.getGenes(t)) {
+						for (Enzyme e : network.getEncodedEnzymes(g)) {
+							reactions.addAll(network.getReactions(e));
+						}
+					}
+				}
+
+				String message = "New network will contain " + counter_transcripts + " transcripts\n(" + reactions.
+						size() + " with associated reaction). Accept?";
+				if (MarvisGraphMainWindow.this.confirm(message, "Accept import")) {
+					MarvisGraphMainWindow.this.setNetwork(network);
+				}
 			}
 		});
 		process.execute();
+	}
+
+	public void createNewNetwork() {
+		new NetworkDownloaderDialog(this).setVisible(true);
+	}
+
+	public void monitorTask(SwingWorker process) {
+		statusbar.monitorTask(process);
+		status_dialog.monitorTask(process);
+	}
+
+	public boolean confirm(String question) {
+		return confirm(question, "Question");
+	}
+
+	/**
+	 * Displays a message dialog showing the given question. It will return true
+	 * if the user pressed the "yes" button
+	 *
+	 * @param question
+	 * @param title
+	 * @return
+	 */
+	public boolean confirm(String question, String title) {
+		return JOptionPane.showConfirmDialog(this, question, title, JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION;
+	}
+
+	public void display_information(String report) {
+		Component message = new JLabel(report);
+		if (report.length() > 50 || report.contains("\n")) {
+			message = new JScrollPane(new JTextArea(report));
+		}
+		JOptionPane.showMessageDialog(this, message);
+	}
+
+	public void displayNetworkReport() {
+		displayNetworkReport(getSelectedNetwork());
+	}
+
+	public void displayNetworkReport(MetabolicNetwork network) {
+		MetabolicNetworkTester tester = new MetabolicNetworkTester(network);
+		String report = tester.generateReport();
+		display_information(report);
 	}
 }

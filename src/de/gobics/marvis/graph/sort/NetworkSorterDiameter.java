@@ -1,25 +1,32 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
 package de.gobics.marvis.graph.sort;
 
-import de.gobics.marvis.graph.*;
-import de.gobics.marvis.graph.graphview.*;
+import de.gobics.marvis.graph.GraphObject;
+import de.gobics.marvis.graph.MetabolicNetwork;
+import de.gobics.marvis.graph.Reaction;
+import de.gobics.marvis.graph.graphview.GraphViewReactions;
+import de.gobics.marvis.graph.graphview.ReactionRelation;
 import edu.uci.ics.jung.algorithms.shortestpath.DijkstraDistance;
-import java.util.*;
+import java.util.Collection;
+import java.util.Map;
+import java.util.TreeSet;
 
 /**
+ * Calculates the diameter of a sub-networks. For all pairs of reactions the
+ * shortest paths between them are calculated. The diameter is the longest of
+ * the found paths.
+ * 
+ * For calculation of the shortest paths the Jung-Implementation of Dijkstras 
+ * algorithm is utilized.
  *
- * @author manuel
+ * @author manuel &lt;manuel@gobics.de&gt;
  */
-public class NetworkSorterLongestShortestPath extends AbstractGraphSort {
+public class NetworkSorterDiameter extends AbstractGraphScore {
 
-	public NetworkSorterLongestShortestPath(MetabolicNetwork p) {
+	public NetworkSorterDiameter(MetabolicNetwork p) {
 		super(p);
 	}
 
-	public NetworkSorterLongestShortestPath() {
+	public NetworkSorterDiameter() {
 		super();
 	}
 
@@ -35,7 +42,7 @@ public class NetworkSorterLongestShortestPath extends AbstractGraphSort {
 		for (Reaction r : reactions) {
 			// Calculate the distance
 			Map<GraphObject, Number> map = distance.getDistanceMap(r, reactions_graphobjects);
-			
+
 			// Find longest path in results
 			for (GraphObject go : map.keySet()) {
 				if (go instanceof Reaction && max_length < map.get(go).intValue()) {
@@ -49,7 +56,7 @@ public class NetworkSorterLongestShortestPath extends AbstractGraphSort {
 
 	@Override
 	public String getName() {
-		return "Longest shortest path";
+		return "Diameter";
 	}
 
 	@Override

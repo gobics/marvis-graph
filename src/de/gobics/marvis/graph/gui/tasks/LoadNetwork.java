@@ -17,7 +17,7 @@ import org.jdom.input.*;
  *
  * @author manuel
  */
-public class LoadNetwork extends SwingWorker<MetabolicNetwork, Void> {
+public class LoadNetwork extends AbstractTask<MetabolicNetwork, Void> {
 
 	private final static Logger logger = Logger.getLogger(LoadNetwork.class.
 			getName());
@@ -38,19 +38,20 @@ public class LoadNetwork extends SwingWorker<MetabolicNetwork, Void> {
 	}
 
 	@Override
-	protected MetabolicNetwork doInBackground() throws Exception {
+	protected MetabolicNetwork performTask() throws Exception {
 		return this.load();
 	}
 
 	public MetabolicNetwork load() throws Exception {
 		logger.info("Importing file " + filename);
 
-		getPropertyChangeSupport().firePropertyChange("description", null, "Loading network");
+		sendDescription("Loading network");
 
 		if (filename.getAbsolutePath().toLowerCase().endsWith(".zip")) {
 			return this.loadZip(filename);
 		}
-		else if (filename.getAbsolutePath().toLowerCase().endsWith(".xml.gz")) {
+		else if (filename.getAbsolutePath().toLowerCase().endsWith(".xml.gz")
+				|| filename.getAbsolutePath().toLowerCase().endsWith(".xgz")) {
 			return this.loadGZip(filename);
 		}
 		else if (filename.getAbsolutePath().toLowerCase().endsWith(".xml")) {
@@ -66,8 +67,6 @@ public class LoadNetwork extends SwingWorker<MetabolicNetwork, Void> {
 		SAXBuilder builder = new SAXBuilder();
 		Document doc = builder.build(instream);
 		Element root = doc.getRootElement();
-
-		setProgress(0);
 
 		if (!root.getAttribute("version").getValue().equals("0.2")) {
 			throw new Exception(
@@ -88,27 +87,24 @@ public class LoadNetwork extends SwingWorker<MetabolicNetwork, Void> {
 		}
 
 		List<Element> children = root.getChildren();
-		logger.fine("Importing "+ children.size()+" objects");
-		int counter = 1;
-		int max = children.size() / 100 + 1; // Like to get percentages
-		if (max < 1) { // prevent NullPointerException if child count is < 100
-			max = 1;
-		}
+		logger.fine("Importing " + children.size() + " objects");
+		setProgressMax(children.size());
+		
 		for (Element e : children) {
 			if (e.getName().equals("IntensityConfiguration")) {
 				continue;
 			}
-			
+
 			//logger.info("Importing object ("+ counter +"/"+ children.size()+"):" + e.getName());
 			this.create_object_from_element(e);
-			setProgress(Math.min(counter++ / max, 100));
+			
+			incrementProgress();
 
 			if (this.isCancelled()) {
 				return null;
 			}
 		}
 
-		setProgress(100);
 		logger.info("Loaded MetabolicNetwork ready");
 		return temporaryMetabolicNetwork;
 

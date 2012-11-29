@@ -22,7 +22,7 @@ import java.util.logging.Logger;
  */
 public class GraphViewCustomizable extends GraphViewAbstract<Relation> {
 
-	private final Logger logger = Logger.getLogger(GraphViewCustomizable.class.
+	private static final Logger logger = Logger.getLogger(GraphViewCustomizable.class.
 			getName());
 	private final Graph<GraphObject, Relation> view = new SparseGraph<GraphObject, Relation>();
 	private final Set<GraphObject> objects_to_hide = new TreeSet<GraphObject>();
@@ -149,12 +149,13 @@ public class GraphViewCustomizable extends GraphViewAbstract<Relation> {
 	}
 
 	/**
-	 * Check whether the node @code{obj} will be displayed or not. 
+	 * Check whether the node @code{obj} will be displayed or not.
+	 *
 	 * @param obj The object to check.
 	 * @return true if the vertex should be display.
 	 */
 	private boolean evaluateVertex(GraphObject obj) {
-		logger.finer("Evaluating: " + obj);
+		//logger.finer("Evaluating: " + obj);
 		try { // FIXME:
 			if (classes_to_hide.contains(obj.getClass())) {
 				return false;

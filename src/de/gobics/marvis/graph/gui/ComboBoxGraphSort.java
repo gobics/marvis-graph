@@ -9,17 +9,19 @@ import de.gobics.marvis.graph.sort.*;
 import java.awt.Component;
 import javax.swing.*;
 
+
 /**
  *
  * @author manuel
  */
-public class JcbGraphSort extends JComboBox {
+public class ComboBoxGraphSort extends JComboBox {
 
-	public JcbGraphSort() {
+	public ComboBoxGraphSort() {
 
 		setRenderer(new GraphSortListCellRenderer());
 
-		addItem(new NetworkSorterLongestShortestPath());
+		addItem(new NetworkSorterDiameter());
+		addItem(new NetworkSorterSEA());
 		//addItem(new ModularityScore());
 		addItem(new NetworkSorterName());
 		addItem(new NetworkSorterSize());
@@ -32,21 +34,20 @@ public class JcbGraphSort extends JComboBox {
 
 	}
 
-	public AbstractGraphSort getSorterFor(MetabolicNetwork parent) {
-		AbstractGraphSort sorter = (AbstractGraphSort) getSelectedItem();
+	public AbstractGraphScore getSorterFor(MetabolicNetwork parent) {
+		AbstractGraphScore sorter = (AbstractGraphScore) getSelectedItem();
 		sorter.setParent(parent);
 		return sorter;
 	}
 }
-
 class GraphSortListCellRenderer extends DefaultListCellRenderer {
 
 	@Override
 	public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
 		Component top = super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
-		if (top instanceof JLabel && value instanceof AbstractGraphSort) {
-			((JLabel) top).setText(((AbstractGraphSort) value).getName());
-			((JLabel) top).setToolTipText(((AbstractGraphSort) value).
+		if (top instanceof JLabel && value instanceof AbstractGraphScore) {
+			((JLabel) top).setText(((AbstractGraphScore) value).getName());
+			((JLabel) top).setToolTipText(((AbstractGraphScore) value).
 					getDescription());
 		}
 		return top;

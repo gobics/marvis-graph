@@ -5,9 +5,7 @@
 package de.gobics.marvis.graph.gui.tasks;
 
 import de.gobics.marvis.graph.*;
-import java.util.LinkedList;
-import java.util.Set;
-import java.util.TreeSet;
+import java.util.*;
 import java.util.logging.Logger;
 import javax.swing.SwingWorker;
 
@@ -15,7 +13,7 @@ import javax.swing.SwingWorker;
  *
  * @author manuel
  */
-public class CalculateNetworksReaction extends SwingWorker<MetabolicNetwork[], Void> {
+public class CalculateNetworksReaction extends AbstractTask<MetabolicNetwork[], Void> {
 
 	private static final Logger logger = Logger.getLogger(CalculateNetworksReaction.class.
 			getName());
@@ -29,13 +27,13 @@ public class CalculateNetworksReaction extends SwingWorker<MetabolicNetwork[], V
 	}
 
 	@Override
-	protected MetabolicNetwork[] doInBackground() throws Exception {
+	protected MetabolicNetwork[] performTask() throws Exception {
 		return calculateNetworks();
 	}
 
 	public MetabolicNetwork[] calculateNetworks() throws Exception {
 		logger.fine("Searching start nodes");
-		getPropertyChangeSupport().firePropertyChange("description", "", "Searching start nodes");
+		sendDescription("Searching start nodes");
 		TreeSet<Reaction> possible_start_nodes = new TreeSet<Reaction>();
 		for (Reaction reaction : root_network.getReactions()) {
 			possible_start_nodes.add(reaction);
@@ -43,17 +41,10 @@ public class CalculateNetworksReaction extends SwingWorker<MetabolicNetwork[], V
 
 		logger.fine("Beginning calculation of subnetworks with " + possible_start_nodes.
 				size() + " possible start nodes: " + possible_start_nodes);
-		getPropertyChangeSupport().firePropertyChange("description", "", "Calculating sub networks");
-		double max = ((double) possible_start_nodes.size()) / 100.0d;
-		if (max == 0) {
-			max = 1;
-		}
+		sendDescription("Calculating sub networks");
+		setProgressMax(possible_start_nodes.size());
 
 		// Store the initial number of nodes to set progress status
-		int num_start_nodes = possible_start_nodes.size();
-
-
-		setProgress(0);
 		while (!possible_start_nodes.isEmpty()) {
 			// Extract the first element from possible nodes
 			Reaction next_vertex = possible_start_nodes.pollFirst();
@@ -64,17 +55,29 @@ public class CalculateNetworksReaction extends SwingWorker<MetabolicNetwork[], V
 			}
 			possible_start_nodes.removeAll(neighbor_nodes);
 			MetabolicNetwork new_network = generate_network(neighbor_nodes);
-			new_network.setName("Subnetwork: " + next_vertex.getName());
 			found_networks.add(new_network);
+
+			Iterator<Reaction> reactions = new_network.getReactions().iterator();
+			while (reactions.hasNext() && new_network.getName() == null) {
+				Reaction r = reactions.next();
+				if (r.getName() != null) {
+					new_network.setName("Subnetwork: " + r.getName());
+				}
+			}
+			if (new_network.getName() == null) {
+				new_network.setName("Subnetwork: " + next_vertex.getId());
+			}
+
+
 
 			if (isCancelled()) {
 				return null;
 			}
 
-			setProgress((int) ((num_start_nodes - possible_start_nodes.size()) / max));
+
+			incrementProgress(new_network.getReactions().size());
 		}
 
-		setProgress(100);
 		logger.info("Found " + found_networks.size() + " networks");
 		return found_networks.toArray(new MetabolicNetwork[found_networks.size()]);
 	}
@@ -98,7 +101,9 @@ public class CalculateNetworksReaction extends SwingWorker<MetabolicNetwork[], V
 			}
 
 			for (Compound c : root_network.getCompounds(current)) {
-				if (root_network.getReactions(c).size() >= cofactor_treshold) {
+				// If this compound is a cofactor or not explainable do not go further
+				if (root_network.getReactions(c).size() >= cofactor_treshold || !root_network.
+						isExplainable(c)) {
 					continue;
 				}
 				for (Reaction neighbor : root_network.getReactions(c)) {
@@ -133,8 +138,8 @@ public class CalculateNetworksReaction extends SwingWorker<MetabolicNetwork[], V
 	public void setMaximumGaps(int intValue) {
 		this.max_gaps = Math.abs(intValue);
 	}
-	
-	public void setCofactorTreshold(int value){
+
+	public void setCofactorTreshold(int value) {
 		this.cofactor_treshold = Math.abs(value);
 	}
 }

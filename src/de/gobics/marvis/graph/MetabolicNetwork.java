@@ -73,11 +73,11 @@ public class MetabolicNetwork {
 		}
 	}
 
-	public boolean addRelation(RelationshipType type, GraphObject from, GraphObject to) {
+	synchronized public boolean addRelation(RelationshipType type, GraphObject from, GraphObject to) {
 		return addRelation(new Relation(type, from, to));
 	}
 
-	public boolean addRelation(Relation relation) {
+	synchronized public boolean addRelation(Relation relation) {
 		if (!relations.containsKey(relation.getType())) {
 			relations.put(relation.getType(), new TreeSet());
 		}
@@ -117,7 +117,7 @@ public class MetabolicNetwork {
 		return true;
 	}
 
-	public GraphObject addObject(GraphObject o) {
+	synchronized public GraphObject addObject(GraphObject o) {
 
 		if (!object_to_relation_mapping.containsKey(o.getClass())) {
 			object_to_relation_mapping.put(o.getClass(), new TreeMap<GraphObject, LinkedList<Relation>>());
@@ -140,11 +140,11 @@ public class MetabolicNetwork {
 		return o2;
 	}
 
-	public void annotates(Marker marker, Compound compound) {
+	synchronized public void annotates(Marker marker, Compound compound) {
 		addRelation(RelationshipType.MARKER_ANNOTATION_COMPOUND, marker, compound);
 	}
 
-	public LinkedList<Reaction> catalysesReactions(Enzyme enzyme) {
+	synchronized public LinkedList<Reaction> catalysesReactions(Enzyme enzyme) {
 		LinkedList<Reaction> ret = new LinkedList<Reaction>();
 		for (Object o : object_to_relation_mapping.get(enzyme.getClass()).get(enzyme)) {
 			Relation r = (Relation) o;
@@ -156,7 +156,7 @@ public class MetabolicNetwork {
 	}
 
 	@Override
-	public MetabolicNetwork clone() {
+	synchronized public MetabolicNetwork clone() {
 		MetabolicNetwork clone = new MetabolicNetwork(getParent());
 		clone.setName(getName());
 		for (Relation r : getRelations()) {
@@ -174,18 +174,18 @@ public class MetabolicNetwork {
 		return clone;
 	}
 
-	public boolean containsRelation(RelationshipType type, GraphObject from, GraphObject to) {
+	synchronized public boolean containsRelation(RelationshipType type, GraphObject from, GraphObject to) {
 		return containsRelation(new Relation(type, from, to));
 	}
 
-	public boolean containsRelation(Relation arg0) {
+	synchronized public boolean containsRelation(Relation arg0) {
 		if (!relations.containsKey(arg0.getType())) {
 			return false;
 		}
 		return relations.get(arg0.getType()).contains(arg0);
 	}
 
-	public boolean containsObject(GraphObject o) {
+	synchronized public boolean containsObject(GraphObject o) {
 		if (!vertices.containsKey(o.getClass())) {
 			return false;
 		}
@@ -193,7 +193,7 @@ public class MetabolicNetwork {
 		return class_objects.containsKey(o.getId());
 	}
 
-	public int countExplainable() {
+	synchronized public int countExplainable() {
 		int counter = 0;
 		for (GraphObject o : getAllObjects()) {
 			if (explainer.evaluate(this, o)) {
@@ -203,35 +203,35 @@ public class MetabolicNetwork {
 		return counter;
 	}
 
-	public Compound createCompound(String compound_id) {
+	synchronized public Compound createCompound(String compound_id) {
 		return (Compound) addObject(new Compound(compound_id));
 	}
 
-	public Enzyme createEnzyme(String enzyme_id) {
+	synchronized public Enzyme createEnzyme(String enzyme_id) {
 		return (Enzyme) addObject(new Enzyme(enzyme_id));
 	}
 
-	public Gene createGene(String id) {
+	synchronized public Gene createGene(String id) {
 		return (Gene) addObject(new Gene(id));
 	}
 
-	public Marker createMarker(String marker_id) {
+	synchronized public Marker createMarker(String marker_id) {
 		return (Marker) addObject(new Marker(marker_id));
 	}
 
-	public Pathway createPathway(String id) {
+	synchronized public Pathway createPathway(String id) {
 		return (Pathway) addObject(new Pathway(id));
 	}
 
-	public Reaction createReaction(String reaction_id) {
+	synchronized public Reaction createReaction(String reaction_id) {
 		return (Reaction) addObject(new Reaction(reaction_id));
 	}
 
-	public Transcript createTranscript(String transcript_id) {
+	synchronized public Transcript createTranscript(String transcript_id) {
 		return (Transcript) addObject(new Transcript(transcript_id));
 	}
 
-	public LinkedList<Gene> encodedByGenes(Enzyme enzyme) {
+	synchronized public LinkedList<Gene> encodedByGenes(Enzyme enzyme) {
 		LinkedList<Gene> ret = new LinkedList<Gene>();
 		for (Object o : object_to_relation_mapping.get(enzyme.getClass()).get(enzyme)) {
 			Relation r = (Relation) o;
@@ -242,7 +242,7 @@ public class MetabolicNetwork {
 		return ret;
 	}
 
-	public void encodesFor(Gene gene, Enzyme enzyme) {
+	synchronized public void encodesFor(Gene gene, Enzyme enzyme) {
 		addRelation(RelationshipType.GENE_ENCODES_ENZYME, gene, enzyme);
 	}
 
@@ -260,7 +260,7 @@ public class MetabolicNetwork {
 	return old_size != size();
 	}
 	 */
-	public LinkedList<GraphObject> getAllObjects() {
+	synchronized public LinkedList<GraphObject> getAllObjects() {
 		LinkedList<GraphObject> ret = new LinkedList<GraphObject>();
 		for (TreeMap<String, GraphObject> tset : vertices.values()) {
 			ret.addAll(tset.values());
@@ -268,14 +268,14 @@ public class MetabolicNetwork {
 		return ret;
 	}
 
-	public LinkedList<GraphObject> getAllObjects(Class<? extends GraphObject> classtype) {
+	synchronized public LinkedList<GraphObject> getAllObjects(Class<? extends GraphObject> classtype) {
 		if (vertices.containsKey(classtype)) {
 			return new LinkedList<GraphObject>(vertices.get(classtype).values());
 		}
 		return new LinkedList<GraphObject>();
 	}
 
-	public LinkedList<Marker> getAnnotatingMarker(Compound compound) {
+	synchronized public LinkedList<Marker> getAnnotatingMarker(Compound compound) {
 		LinkedList<Marker> ret = new LinkedList<Marker>();
 		for (Object o : object_to_relation_mapping.get(compound.getClass()).get(compound)) {
 			Relation r = (Relation) o;
@@ -286,7 +286,7 @@ public class MetabolicNetwork {
 		return ret;
 	}
 
-	public LinkedList<Compound> getAnnotations(Marker marker) {
+	synchronized public LinkedList<Compound> getAnnotations(Marker marker) {
 		LinkedList<Compound> ret = new LinkedList<Compound>();
 		for (Object o : relations.get(RelationshipType.MARKER_ANNOTATION_COMPOUND)) {
 			Relation r = (Relation) o;
@@ -297,11 +297,11 @@ public class MetabolicNetwork {
 		return ret;
 	}
 
-	public Compound getCompound(String id) {
+	synchronized public Compound getCompound(String id) {
 		return (Compound) getObject(Compound.class, id);
 	}
 
-	public Collection<Compound> getMolecules() {
+	synchronized public Collection<Compound> getMolecules() {
 		ArrayList<Compound> list = new ArrayList<Compound>();
 		if (!vertices.containsKey(Compound.class)) {
 			return list;
@@ -312,18 +312,19 @@ public class MetabolicNetwork {
 		return list;
 	}
 
-	public Collection<Relation> getRelations(RelationshipType type) {
+	@SuppressWarnings("unchecked")
+	synchronized public Collection<Relation> getRelations(RelationshipType type) {
 		if (!relations.containsKey(type)) {
 			return new ArrayList<Relation>();
 		}
-		return relations.get(type);
+		return (Collection<Relation>) relations.get(type).clone();
 	}
 
-	public int countRelations() {
+	synchronized public int countRelations() {
 		return getRelations().size();
 	}
 
-	public Collection<Relation> getRelations() {
+	synchronized public Collection<Relation> getRelations() {
 		LinkedList<Relation> rels = new LinkedList<Relation>();
 		for (TreeSet grs : relations.values()) {
 			rels.addAll(grs);
@@ -331,7 +332,7 @@ public class MetabolicNetwork {
 		return rels;
 	}
 
-	public Collection<Relation> getRelationsBetween(GraphObject v1, GraphObject v2) {
+	synchronized public Collection<Relation> getRelationsBetween(GraphObject v1, GraphObject v2) {
 		TreeSet<Relation> rels = new TreeSet<Relation>();
 		for (Relation r : getRelations(v1)) {
 			if (r.getOther(v1).equals(v2)) {
@@ -341,7 +342,7 @@ public class MetabolicNetwork {
 		return rels;
 	}
 
-	public LinkedList<Enzyme> getEncodedEnzymes(Gene gene) {
+	synchronized public LinkedList<Enzyme> getEncodedEnzymes(Gene gene) {
 		LinkedList<Enzyme> ret = new LinkedList<Enzyme>();
 		for (Object o : object_to_relation_mapping.get(gene.getClass()).get(gene)) {
 			Relation r = (Relation) o;
@@ -352,11 +353,11 @@ public class MetabolicNetwork {
 		return ret;
 	}
 
-	public Enzyme getEnzyme(String id) {
+	synchronized public Enzyme getEnzyme(String id) {
 		return (Enzyme) getObject(Enzyme.class, id);
 	}
 
-	public Collection<Enzyme> getEnzymes() {
+	synchronized public Collection<Enzyme> getEnzymes() {
 		ArrayList<Enzyme> list = new ArrayList<Enzyme>();
 		if (!vertices.containsKey(Enzyme.class)) {
 			return list;
@@ -367,15 +368,15 @@ public class MetabolicNetwork {
 		return list;
 	}
 
-	public ExplainablePredicate getExplainablePredicate() {
+	synchronized public ExplainablePredicate getExplainablePredicate() {
 		return explainer;
 	}
 
-	public Gene getGene(String id) {
+	synchronized public Gene getGene(String id) {
 		return (Gene) getObject(Gene.class, id);
 	}
 
-	public Collection<Gene> getGenes() {
+	synchronized public Collection<Gene> getGenes() {
 		ArrayList<Gene> list = new ArrayList<Gene>();
 		if (!vertices.containsKey(Gene.class)) {
 			return list;
@@ -386,7 +387,7 @@ public class MetabolicNetwork {
 		return list;
 	}
 
-	public LinkedList<Gene> getGenes(Transcript transcript) {
+	synchronized public LinkedList<Gene> getGenes(Transcript transcript) {
 		LinkedList<Gene> ret = new LinkedList<Gene>();
 		for (Object o : object_to_relation_mapping.get(transcript.getClass()).
 				get(transcript)) {
@@ -398,7 +399,7 @@ public class MetabolicNetwork {
 		return ret;
 	}
 
-	public LinkedList<Gene> getEncodingGenes(Enzyme enzyme) {
+	synchronized public LinkedList<Gene> getEncodingGenes(Enzyme enzyme) {
 		LinkedList<Gene> ret = new LinkedList<Gene>();
 		for (Object o : object_to_relation_mapping.get(enzyme.getClass()).get(enzyme)) {
 			Relation r = (Relation) o;
@@ -409,7 +410,7 @@ public class MetabolicNetwork {
 		return ret;
 	}
 
-	private double getExplainableReactionCount() {
+	synchronized private double getExplainableReactionCount() {
 		int counter = 0;
 		for (Reaction r : getReactions()) {
 			if (isExplainable(r)) {
@@ -420,11 +421,11 @@ public class MetabolicNetwork {
 		return (double) counter;
 	}
 
-	public Marker getMarker(String id) {
+	synchronized public Marker getMarker(String id) {
 		return (Marker) getObject(Marker.class, id);
 	}
 
-	public Collection<Marker> getMarkers() {
+	synchronized public Collection<Marker> getMarkers() {
 		ArrayList<Marker> list = new ArrayList<Marker>();
 		if (!vertices.containsKey(Marker.class)) {
 			return list;
@@ -435,23 +436,23 @@ public class MetabolicNetwork {
 		return list;
 	}
 
-	public String getName() {
+	synchronized public String getName() {
 		return this.name;
 	}
 
-	private GraphObject getObject(Class<? extends GraphObject> c, String id) {
+	synchronized private GraphObject getObject(Class<? extends GraphObject> c, String id) {
 		return (GraphObject) getStore(c).get(id);
 	}
 
-	public Collection<GraphObject> getObjects(Class<? extends GraphObject> c) {
+	synchronized public Collection<GraphObject> getObjects(Class<? extends GraphObject> c) {
 		return getStore(c).values();
 	}
 
-	public Pathway getPathway(String id) {
+	synchronized public Pathway getPathway(String id) {
 		return (Pathway) getObject(Pathway.class, id);
 	}
 
-	public Collection<Pathway> getPathways() {
+	synchronized public Collection<Pathway> getPathways() {
 		ArrayList<Pathway> list = new ArrayList<Pathway>();
 		if (!vertices.containsKey(Pathway.class)) {
 			return list;
@@ -462,7 +463,7 @@ public class MetabolicNetwork {
 		return list;
 	}
 
-	public LinkedList<Compound> getProducts(Reaction reaction) {
+	synchronized public LinkedList<Compound> getProducts(Reaction reaction) {
 		LinkedList<Compound> ret = new LinkedList<Compound>();
 		for (Object o : object_to_relation_mapping.get(reaction.getClass()).get(reaction)) {
 			Relation r = (Relation) o;
@@ -473,7 +474,7 @@ public class MetabolicNetwork {
 		return ret;
 	}
 
-	public Set<Compound> getCompounds() {
+	synchronized public Set<Compound> getCompounds() {
 		TreeSet<Compound> list = new TreeSet<Compound>();
 		if (!vertices.containsKey(Compound.class)) {
 			return list;
@@ -484,13 +485,13 @@ public class MetabolicNetwork {
 		return list;
 	}
 
-	public Set<Compound> getCompounds(Reaction reaction) {
+	synchronized public Set<Compound> getCompounds(Reaction reaction) {
 		TreeSet<Compound> compounds = new TreeSet<Compound>(getSubstrates(reaction));
 		compounds.addAll(getProducts(reaction));
 		return compounds;
 	}
 
-	public LinkedList<Reaction> getProductToReaction(Compound compound) {
+	synchronized public LinkedList<Reaction> getProductToReaction(Compound compound) {
 		LinkedList<Reaction> ret = new LinkedList<Reaction>();
 		for (Object o : object_to_relation_mapping.get(compound.getClass()).get(compound)) {
 			Relation r = (Relation) o;
@@ -501,11 +502,11 @@ public class MetabolicNetwork {
 		return ret;
 	}
 
-	public Reaction getReaction(String id) {
+	synchronized public Reaction getReaction(String id) {
 		return (Reaction) getObject(Reaction.class, id);
 	}
 
-	public Collection<Reaction> getReactions() {
+	synchronized public Collection<Reaction> getReactions() {
 		ArrayList<Reaction> list = new ArrayList<Reaction>();
 		if (!vertices.containsKey(Reaction.class)) {
 			return list;
@@ -516,7 +517,7 @@ public class MetabolicNetwork {
 		return list;
 	}
 
-	public LinkedList<Reaction> getReactions(Pathway pathway) {
+	synchronized public LinkedList<Reaction> getReactions(Pathway pathway) {
 		LinkedList<Reaction> ret = new LinkedList<Reaction>();
 		for (Object o : relations.get(RelationshipType.REACTION_HAPPENSIN_PATHWAY)) {
 			Relation r = (Relation) o;
@@ -527,20 +528,20 @@ public class MetabolicNetwork {
 		return ret;
 	}
 
-	public Set<Reaction> getReactions(Compound compound) {
+	synchronized public Set<Reaction> getReactions(Compound compound) {
 		TreeSet<Reaction> reactions = new TreeSet<Reaction>(getSubstrateToReaction(compound));
 		reactions.addAll(getProductToReaction(compound));
 		return reactions;
 	}
 
-	private TreeMap<String, GraphObject> getStore(Class c) {
+	synchronized private TreeMap<String, GraphObject> getStore(Class c) {
 		if (!vertices.containsKey(c)) {
 			return new TreeMap<String, GraphObject>();
 		}
 		return vertices.get(c);
 	}
 
-	public LinkedList<Compound> getSubstrates(Reaction reaction) {
+	synchronized public LinkedList<Compound> getSubstrates(Reaction reaction) {
 		LinkedList<Compound> ret = new LinkedList<Compound>();
 		for (Relation r : getRelations(reaction)) {
 			if (r.getType().equals(RelationshipType.REACTION_HAS_SUBSTRATE)) {
@@ -550,7 +551,7 @@ public class MetabolicNetwork {
 		return ret;
 	}
 
-	public LinkedList<Reaction> getSubstrateToReaction(Compound compound) {
+	synchronized public LinkedList<Reaction> getSubstrateToReaction(Compound compound) {
 		LinkedList<Reaction> ret = new LinkedList<Reaction>();
 		for (Relation r : getRelations(compound)) {
 			if (r.getType().equals(RelationshipType.REACTION_HAS_SUBSTRATE)) {
@@ -560,11 +561,11 @@ public class MetabolicNetwork {
 		return ret;
 	}
 
-	public Transcript getTranscript(String id) {
+	synchronized public Transcript getTranscript(String id) {
 		return (Transcript) getObject(Transcript.class, id);
 	}
 
-	public Collection<Transcript> getTranscripts() {
+	synchronized public Collection<Transcript> getTranscripts() {
 		ArrayList<Transcript> list = new ArrayList<Transcript>();
 		if (!vertices.containsKey(Transcript.class)) {
 			return list;
@@ -575,7 +576,7 @@ public class MetabolicNetwork {
 		return list;
 	}
 
-	public LinkedList<Transcript> getTranscripts(Gene gene) {
+	synchronized public LinkedList<Transcript> getTranscripts(Gene gene) {
 		LinkedList<Transcript> ret = new LinkedList<Transcript>();
 		for (Object o : object_to_relation_mapping.get(gene.getClass()).get(gene)) {
 			Relation r = (Relation) o;
@@ -586,22 +587,22 @@ public class MetabolicNetwork {
 		return ret;
 	}
 
-	public void happensIn(Reaction reaction, Pathway pathway) {
+	synchronized public void happensIn(Reaction reaction, Pathway pathway) {
 		addRelation(new Relation(RelationshipType.REACTION_HAPPENSIN_PATHWAY,
 				reaction, pathway));
 	}
 
-	public void hasProduct(Reaction reaction, Compound compound) {
+	synchronized public void hasProduct(Reaction reaction, Compound compound) {
 		addRelation(new Relation(RelationshipType.REACTION_HAS_PRODUCT, reaction,
 				compound));
 	}
 
-	public void hasSubstrate(Reaction reaction, Compound compound) {
+	synchronized public void hasSubstrate(Reaction reaction, Compound compound) {
 		addRelation(new Relation(RelationshipType.REACTION_HAS_SUBSTRATE, reaction,
 				compound));
 	}
 
-	public boolean isExplainable(GraphObject object) {
+	synchronized public boolean isExplainable(GraphObject object) {
 		if (object == null) {
 			throw new IllegalArgumentException("Given object is null");
 		}
@@ -611,11 +612,11 @@ public class MetabolicNetwork {
 		return explainer.evaluate(this, object);
 	}
 
-	public boolean isExplainableWithGap(GraphObject graphobject, int allowed_gaps) {
+	synchronized public boolean isExplainableWithGap(GraphObject graphobject, int allowed_gaps) {
 		return this.isExplainableWithGap(graphobject, allowed_gaps, new LinkedList<GraphObject>());
 	}
 
-	private boolean isExplainableWithGap(GraphObject graphobject,
+	synchronized private boolean isExplainableWithGap(GraphObject graphobject,
 			int allowed_gaps, LinkedList<GraphObject> former_path) {
 		//logger.finer("Try to explain " + graphobject + " with max " + allowed_gaps + ". Path is: " + former_path);
 		if (allowed_gaps <= 0) {
@@ -641,16 +642,16 @@ public class MetabolicNetwork {
 		return false;
 	}
 
-	public void isFrom(Transcript transcript, Gene gene) {
+	synchronized public void isFrom(Transcript transcript, Gene gene) {
 		addRelation(new Relation(RelationshipType.TRANSCRIPT_ISFROM_GENE, transcript, gene));
 	}
 
-	public void needsEnzyme(Reaction reaction, Enzyme enzyme) {
+	synchronized public void needsEnzyme(Reaction reaction, Enzyme enzyme) {
 		addRelation(new Relation(RelationshipType.REACTION_NEEDS_ENZYME, reaction,
 				enzyme));
 	}
 
-	public void remove(GraphObject o) {
+	synchronized public void remove(GraphObject o) {
 		if (!vertices.containsKey(o.getClass())) {
 			return;
 		}
@@ -662,7 +663,7 @@ public class MetabolicNetwork {
 		vertices.get(o.getClass()).remove(o.getId());
 	}
 
-	public boolean removeRelation(Relation arg0) {
+	synchronized public boolean removeRelation(Relation arg0) {
 		if (!relations.containsKey(arg0.getType())) {
 			logger.finer("Graph does not contain edges of type: " + arg0.getType());
 			return true;
@@ -676,17 +677,17 @@ public class MetabolicNetwork {
 		return true;
 	}
 
-	public void setExplainablePredicate(ExplainablePredicate predicate) {
+	synchronized public void setExplainablePredicate(ExplainablePredicate predicate) {
 		explainer = predicate;
 	}
 
-	public void setName(String new_name) {
+	synchronized public void setName(String new_name) {
 		if (new_name != null) {
 			this.name = new_name;
 		}
 	}
 
-	public int size() {
+	synchronized public int size() {
 		int count = 0;
 		for (TreeMap<String, GraphObject> tmap : vertices.values()) {
 			count += tmap.size();
@@ -695,11 +696,11 @@ public class MetabolicNetwork {
 	}
 
 	@Override
-	public String toString() {
+	synchronized public String toString() {
 		return getClass().getSimpleName() + "{name=" + getName() + "}";
 	}
 
-	public LinkedList<Relation> getRelations(GraphObject graphobject) {
+	synchronized public LinkedList<Relation> getRelations(GraphObject graphobject) {
 		//try {throw new Exception("CROAK");} catch (Exception e) {e.printStackTrace();}
 		if (graphobject == null) {
 			throw new IllegalArgumentException("Can not fetch relations of: " + graphobject);
@@ -720,7 +721,7 @@ public class MetabolicNetwork {
 		return rels;
 	}
 
-	public LinkedList<Relation> getRelations(GraphObject object, RelationshipType type) {
+	synchronized public LinkedList<Relation> getRelations(GraphObject object, RelationshipType type) {
 		LinkedList<Relation> rels = new LinkedList<Relation>();
 		for (Relation r : getRelations(object)) {
 			if (r.getType().equals(type)) {
@@ -730,7 +731,7 @@ public class MetabolicNetwork {
 		return rels;
 	}
 
-	public LinkedList<Enzyme> getEnzymes(Reaction reaction) {
+	synchronized public LinkedList<Enzyme> getEnzymes(Reaction reaction) {
 		LinkedList<Enzyme> ret = new LinkedList<Enzyme>();
 		for (Object o : object_to_relation_mapping.get(reaction.getClass()).get(reaction)) {
 			Relation r = (Relation) o;
@@ -740,8 +741,19 @@ public class MetabolicNetwork {
 		}
 		return ret;
 	}
+	
+	synchronized public LinkedList<Reaction> getReactions(Enzyme enzyme) {
+		LinkedList<Reaction> ret = new LinkedList<Reaction>();
+		for (Object o : object_to_relation_mapping.get(enzyme.getClass()).get(enzyme)) {
+			Relation r = (Relation) o;
+			if (r.getType().equals(RelationshipType.REACTION_NEEDS_ENZYME)) {
+				ret.add((Reaction) r.getStart());
+			}
+		}
+		return ret;
+	}
 
-	public LinkedList<Pathway> getPathways(Reaction reaction) {
+	synchronized public LinkedList<Pathway> getPathways(Reaction reaction) {
 		//try { throw new Exception("This is how we get here"); } catch(Exception e){ e.printStackTrace(); }
 		Collection<Relation> rels = getRelations(reaction);
 		LinkedList<Pathway> ret = new LinkedList<Pathway>();
@@ -754,7 +766,7 @@ public class MetabolicNetwork {
 		return ret;
 	}
 
-	public String[] getConditionNames() {
+	synchronized public String[] getConditionNames() {
 		TreeSet<String> names = new TreeSet<String>();
 
 		for (Marker m : getMarkers()) {
@@ -772,7 +784,7 @@ public class MetabolicNetwork {
 		return names_array;
 	}
 
-	public void importData(MetabolicNetwork other) {
+	synchronized public void importData(MetabolicNetwork other) {
 		for (Relation r : other.getRelations()) {
 			addRelation(r);
 		}
@@ -781,13 +793,13 @@ public class MetabolicNetwork {
 		}
 	}
 
-	public MetabolicNetwork merge(MetabolicNetwork other) {
+	synchronized public MetabolicNetwork merge(MetabolicNetwork other) {
 		MetabolicNetwork merged = clone();
 		merged.importData(other);
 		return merged;
 	}
 
-	public void dump() {
+	synchronized public void dump() {
 		System.out.println("Graph '" + this.getName() + "' contains:");
 		for (Class c : vertices.keySet()) {
 			System.out.println("  " + c.getSimpleName() + ": " + vertices.get(c).
@@ -795,27 +807,31 @@ public class MetabolicNetwork {
 		}
 	}
 
-	public boolean hasTranscripts() {
+	synchronized public boolean hasTranscripts() {
+		if( parent != null)
+			return parent.hasTranscripts();
 		return vertices.containsKey(Transcript.class);
 	}
 
-	public void setHasTranscripts() {
+	synchronized public void setHasTranscripts() {
 		if (!vertices.containsKey(Transcript.class)) {
 			vertices.put(Transcript.class, new TreeMap<String, GraphObject>());
 		}
 	}
 
-	public boolean hasMarkers() {
+	synchronized public boolean hasMarkers() {
+		if( parent != null)
+			return parent.hasMarkers();
 		return vertices.containsKey(Marker.class);
 	}
 
-	public void setHasMarkers() {
+	synchronized public void setHasMarkers() {
 		if (!vertices.containsKey(Marker.class)) {
 			vertices.put(Marker.class, new TreeMap<String, GraphObject>());
 		}
 	}
 
-	public Collection<Relation> getAllRelations() {
+	synchronized public Collection<Relation> getAllRelations() {
 		LinkedList<Relation> rels = new LinkedList<Relation>();
 		for (RelationshipType rt : relations.keySet()) {
 			rels.addAll(relations.get(rt));
@@ -823,15 +839,15 @@ public class MetabolicNetwork {
 		return rels;
 	}
 
-	public Collection<Relation> getAllRelations(RelationshipType of_type) {
+	synchronized public Collection<Relation> getAllRelations(RelationshipType of_type) {
 		return new LinkedList<Relation>(relations.get(of_type));
 	}
 
-	public MetabolicNetwork getSubgraph(Collection<Relation> relations) {
+	synchronized public MetabolicNetwork getSubgraph(Collection<Relation> relations) {
 		return getSubgraph(relations, true);
 	}
 
-	public MetabolicNetwork getSubgraph(Collection<Relation> relations, boolean extract_environment) {
+	synchronized public MetabolicNetwork getSubgraph(Collection<Relation> relations, boolean extract_environment) {
 		MetabolicNetwork g = new MetabolicNetwork();
 		for (Relation r : relations) {
 			g.addRelation(r);
@@ -846,7 +862,7 @@ public class MetabolicNetwork {
 		return g;
 	}
 
-	public boolean hasInputData() {
+	synchronized public boolean hasInputData() {
 		if (hasMarkers() && getMarkers().size() > 0) {
 			return true;
 		}
@@ -856,7 +872,7 @@ public class MetabolicNetwork {
 		return false;
 	}
 
-	public int countRelations(GraphObject obj, RelationshipType... types) {
+	synchronized public int countRelations(GraphObject obj, RelationshipType... types) {
 		int c = 0;
 		for (RelationshipType rt : types) {
 			c += getRelations(obj, rt).size();
@@ -864,7 +880,7 @@ public class MetabolicNetwork {
 		return c;
 	}
 
-	public void removeNodesWhichAreNotExplainable() {
+	synchronized public void removeNodesWhichAreNotExplainable() {
 		for (GraphObject o : getAllObjects()) {
 			if (!isExplainable(o)) {
 				remove(o);
@@ -872,7 +888,7 @@ public class MetabolicNetwork {
 		}
 	}
 
-	public Set<Relation> getEnvironment(Reaction reaction) {
+	synchronized public Set<Relation> getEnvironment(Reaction reaction) {
 		if (!containsObject(reaction)) {
 			throw new RuntimeException(this + " does not contain " + reaction);
 		}
@@ -917,7 +933,7 @@ public class MetabolicNetwork {
 		return rels;
 	}
 
-	public Set<Relation> getAllPathwayComponents(Pathway pathway) {
+	synchronized public Set<Relation> getAllPathwayComponents(Pathway pathway) {
 		if (!containsObject(pathway)) {
 			throw new RuntimeException(this + " does not contain " + pathway);
 		}
@@ -941,7 +957,7 @@ public class MetabolicNetwork {
 	}
 
 	@SuppressWarnings("unchecked")
-	public Class<? extends GraphObject>[] getAllObjectClasses() {
+	synchronized public Class<? extends GraphObject>[] getAllObjectClasses() {
 		return vertices.keySet().toArray(new Class[vertices.size()]);
 	}
 }

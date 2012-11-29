@@ -38,10 +38,12 @@ public class VisualizationViewerGraph<E> extends VisualizationViewer<GraphObject
 			getName());
 	private final LinkedList<GraphMouseListener> graph_action_listener = new LinkedList<GraphMouseListener>();
 	private final GraphViewAbstract<E> graph;
+	private final MarvisGraphMainWindow main_window;
 
-	public VisualizationViewerGraph(GraphViewAbstract<E> graph) {
+	public VisualizationViewerGraph(MarvisGraphMainWindow main_window, GraphViewAbstract<E> graph) {
 		super(new StaticLayout<GraphObject, E>(graph));
 		this.graph = graph;
+		this.main_window = main_window;
 		logger.finer("Initializing graph viewer for graph: " + graph);
 		setBackground(Color.WHITE);
 
@@ -85,8 +87,7 @@ public class VisualizationViewerGraph<E> extends VisualizationViewer<GraphObject
 		layout.reset();
 
 		final RenderGraphLayout process = new RenderGraphLayout(layout);
-		new Statusdialog(null).monitorTask(process);
-
+		main_window.monitorTask(process);
 		process.addPropertyChangeListener(new ProcessListener() {
 
 			@Override
@@ -99,14 +100,13 @@ public class VisualizationViewerGraph<E> extends VisualizationViewer<GraphObject
 				}
 				catch (Exception exeption) {
 					logger.log(Level.SEVERE, "Can not render graph layout: " + exeption);
-					new ErrorBox(null, "Can not get rendered graph layout", exeption).
-							setVisible(true);
+					ErrorDialog.show(null, "Can not get rendered graph layout", exeption);
 				}
 			}
 
 			@Override
 			public void processError(Exception exeption) {
-				new ErrorBox(null, "Can not render graph", exeption);
+				ErrorDialog.show(null, "Can not render graph", exeption);
 			}
 		});
 		process.execute();

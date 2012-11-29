@@ -10,7 +10,7 @@ import java.util.logging.Logger;
 import java.util.zip.GZIPOutputStream;
 import javax.swing.SwingWorker;
 
-public class SaveNetwork extends SwingWorker<Void, Void> {
+public class SaveNetwork extends AbstractTask<Void, Void> {
 
 	private final static Logger logger = Logger.getLogger(SaveNetwork.class.
 			getName());
@@ -31,17 +31,17 @@ public class SaveNetwork extends SwingWorker<Void, Void> {
 	}
 
 	@Override
-	protected Void doInBackground() throws Exception {
+	protected Void performTask() throws Exception {
 		save();
 		return null;
 	}
 
 	public void save() throws Exception {
+		sendDescription("Save network to file");
 		if (file.getParentFile() != null && !file.getParentFile().exists() && !file.
 				getParentFile().mkdirs()) {
 			throw new IOException("Can not create directory");
 		}
-		getPropertyChangeSupport().firePropertyChange("description", null, "Save network to file");
 
 		if (this.file.getAbsolutePath().toLowerCase().endsWith(".xml")) {
 			create_xml(new FileOutputStream(file));
@@ -72,8 +72,8 @@ public class SaveNetwork extends SwingWorker<Void, Void> {
 		logger.finer("Saving intensity configuration");
 
 		logger.finer("Exporting objects");
-		int current = 1;
-		int max = network.size();
+
+		setProgressMax(network.size());
 		for (GraphObject o : network.getAllObjects()) {
 			Element child = this.create_element_from_object(o);
 			root.addContent(child);
@@ -89,7 +89,7 @@ public class SaveNetwork extends SwingWorker<Void, Void> {
 			if (this.isCancelled()) {
 				return;
 			}
-			setProgress(current++ / max);
+			incrementProgress();
 		}
 
 		XMLOutputter fmt = new XMLOutputter();

@@ -11,7 +11,7 @@ import org.apache.commons.math3.stat.correlation.SpearmansCorrelation;
  *
  * @author manuel
  */
-public class SpearmanSort extends AbstractGraphSort {
+public class SpearmanSort extends AbstractGraphScore {
 
 	private static final SpearmansCorrelation correlation = new SpearmansCorrelation();
 

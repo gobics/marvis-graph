@@ -1,25 +1,28 @@
 package de.gobics.marvis.graph.gui.tasks;
 
-import java.io.*;
 import au.com.bytecode.opencsv.CSVReader;
-import de.gobics.marvis.graph.*;
+import de.gobics.marvis.graph.Marker;
+import de.gobics.marvis.graph.MetabolicNetwork;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
+import java.io.IOException;
 import java.util.logging.Logger;
-import javax.swing.SwingWorker;
 
 /**
- * Process to import metabolic marker data from a CSV file into the graph.
- * The original graph will not be modified but an altered version will be returned.
+ * Process to import metabolic marker data from a CSV file into the graph. The
+ * original graph will not be modified but an altered version will be returned.
  * If an error happens. The old graph is still valid.
- * 
+ *
  * @author manuel
  */
-public class ImportMetabolicMarkerCSV extends SwingWorker<MetabolicNetwork, Void> {
+public class ImportMetabolicMarkerCSV extends AbstractTask<MetabolicNetwork, Void> {
 
 	private static final Logger logger = Logger.getLogger(ImportMetabolicMarkerCSV.class.
 			getName());
 	private MetabolicNetwork network;
 	private File[] filenames = new File[0];
-	private Integer id_column = 0, mass_column = 2, start_row = 1, rt_column = 1;
+	private Integer id_column = 0, mass_column = 2, start_row = 1, rt_column = 1, weight_column = -1;
 	private char separator = ',';
 	private double correction_factor = 0.0;
 	private int first_intensity_column = 0;
@@ -74,7 +77,7 @@ public class ImportMetabolicMarkerCSV extends SwingWorker<MetabolicNetwork, Void
 	}
 
 	public void setFirstIntensityColumn(int column) {
-		this.first_intensity_column = column -1;
+		this.first_intensity_column = column - 1;
 	}
 
 	public void setIntensityMapping(String[] condition_names) {
@@ -89,10 +92,9 @@ public class ImportMetabolicMarkerCSV extends SwingWorker<MetabolicNetwork, Void
 	}
 
 	public MetabolicNetwork importMarker(File current_file) throws IOException {
-		int max = getNumberOfLines(current_file) - start_row;
-		int current = 0;
-
-		getPropertyChangeSupport().firePropertyChange("description", null, "Importing metabolomic data");
+		setProgressMax( getNumberOfLines(current_file) - start_row );
+		
+		sendDescription("Importing metabolomic data");
 		CSVReader reader = new CSVReader(new FileReader(current_file), separator);
 
 		// <= for convenience with Matlab MarVis
@@ -106,7 +108,7 @@ public class ImportMetabolicMarkerCSV extends SwingWorker<MetabolicNetwork, Void
 			minCol = first_intensity_column + condition_names.length;
 		}
 
-		logger.finer("Will now import " + max + " lines of marker data");
+		logger.finer("Will now import marker data");
 		String[] nextLine;
 		while ((nextLine = reader.readNext()) != null) {
 			String mid = Integer.toString(id_counter++);
@@ -124,11 +126,14 @@ public class ImportMetabolicMarkerCSV extends SwingWorker<MetabolicNetwork, Void
 				marker.setRetentionTime(new Float(nextLine[rt_column]).
 						floatValue());
 			}
+			if (weight_column != null) {
+				marker.setWeight(new Double(nextLine[weight_column]).doubleValue());
+			}
 
-			if( first_intensity_column < 0 ){
+			if (first_intensity_column < 0) {
 				continue;
 			}
-			
+
 			// logger.finer("Importing intensity data for transcript: "+transcript_id);
 			float[] intensity_data = new float[condition_names.length];
 			for (int j = 0; j < condition_names.length; j++) {
@@ -141,8 +146,7 @@ public class ImportMetabolicMarkerCSV extends SwingWorker<MetabolicNetwork, Void
 			System.arraycopy(nextLine, first_intensity_column + condition_names.length, additional_data, 0, additional_data.length);
 			marker.setAdditionalData(additional_data);
 
-			setProgress(current / max);
-			current++;
+			incrementProgress();
 
 			if (isCancelled()) {
 				return null;
@@ -150,7 +154,7 @@ public class ImportMetabolicMarkerCSV extends SwingWorker<MetabolicNetwork, Void
 		}
 		reader.close();
 
-		logger.finer("Read " + current + " lines of marker data");
+		logger.finer("Read marker data");
 
 		return network;
 	}
@@ -166,7 +170,14 @@ public class ImportMetabolicMarkerCSV extends SwingWorker<MetabolicNetwork, Void
 	}
 
 	@Override
-	protected MetabolicNetwork doInBackground() throws Exception {
+	public MetabolicNetwork performTask() throws Exception {
 		return importMarker();
+	}
+
+	public void setWeightColumn(Integer weightColumn) {
+		if (weightColumn < 1) {
+			weightColumn = null;
+		}
+		weight_column = weightColumn - 1;
 	}
 }
