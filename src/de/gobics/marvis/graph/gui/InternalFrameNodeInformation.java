@@ -11,6 +11,8 @@ import de.gobics.marvis.utils.swing.Histogram;
 import java.net.URISyntaxException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.jfree.chart.ChartPanel;
+import org.jfree.chart.JFreeChart;
 
 public class InternalFrameNodeInformation extends JInternalFrame {
 
@@ -221,22 +223,9 @@ public class InternalFrameNodeInformation extends JInternalFrame {
 			}
 		}
 
-		if (ip != null) {
-			// Cast float to double precision
-			float[] intensities_orig = ip.getRawIntensities();
-			double[] intensities = new double[intensities_orig.length];
-			for (int idx = 0; idx < intensities.length; idx++) {
-				intensities[idx] = (double) intensities_orig[idx];
-			}
-
-			// Create histogram
-			Histogram ih = new Histogram(intensities);
-			ih.setLabel(ip.getRawIntensityNames());
-			ih.setBarColors(colors);
-			if (display_conditions) {
-				ih.setHistogramType(Histogram.HistogramType.LabelMean);
-			}
-			this.add(ih, BorderLayout.CENTER);
+		if (ip != null && ip.sizeRaw() > 0) {
+			ChartPanel panel = IntensityProfileHistogram.createHistogram(ip, display_conditions);
+			this.add(panel, BorderLayout.CENTER);
 
 		}
 	}

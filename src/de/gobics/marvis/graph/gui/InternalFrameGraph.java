@@ -9,6 +9,7 @@ import de.gobics.marvis.utils.swing.*;
 import edu.uci.ics.jung.visualization.GraphZoomScrollPane;
 import java.util.Collection;
 import java.util.logging.Logger;
+import org.jfree.chart.ChartPanel;
 
 public class InternalFrameGraph extends JInternalFrame {
 
@@ -117,39 +118,27 @@ public class InternalFrameGraph extends JInternalFrame {
 
 		Marker[] markers = marker_collection.toArray(new Marker[marker_collection.
 				size()]);
-		double[][] data = new double[markers.length][markers[0].
-				getRawIntensities().length];
-		Marker[] labels_x = markers.clone();
-		String[] labels_y = markers[0].getRawIntensityNames();
-		for (int midx = 0; midx < markers.length; midx++) {
-			float[] intensities = markers[midx].getRawIntensities();
-			for (int iidx = 0; iidx < intensities.length; iidx++) {
-				data[midx][iidx] = (double) intensities[iidx];
-			}
-		}
 
-		Heatmap heatmap_marker = new Heatmap(data);
-		heatmap_marker.setLabelX(labels_x);
-		heatmap_marker.setLabelY(labels_y);
+		ChartPanel heatmap_marker = IntensityProfileHistogram.createHeatmap(markers);
 
-		heatmap_marker.addHeatmapListener(new HeatmapListener() {
-
-			@Override
-			public void heatmapClicked(HeatmapEvent event) {
-			}
-
-			@Override
-			public void heatmapSelectionChanged(HeatmapEvent event) {
-			}
-
-			@Override
-			public void heatmapDoubleClicked(HeatmapEvent event) {
-				Object o = event.getLabelX();
-				if (o instanceof GraphObject) {
-					main_window.createGraphobjectVisualization((GraphObject) o);
-				}
-			}
-		});
+//		heatmap_marker.addHeatmapListener(new HeatmapListener() {
+//
+//			@Override
+//			public void heatmapClicked(HeatmapEvent event) {
+//			}
+//
+//			@Override
+//			public void heatmapSelectionChanged(HeatmapEvent event) {
+//			}
+//
+//			@Override
+//			public void heatmapDoubleClicked(HeatmapEvent event) {
+//				Object o = event.getLabelX();
+//				if (o instanceof GraphObject) {
+//					main_window.createGraphobjectVisualization((GraphObject) o);
+//				}
+//			}
+//		});
 
 
 		addTab("Marker heatmap", heatmap_marker);
@@ -164,42 +153,23 @@ public class InternalFrameGraph extends JInternalFrame {
 		if (transcript_collection.isEmpty()) {
 			return;
 		}
-		Transcript[] transcripts = transcript_collection.toArray(new Transcript[transcript_collection.
+		Transcript[] markers = transcript_collection.toArray(new Transcript[transcript_collection.
 				size()]);
-		double[][] data = new double[transcripts.length][transcripts[0].
-				getRawIntensities().length];
-		Transcript[] labels_x = transcripts.clone();
-		String[] labels_y = transcripts[0].getRawIntensityNames();
-		for (int midx = 0; midx < transcripts.length; midx++) {
-			float[] intensities = transcripts[midx].getRawIntensities();
-			for (int iidx = 0; iidx < intensities.length; iidx++) {
-				data[midx][iidx] = (double) intensities[iidx];
-			}
-		}
 
-		Heatmap heatmap_transcripts = new Heatmap(data);
-		heatmap_transcripts.setLabelX(labels_x);
-		heatmap_transcripts.setLabelY(labels_y);
+		ChartPanel heatmap_transcripts = IntensityProfileHistogram.createHeatmap(markers);
 
-
-		heatmap_transcripts.addHeatmapListener(new HeatmapListener() {
-
-			@Override
-			public void heatmapClicked(HeatmapEvent event) {
-			}
-
-			@Override
-			public void heatmapSelectionChanged(HeatmapEvent event) {
-			}
-
-			@Override
-			public void heatmapDoubleClicked(HeatmapEvent event) {
-				Object o = event.getLabelX();
-				if (o instanceof GraphObject) {
-					main_window.createGraphobjectVisualization((GraphObject) o);
-				}
-			}
+		/*
+		 * heatmap_transcripts.addHeatmapListener(new HeatmapListener() {
+		 *
+		 * @Override public void heatmapClicked(HeatmapEvent event) { }
+		 *
+		 * @Override public void heatmapSelectionChanged(HeatmapEvent event) { }
+		 *
+		 * @Override public void heatmapDoubleClicked(HeatmapEvent event) {
+		 * Object o = event.getLabelX(); if (o instanceof GraphObject) {
+		 * main_window.createGraphobjectVisualization((GraphObject) o); } }
 		});
+		 */
 		addTab("Transcript heatmap", heatmap_transcripts);
 	}
 

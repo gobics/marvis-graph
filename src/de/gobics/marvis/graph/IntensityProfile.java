@@ -62,6 +62,20 @@ public class IntensityProfile implements Cloneable {
 		return intensity_profile.clone();
 	}
 
+	public float[] getRawIntensities(String condition_name) {
+		LinkedList<Float> values = new LinkedList<Float>();
+		for (int idx = 0; idx < intensity_names.length; idx++) {
+			if (intensity_names[idx].equals(condition_name)) {
+				values.add(intensity_profile[idx]);
+			}
+		}
+		float[] floats = new float[values.size()];
+		for (int idx = 0; idx < floats.length; idx++) {
+			floats[idx] = values.get(idx);
+		}
+		return floats;
+	}
+
 	/**
 	 * Similar to the {@link #getRawIntensities()} method but returns an Float
 	 * object array.
@@ -285,6 +299,7 @@ public class IntensityProfile implements Cloneable {
 
 	/**
 	 * Short for {@code normalizeScale(values)}. See {@link #normalizeScale(float[])}
+	 *
 	 * @param values the values to normalize
 	 * @return the normalized values
 	 */
@@ -293,13 +308,14 @@ public class IntensityProfile implements Cloneable {
 	}
 
 	/**
-	 * Perform a linear normalization of the given values. All values will be replaced
-	 * their fraction of the max value, that is
+	 * Perform a linear normalization of the given values. All values will be
+	 * replaced their fraction of the max value, that is
 	 * <pre>
 	 *  values[i] = values[i] / max(values);
 	 * </pre>
+	 *
 	 * @param values the values to normalize
-	 * @return  the normalized values
+	 * @return the normalized values
 	 */
 	public static float[] normalizeScale(float[] values) {
 		float[] nints = values.clone();
@@ -321,13 +337,12 @@ public class IntensityProfile implements Cloneable {
 	}
 
 	/**
-	 * Perform a linear normalization of the given values. All values will be replaced
-	 * their fraction of the sum of all values, that is:
+	 * Perform a linear normalization of the given values. All values will be
+	 * replaced their fraction of the sum of all values, that is:
 	 * <pre>
 	 *  values[i] = values[i] / sum(values);
-	 * </pre>
-	 * After this the values will sum up to 1.
-	 * 
+	 * </pre> After this the values will sum up to 1.
+	 *
 	 * @param values the values to normalize
 	 * @return the normalized values
 	 */
@@ -350,6 +365,7 @@ public class IntensityProfile implements Cloneable {
 
 	/**
 	 * The method sorts the profile according to the names.
+	 *
 	 * @param names the new condition names
 	 * @param ints the new intensities
 	 */
@@ -394,6 +410,7 @@ public class IntensityProfile implements Cloneable {
 
 	/**
 	 * Returns the sample intensities for a given condition name.
+	 *
 	 * @param name name of the condition
 	 * @return the intensity abundances of the samples in the given condition
 	 */
