@@ -4,6 +4,7 @@
  */
 package de.gobics.marvis.graph.gui.tasks;
 
+import de.gobics.marvis.utils.swing.AbstractTask;
 import de.gobics.marvis.graph.*;
 import java.util.logging.Logger;
 import java.io.*;

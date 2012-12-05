@@ -1,5 +1,6 @@
 package de.gobics.marvis.graph.gui;
 
+import de.gobics.marvis.utils.swing.AbstractTaskListener;
 import de.gobics.marvis.graph.*;
 import de.gobics.marvis.graph.downloader.MetabolicNetworkTester;
 import de.gobics.marvis.graph.downloader.NetworkDownloaderDialog;
@@ -14,12 +15,17 @@ import de.gobics.marvis.utils.swing.filechooser.ChooserExcel;
 import de.gobics.marvis.utils.swing.filechooser.FileFilterCef;
 import java.awt.BorderLayout;
 import java.awt.Component;
+import java.awt.Desktop;
 import java.awt.Dimension;
 import java.awt.event.KeyEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.net.URL;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.TreeSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -826,5 +832,85 @@ public class MarvisGraphMainWindow extends JFrame {
 		MetabolicNetworkTester tester = new MetabolicNetworkTester(network);
 		String report = tester.generateReport();
 		display_information(report);
+	}
+
+	public void displayPathwayAtKegg() {
+		MetabolicNetwork network = getSelectedNetwork();
+		if (network == null) {
+			display_error("Please select a network first");
+			return;
+		}
+		Collection<Pathway> pathways = network.getPathways();
+		if (pathways.isEmpty()) {
+			display_error("No pathway object exists in selected network");
+			return;
+		}
+
+		Pathway pathway = pathways.iterator().next();
+		if (pathways.size() > 1) {
+			ComboBoxGraphobject<Pathway> cb = new ComboBoxGraphobject<Pathway>(pathways);
+			JOptionPane.showMessageDialog(this, cb);
+			pathway = cb.getSelectGraphObject();
+		}
+
+		displayPathwayAtKegg(network, pathway);
+	}
+
+	public void displayPathwayAtKegg(Pathway path) {
+		displayPathwayAtKegg(getMainNetwork(), path);
+	}
+
+	public void displayPathwayAtKegg(MetabolicNetwork network, Pathway path) {
+
+		StringBuilder sb = new StringBuilder("http://www.genome.jp/kegg-bin/show_pathway?").
+				append(path.getId().replace("path:", ""));
+		for (GraphObject c : network.getCompounds()) {
+			if (network.isExplainable(c)) {
+				sb.append("/").append(c.getId()).append("%09,red");
+			}
+		}
+		for (GraphObject r : network.getReactions()) {
+
+			if (network.isExplainable(r)) {
+				sb.append("/").append(r.getId()).append("%09,red");
+			}
+		}
+		for (GraphObject r : network.getGenes()) {
+			if (network.isExplainable(r)) {
+				sb.append("/").append(r.getId()).append("%09,red");
+			}
+		}
+
+		openBrowser(sb.toString());
+	}
+
+	/**
+	 * Tries to open a browser for the given URL.
+	 * @param url 
+	 */
+	public boolean openBrowser(String url) {
+		try {
+			return openBrowser(new URI(url));
+		}
+		catch (URISyntaxException ex) {
+			display_error("Can not parse url '" + url + "': ", ex);
+		}
+		return false;
+	}
+
+	/**
+	 * Tries to open a browser for the given URL.
+	 * @param url 
+	 */
+	public boolean openBrowser(URI url) {
+		try {
+			logger.fine("Try to browse: " + url);
+			Desktop.getDesktop().browse(url);
+			return true;
+		}
+		catch (Exception ex) {
+			display_error("Can not browse '" + url.toString() + "':\n", ex);
+		}
+		return false;
 	}
 }

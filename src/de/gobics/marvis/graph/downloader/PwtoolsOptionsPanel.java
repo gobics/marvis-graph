@@ -6,7 +6,7 @@ package de.gobics.marvis.graph.downloader;
 
 import de.gobics.marvis.graph.gui.ErrorDialog;
 import de.gobics.marvis.graph.gui.MarvisGraphMainWindow;
-import de.gobics.marvis.graph.gui.tasks.AbstractTask;
+import de.gobics.marvis.utils.swing.AbstractTask;
 import de.gobics.marvis.utils.swing.Statusdialog;
 import java.awt.BorderLayout;
 import java.io.File;

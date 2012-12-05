@@ -1,5 +1,6 @@
 package de.gobics.marvis.graph.gui.tasks;
 
+import de.gobics.marvis.utils.swing.AbstractTask;
 import java.io.*;
 
 import org.jdom.*;

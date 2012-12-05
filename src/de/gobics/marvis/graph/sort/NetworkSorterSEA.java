@@ -11,8 +11,7 @@ import de.gobics.marvis.utils.stat.HypergeometricDistribution;
  */
 public class NetworkSorterSEA extends AbstractGraphScore {
 
-	private int overall_size = -1;
-	private int good = -1;
+	private HypergeometricDistribution dist = null;
 
 	public NetworkSorterSEA(MetabolicNetwork p) {
 		super(p);
@@ -24,22 +23,15 @@ public class NetworkSorterSEA extends AbstractGraphScore {
 	@Override
 	public void setParent(MetabolicNetwork p) {
 		super.setParent(p);
-		allElements();
-		allElementsSuccess();
-	}
-
-	private void allElements() {
-		overall_size = 0;
+		int overall_size = 0;
 		if (getParent().hasMarkers()) {
 			overall_size += getParent().getCompounds().size();
 		}
 		if (getParent().hasTranscripts()) {
 			overall_size += getParent().getGenes().size();
 		}
-	}
 
-	private void allElementsSuccess() {
-		good = 0;
+		int good = 0;
 		if (getParent().hasMarkers()) {
 			for (Compound c : getParent().getCompounds()) {
 				if (getParent().isExplainable(c)) {
@@ -55,11 +47,13 @@ public class NetworkSorterSEA extends AbstractGraphScore {
 				}
 			}
 		}
+
+		dist = new HypergeometricDistribution(overall_size, good);
 	}
 
 	@Override
 	public Double calculateScore(MetabolicNetwork graph) {
-		if (good <= 0 || overall_size <= 0) {
+		if (dist == null) {
 			throw new RuntimeException("Can not calculate required parameter");
 		}
 		int set_size = 0;
@@ -81,7 +75,7 @@ public class NetworkSorterSEA extends AbstractGraphScore {
 				}
 			}
 		}
-		return HypergeometricDistribution.hypergeom(good, set_size, overall_size, i);
+		return dist.hypergeom(set_size, i);
 	}
 
 	@Override

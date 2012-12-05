@@ -5,6 +5,7 @@
 package de.gobics.marvis.graph.gui;
 
 import de.gobics.marvis.graph.MetabolicNetwork;
+import de.gobics.marvis.graph.gui.actions.ActionDisplayNetworkInKegg;
 import de.gobics.marvis.graph.gui.actions.ActionDrawNetwork;
 import de.gobics.marvis.graph.gui.actions.ActionReportOnNetwork;
 import de.gobics.marvis.graph.gui.actions.ActionSaveNetwork;
@@ -44,7 +45,7 @@ public class PopupMenuNetworksTree extends JPopupMenu {
 
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				PopupMenuNetworksTree.this.renameNetwork();
+				renameNetwork();
 			}
 		});
 		add(new JMenuItem(new ActionSaveNetwork(main_window, tree)));
@@ -56,10 +57,11 @@ public class PopupMenuNetworksTree extends JPopupMenu {
 
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				PopupMenuNetworksTree.this.openNewWindow();
+				openNewWindow();
 			}
 		});
 		add(new JMenuItem(new ActionReportOnNetwork(main_window, tree)));
+		add(new JMenuItem(new ActionDisplayNetworkInKegg(main_window, tree)));
 
 
 		// Add the mouselistener to the menu to detect the popup request
@@ -68,21 +70,21 @@ public class PopupMenuNetworksTree extends JPopupMenu {
 			@Override
 			public void mouseClicked(MouseEvent e) {
 				if (e.isPopupTrigger()) {
-					PopupMenuNetworksTree.this.popup(e.getPoint());
+					popup(e.getPoint());
 				}
 			}
 
 			@Override
 			public void mousePressed(MouseEvent e) {
 				if (e.isPopupTrigger()) {
-					PopupMenuNetworksTree.this.popup(e.getPoint());
+					popup(e.getPoint());
 				}
 			}
 
 			@Override
 			public void mouseReleased(MouseEvent e) {
 				if (e.isPopupTrigger()) {
-					PopupMenuNetworksTree.this.popup(e.getPoint());
+					popup(e.getPoint());
 				}
 			}
 
@@ -113,9 +115,10 @@ public class PopupMenuNetworksTree extends JPopupMenu {
 		if (!(last instanceof MetabolicNetwork)) {
 			return;
 		}
+		current_network = (MetabolicNetwork) last;
 
 		tree.getSelectionModel().setSelectionPath(selPath);
-		
+
 		setLocation(point);
 		show(tree, (int) point.getX(), (int) point.getY());
 	}
@@ -134,22 +137,21 @@ public class PopupMenuNetworksTree extends JPopupMenu {
 		tree.updateUI();
 	}
 
-
 	private void openNewWindow() {
 		if (current_network != null) {
 			final MetabolicNetwork new_network = current_network.clone();
 			new_network.detachFromParent();
-			
+
 			SwingUtilities.invokeLater(new Runnable() {
 
-			@Override
-			public void run() {
-				MarvisGraphMainWindow main = new MarvisGraphMainWindow();
-				main.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
-				main.setNetwork(new_network);
-				main.setVisible(true);
-			}
-		});
+				@Override
+				public void run() {
+					MarvisGraphMainWindow main = new MarvisGraphMainWindow();
+					main.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+					main.setNetwork(new_network);
+					main.setVisible(true);
+				}
+			});
 		}
 	}
 }

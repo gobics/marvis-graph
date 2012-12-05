@@ -1,4 +1,5 @@
 package de.gobics.marvis.graph.gui.tasks;
+import de.gobics.marvis.utils.swing.AbstractTask;
 import de.gobics.marvis.graph.Gene;
 import de.gobics.marvis.graph.MetabolicNetwork;
 import de.gobics.marvis.graph.Transcript;
@@ -63,7 +64,7 @@ public class ImportTranscriptomicsExcel extends AbstractTask<MetabolicNetwork, V
 		for (int row = this.start_row; row < sheet.getRows(); row++) {
 			String transcript_id = "t" + (row - start_row);
 			if (id_column >= 0) {
-				sheet.getCell(this.id_column, row).getContents();
+				transcript_id = sheet.getCell(this.id_column, row).getContents();
 			}
 			String gene_id = sheet.getCell(this.gene_id_column, row).getContents();
 

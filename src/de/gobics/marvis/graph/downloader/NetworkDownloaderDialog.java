@@ -2,7 +2,7 @@ package de.gobics.marvis.graph.downloader;
 
 import de.gobics.marvis.graph.MetabolicNetwork;
 import de.gobics.marvis.graph.gui.MarvisGraphMainWindow;
-import de.gobics.marvis.graph.gui.tasks.AbstractTaskListener;
+import de.gobics.marvis.utils.swing.AbstractTaskListener;
 import de.gobics.marvis.utils.swing.Statusdialog;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;

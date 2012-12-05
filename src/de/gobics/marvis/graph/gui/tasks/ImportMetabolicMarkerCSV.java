@@ -1,5 +1,6 @@
 package de.gobics.marvis.graph.gui.tasks;
 
+import de.gobics.marvis.utils.swing.AbstractTask;
 import au.com.bytecode.opencsv.CSVReader;
 import de.gobics.marvis.graph.Marker;
 import de.gobics.marvis.graph.MetabolicNetwork;
