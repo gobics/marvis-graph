@@ -40,13 +40,8 @@ public class CalculateNetworksRWR extends AbstractTask<MetabolicNetwork[], Void>
         sendDescription("Search start nodes");
         setProgressMax(5);
         setProgress(1);
-        logger.finer("Searching explainable reactions as start nodes");
-        Collection<Reaction> initial = new LinkedList<>();
-        for (Reaction r : root_network.getReactions()) {
-            if (root_network.isExplainable(r)) {
-                initial.add(r);
-            }
-        }
+        logger.finer("Calculating reaction start probabilities");
+        Map<Reaction, Double> initial = calculateInitialScores();
 
         sendDescription("Performing random walk for reaction scoring");
         setProgress(2);
@@ -152,5 +147,52 @@ public class CalculateNetworksRWR extends AbstractTask<MetabolicNetwork[], Void>
 
     public void setRestartProbability(double probability) {
         this.restart_probability = probability;
+    }
+
+    private Map<Reaction, Double> calculateInitialScores() {
+        Map<Reaction, Double> reaction_scores = new TreeMap<>();
+
+        for (Marker marker : root_network.getMarkers()) {
+            LinkedList<Compound> compounds = root_network.getAnnotations(marker);
+
+            for (Compound compound : compounds) {
+                LinkedList<Reaction> reactions = new LinkedList<>();
+                reactions.addAll(root_network.getSubstrateToReaction(compound));
+                reactions.addAll(root_network.getProductToReaction(compound));
+
+                double addscore = (1d / compounds.size()) / reactions.size();
+                for (Reaction r : reactions) {
+
+                    if (!reaction_scores.containsKey(r)) {
+                        reaction_scores.put(r, addscore);
+                    } else {
+                        reaction_scores.put(r, reaction_scores.get(r) + addscore);
+                    }
+                }
+            }
+        }
+
+        for (Transcript transcript : root_network.getTranscripts()) {
+            LinkedList<Gene> genes = root_network.getGenes(transcript);
+
+            for (Gene gene : genes) {
+                LinkedList<Enzyme> enzymes = root_network.getEncodedEnzymes(gene);
+                for (Enzyme enzyme : enzymes) {
+                    LinkedList<Reaction> reactions = root_network.getReactions(enzyme);
+                    double addscore = ((1d / genes.size()) / enzymes.size()) / reactions.size();
+                    for (Reaction r : reactions) {
+
+                        if (!reaction_scores.containsKey(r)) {
+                            reaction_scores.put(r, addscore);
+                        } else {
+                            reaction_scores.put(r, reaction_scores.get(r) + addscore);
+                        }
+                    }
+                }
+            }
+        }
+
+        System.out.println(reaction_scores);
+        return reaction_scores;
     }
 }
