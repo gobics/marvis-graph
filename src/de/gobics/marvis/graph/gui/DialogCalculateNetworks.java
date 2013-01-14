@@ -69,6 +69,7 @@ public class DialogCalculateNetworks extends DialogAbstract {
         if (cb_algorithm.getSelectedIndex() == 0) {
             CalculateNetworksRWR process = new CalculateNetworksRWR(n);
             process.setRestartProbability(sm_rwr.getNumber().doubleValue());
+            process.setCofactorThreshold(sm_cofactor.getNumber().intValue());
             return process;
         }
         if (cb_algorithm.getSelectedIndex() == 1) {
@@ -105,8 +106,12 @@ public class DialogCalculateNetworks extends DialogAbstract {
     private class OptionsRWR extends JPanel {
 
         public OptionsRWR() {
+            super(new SpringLayout());
             add(new JLabel("Restart probability:"));
             add(new JSpinner(sm_rwr));
+            add(new JLabel("Cofactor treshold:"));
+            add(new JSpinner(sm_cofactor));
+            SpringUtilities.makeCompactGrid(this);
         }
     }
 }

@@ -24,10 +24,19 @@ public class CalculateNetworksRWR extends AbstractTask<MetabolicNetwork[], Void>
     private final MetabolicNetwork root_network;
     private final GraphViewReactions reactionview;
     private double restart_probability = 0.8;
+    private int cofactor_threshold = -1;
 
     public CalculateNetworksRWR(MetabolicNetwork network) {
         this.root_network = network;
         this.reactionview = new GraphViewReactions(root_network, true);
+    }
+
+    public void setRestartProbability(double probability) {
+        this.restart_probability = probability;
+    }
+
+    public void setCofactorThreshold(int cofactor_threshold) {
+        this.cofactor_threshold = cofactor_threshold;
     }
 
     @Override
@@ -104,7 +113,7 @@ public class CalculateNetworksRWR extends AbstractTask<MetabolicNetwork[], Void>
     private Set<Reaction> getNeighbors(Reaction cur) {
         TreeSet<Reaction> neighbors = new TreeSet<>();
         for (Compound c : root_network.getSubstrates(cur)) {
-            if (!root_network.isExplainable(c)) {
+            if (!root_network.isExplainable(c) || isCofactor(c)) {
                 continue;
             }
 
@@ -116,7 +125,7 @@ public class CalculateNetworksRWR extends AbstractTask<MetabolicNetwork[], Void>
             }
         }
         for (Compound c : root_network.getProducts(cur)) {
-            if (!root_network.isExplainable(c)) {
+            if (!root_network.isExplainable(c) || isCofactor(c)) {
                 continue;
             }
 
@@ -143,10 +152,6 @@ public class CalculateNetworksRWR extends AbstractTask<MetabolicNetwork[], Void>
         }
 
         return network;
-    }
-
-    public void setRestartProbability(double probability) {
-        this.restart_probability = probability;
     }
 
     private Map<Reaction, Double> calculateInitialScores() {
@@ -194,5 +199,12 @@ public class CalculateNetworksRWR extends AbstractTask<MetabolicNetwork[], Void>
 
         System.out.println(reaction_scores);
         return reaction_scores;
+    }
+
+    private boolean isCofactor(Compound c) {
+        if (cofactor_threshold < 0) {
+            return false;
+        }
+        return (root_network.getProductToReaction(c).size() + root_network.getSubstrateToReaction(c).size()) > cofactor_threshold;
     }
 }
