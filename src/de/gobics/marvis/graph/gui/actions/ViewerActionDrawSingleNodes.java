@@ -5,7 +5,7 @@
 package de.gobics.marvis.graph.gui.actions;
 
 import de.gobics.marvis.graph.graphview.GraphViewCustomizable;
-import de.gobics.marvis.graph.gui.VisualizationViewerGraph;
+import de.gobics.marvis.graph.gui.graphvisualizer.VisualizationViewerGraph;
 import java.awt.event.ActionEvent;
 import java.util.logging.Level;
 import java.util.logging.Logger;

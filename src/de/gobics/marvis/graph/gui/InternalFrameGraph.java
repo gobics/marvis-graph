@@ -1,5 +1,6 @@
 package de.gobics.marvis.graph.gui;
 
+import de.gobics.marvis.graph.gui.graphvisualizer.VisualizationViewerGraph;
 import java.awt.*;
 import javax.swing.*;
 import de.gobics.marvis.graph.*;

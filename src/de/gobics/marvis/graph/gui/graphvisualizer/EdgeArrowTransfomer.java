@@ -3,7 +3,7 @@
  * and open the template in the editor.
  */
 
-package de.gobics.marvis.graph.gui;
+package de.gobics.marvis.graph.gui.graphvisualizer;
 
 import de.gobics.marvis.graph.*;
 import edu.uci.ics.jung.graph.util.Context;

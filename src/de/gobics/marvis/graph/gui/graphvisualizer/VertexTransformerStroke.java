@@ -1,4 +1,4 @@
-package de.gobics.marvis.graph.gui;
+package de.gobics.marvis.graph.gui.graphvisualizer;
 
 import java.awt.BasicStroke;
 import java.awt.Stroke;

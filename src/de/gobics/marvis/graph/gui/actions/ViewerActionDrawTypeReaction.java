@@ -8,7 +8,7 @@ import de.gobics.marvis.graph.Compound;
 import de.gobics.marvis.graph.Marker;
 import de.gobics.marvis.graph.Reaction;
 import de.gobics.marvis.graph.graphview.GraphViewCustomizable;
-import de.gobics.marvis.graph.gui.VisualizationViewerGraph;
+import de.gobics.marvis.graph.gui.graphvisualizer.VisualizationViewerGraph;
 import edu.uci.ics.jung.algorithms.layout.ISOMLayout;
 import java.awt.event.ActionEvent;
 

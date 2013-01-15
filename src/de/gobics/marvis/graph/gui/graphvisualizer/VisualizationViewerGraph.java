@@ -2,29 +2,34 @@
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
-package de.gobics.marvis.graph.gui;
+package de.gobics.marvis.graph.gui.graphvisualizer;
 
+import de.gobics.marvis.graph.gui.graphvisualizer.EdgeTransformerLabel;
+import de.gobics.marvis.graph.gui.graphvisualizer.EdgeTransformerStroke;
+import de.gobics.marvis.graph.gui.graphvisualizer.VertexTransformerStroke;
+import de.gobics.marvis.graph.gui.graphvisualizer.VertexTransformerFill;
+import de.gobics.marvis.graph.gui.graphvisualizer.VertexTransformerLabel;
 import de.gobics.marvis.graph.GraphObject;
 import de.gobics.marvis.graph.Relation;
-import edu.uci.ics.jung.visualization.VisualizationViewer;
 import de.gobics.marvis.graph.graphview.GraphViewAbstract;
+import de.gobics.marvis.graph.gui.ErrorDialog;
+import de.gobics.marvis.graph.gui.GraphMouseListener;
+import de.gobics.marvis.graph.gui.MarvisGraphMainWindow;
+import de.gobics.marvis.graph.gui.ProcessListener;
 import de.gobics.marvis.graph.gui.tasks.RenderGraphLayout;
-import de.gobics.marvis.utils.swing.Statusdialog;
 import edu.uci.ics.jung.algorithms.layout.*;
+import edu.uci.ics.jung.visualization.VisualizationViewer;
 import edu.uci.ics.jung.visualization.control.CrossoverScalingControl;
 import edu.uci.ics.jung.visualization.control.PickingGraphMousePlugin;
 import edu.uci.ics.jung.visualization.control.PluggableGraphMouse;
 import edu.uci.ics.jung.visualization.control.ScalingGraphMousePlugin;
 import edu.uci.ics.jung.visualization.control.TranslatingGraphMousePlugin;
 import edu.uci.ics.jung.visualization.decorators.EdgeShape;
-import edu.uci.ics.jung.visualization.layout.LayoutTransition;
 import java.awt.Color;
-import java.awt.Dimension;
 import java.awt.Point;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.util.LinkedList;
-import java.util.concurrent.ExecutionException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -36,15 +41,15 @@ public class VisualizationViewerGraph<E> extends VisualizationViewer<GraphObject
 
 	private static final Logger logger = Logger.getLogger(VisualizationViewerGraph.class.
 			getName());
-	private final LinkedList<GraphMouseListener> graph_action_listener = new LinkedList<GraphMouseListener>();
+	private final LinkedList<GraphMouseListener> graph_action_listener = new LinkedList<>();
 	private final GraphViewAbstract<E> graph;
 	private final MarvisGraphMainWindow main_window;
 
 	public VisualizationViewerGraph(MarvisGraphMainWindow main_window, GraphViewAbstract<E> graph) {
-		super(new StaticLayout<GraphObject, E>(graph));
+		super(new StaticLayout<>(graph));
 		this.graph = graph;
 		this.main_window = main_window;
-		logger.finer("Initializing graph viewer for graph: " + graph);
+		logger.log(Level.FINER, "Initializing graph viewer for graph: {0}", graph);
 		setBackground(Color.WHITE);
 
 		addMouseListener(this);
@@ -76,7 +81,7 @@ public class VisualizationViewerGraph<E> extends VisualizationViewer<GraphObject
 				MouseEvent.MOUSE_DRAGGED));
 		setGraphMouse(gm);
 
-		logger.finer("Viewer for ready for: " + graph);
+		logger.log(Level.FINER, "Viewer for ready for: {0}", graph);
 	}
 
 	public void updateGraphLayout() {
@@ -99,7 +104,7 @@ public class VisualizationViewerGraph<E> extends VisualizationViewer<GraphObject
 					}
 				}
 				catch (Exception exeption) {
-					logger.log(Level.SEVERE, "Can not render graph layout: " + exeption);
+					logger.log(Level.SEVERE, "Can not render graph layout: {0}", exeption);
 					ErrorDialog.show(null, "Can not get rendered graph layout", exeption);
 				}
 			}
@@ -136,7 +141,7 @@ public class VisualizationViewerGraph<E> extends VisualizationViewer<GraphObject
 	}
 
 	private void fireDoubleClickEvent(MouseEvent e) {
-		logger.finer("Double click event: " + e);
+		logger.log(Level.FINER, "Double click event: {0}", e);
 		Point p = e.getPoint();
 
 		GraphObject o =
@@ -150,7 +155,7 @@ public class VisualizationViewerGraph<E> extends VisualizationViewer<GraphObject
 		}
 	}
 
-	void addGraphActionListener(GraphMouseListener graphActionListener) {
+	public void addGraphActionListener(GraphMouseListener graphActionListener) {
 		if (!graph_action_listener.contains(graphActionListener)) {
 			graph_action_listener.add(graphActionListener);
 		}

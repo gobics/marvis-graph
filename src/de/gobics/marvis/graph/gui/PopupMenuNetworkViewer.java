@@ -4,6 +4,7 @@
  */
 package de.gobics.marvis.graph.gui;
 
+import de.gobics.marvis.graph.gui.graphvisualizer.VisualizationViewerGraph;
 import de.gobics.marvis.graph.*;
 import de.gobics.marvis.graph.graphview.GraphViewAbstract;
 import de.gobics.marvis.graph.graphview.GraphViewCustomizable;

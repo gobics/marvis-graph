@@ -7,7 +7,7 @@ package de.gobics.marvis.graph.gui.actions;
 import de.gobics.marvis.graph.Pathway;
 import de.gobics.marvis.graph.Transcript;
 import de.gobics.marvis.graph.graphview.GraphViewCustomizable;
-import de.gobics.marvis.graph.gui.VisualizationViewerGraph;
+import de.gobics.marvis.graph.gui.graphvisualizer.VisualizationViewerGraph;
 import java.awt.event.ActionEvent;
 
 /**

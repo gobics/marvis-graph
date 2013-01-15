@@ -1,4 +1,4 @@
-package de.gobics.marvis.graph.gui;
+package de.gobics.marvis.graph.gui.graphvisualizer;
 
 import org.apache.commons.collections15.Transformer;
 
