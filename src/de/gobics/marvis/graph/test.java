@@ -1,18 +1,13 @@
 package de.gobics.marvis.graph;
 
-import de.gobics.marvis.graph.graphview.GraphViewReactions;
+import de.gobics.marvis.graph.gui.tasks.CalculateNetworksRWR;
 import de.gobics.marvis.graph.gui.tasks.LoadNetwork;
 import de.gobics.marvis.utils.LoggingUtils;
-import de.gobics.marvis.utils.RandomWalkWithRestart;
-import de.gobics.marvis.utils.matrix.DenseDoubleMatrix1D;
-import java.util.Collection;
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Set;
-import java.util.TreeSet;
+import java.util.Arrays;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.apache.commons.math3.stat.correlation.PearsonsCorrelation;
+import org.apache.commons.math3.stat.correlation.SpearmansCorrelation;
 
 /**
  *
@@ -24,94 +19,32 @@ public class test {
     private static double restart_probability = 0.8;
 
     public static void main(String[] args) throws Exception {
-        LoggingUtils.initLogger(Level.FINER);
-        // Load the network
-        logger.finer("Loading network");
-        LoadNetwork loader = new LoadNetwork("/home/manuel/marvis-graph-paper-data/graph.ath.cut10.xml.gz");
-        MetabolicNetwork network = loader.load();
+	LoggingUtils.initLogger(Level.FINER);
+	// Load the network
+	logger.finer("Loading network");
+	LoadNetwork loader = new LoadNetwork("/home/manuel/marvis-graph/testdata/wound1/wound1.complete.cut5000.intNames.xml.gz");
+	MetabolicNetwork network = loader.load();
 
-        // Find explainable nodes
-        logger.finer("Searching explainable reactions as start nodes");
-        Collection<Reaction> initial = new LinkedList<>();
-        for (Reaction r : network.getReactions()) {
-            if (network.isExplainable(r)) {
-                initial.add(r);
-            }
-        }
+	CalculateNetworksRWR process = new CalculateNetworksRWR(network);
+	
+	int size = process.calculateInitialScores().values().size();
+	Double[] values1 = process.calculateInitialScores(/*false*/).values().toArray(new Double[size]);
+	Double[] values2 = process.calculateInitialScores(/*true*/).values().toArray(new Double[size]);
 
-        logger.log(Level.FINER, "Perfoming random walk process with {0} initial nodes", initial.size());
-        RandomWalkWithRestart process = new RandomWalkWithRestart(new GraphViewReactions(network, true), restart_probability, 0.0000001);
-        DenseDoubleMatrix1D result = process.walk(initial);
-        logger.log(Level.FINER, "Process finished with {0} reactions with non-zero probability", result.cardinality());
-        System.gc();
+	System.out.println(Arrays.toString(values1));
 
-        LinkedList<Reaction> reactions_for_networks = new LinkedList<>();
-        for (int i = 0; i < result.size(); i++) {
-            if (result.getQuick(i) > (1-restart_probability)) {
-                reactions_for_networks.add((Reaction) result.getLabel(i));
-            }
-        }
-        logger.log(Level.FINER, "Found {0} reactions for the subnetworks", reactions_for_networks.size());
 
-        Collection<MetabolicNetwork> subs = getSubnetworks(network, reactions_for_networks);
-        logger.log(Level.FINER, "Found {0} subnetworks", subs.size());
-    }
+	double[] v1 = new double[values1.length];
+	double[] v2 = new double[values1.length];
 
-    public static Collection<MetabolicNetwork> getSubnetworks(MetabolicNetwork parent, LinkedList<Reaction> reactions) {
-        LinkedList<MetabolicNetwork> subs = new LinkedList<>();
+	for (int i = 0; i < values1.length; i++) {
+	    v1[i] = values1[i].doubleValue();
+	    v2[i] = values2[i].doubleValue();
+	}
+	PearsonsCorrelation cor = new PearsonsCorrelation();
+	double corval = cor.correlation(v1, v2);
 
-        TreeSet<Reaction> visited = new TreeSet<>();
-        while (!reactions.isEmpty()) {
-            TreeSet<Reaction> reactions_for_subnet = new TreeSet<>();
-            LinkedList<Reaction> to_visit = new LinkedList<>();
-            to_visit.add(reactions.poll());
+	System.out.println("Correlation: " + corval);
 
-            while (!to_visit.isEmpty()) {
-                Reaction cur = to_visit.poll();
-                reactions_for_subnet.add(cur);
-
-                for (Reaction nr : getNeighbors(parent, cur)) {
-                    if (reactions.contains(nr) && !visited.contains(nr)) {
-                        to_visit.add(nr);
-                    }
-                    visited.add(nr);
-                }
-            }
-
-            MetabolicNetwork sub = createNetwork(parent, reactions_for_subnet);
-            subs.add(sub);
-
-            for (Reaction r : reactions_for_subnet) {
-                reactions.remove(r);
-            }
-        }
-
-        return subs;
-    }
-
-    private static MetabolicNetwork createNetwork(MetabolicNetwork parent, Collection<Reaction> reactions_for_subnet) {
-        return new MetabolicNetwork(parent);
-    }
-
-    private static Iterable<Reaction> getNeighbors(MetabolicNetwork parent, Reaction cur) {
-        TreeSet<Reaction> neighbors = new TreeSet<>();
-        for (Compound c : parent.getSubstrates(cur)) {
-            for (Reaction r : parent.getSubstrateToReaction(c)) {
-                neighbors.add(r);
-            }
-            for (Reaction r : parent.getProductToReaction(c)) {
-                neighbors.add(r);
-            }
-        }
-        for (Compound c : parent.getProducts(cur)) {
-            for (Reaction r : parent.getSubstrateToReaction(c)) {
-                neighbors.add(r);
-            }
-            for (Reaction r : parent.getProductToReaction(c)) {
-                neighbors.add(r);
-            }
-        }
-        // logger.log(Level.FINER, "Found {0} neighbors for {1}", new Object[]{neighbors.size(), cur});
-        return neighbors;
     }
 }

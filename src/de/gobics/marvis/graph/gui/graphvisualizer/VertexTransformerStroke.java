@@ -4,12 +4,13 @@ import java.awt.BasicStroke;
 import java.awt.Stroke;
 import org.apache.commons.collections15.Transformer;
 import de.gobics.marvis.graph.*;
-import de.gobics.marvis.graph.graphview.GraphViewAbstract;
+import de.gobics.marvis.graph.graphview.GraphView;
+import de.gobics.marvis.graph.graphview.GraphViewDefault;
 
 public class VertexTransformerStroke implements Transformer<GraphObject, Stroke> {
-	private GraphViewAbstract graph;
+	private GraphView graph;
 
-	public VertexTransformerStroke(GraphViewAbstract g){
+	public VertexTransformerStroke(GraphView g){
 		this.graph = g;
 	}
 	

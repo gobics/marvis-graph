@@ -11,7 +11,8 @@ import de.gobics.marvis.graph.gui.graphvisualizer.VertexTransformerFill;
 import de.gobics.marvis.graph.gui.graphvisualizer.VertexTransformerLabel;
 import de.gobics.marvis.graph.GraphObject;
 import de.gobics.marvis.graph.Relation;
-import de.gobics.marvis.graph.graphview.GraphViewAbstract;
+import de.gobics.marvis.graph.graphview.GraphView;
+import de.gobics.marvis.graph.graphview.GraphViewDefault;
 import de.gobics.marvis.graph.gui.ErrorDialog;
 import de.gobics.marvis.graph.gui.GraphMouseListener;
 import de.gobics.marvis.graph.gui.MarvisGraphMainWindow;
@@ -42,11 +43,11 @@ public class VisualizationViewerGraph<E> extends VisualizationViewer<GraphObject
 	private static final Logger logger = Logger.getLogger(VisualizationViewerGraph.class.
 			getName());
 	private final LinkedList<GraphMouseListener> graph_action_listener = new LinkedList<>();
-	private final GraphViewAbstract<E> graph;
+	private final GraphView<? extends GraphObject, E> graph;
 	private final MarvisGraphMainWindow main_window;
 
-	public VisualizationViewerGraph(MarvisGraphMainWindow main_window, GraphViewAbstract<E> graph) {
-		super(new StaticLayout<>(graph));
+	public VisualizationViewerGraph(MarvisGraphMainWindow main_window, GraphView<? extends GraphObject, E> graph) {
+		super(new StaticLayout(graph));
 		this.graph = graph;
 		this.main_window = main_window;
 		logger.log(Level.FINER, "Initializing graph viewer for graph: {0}", graph);

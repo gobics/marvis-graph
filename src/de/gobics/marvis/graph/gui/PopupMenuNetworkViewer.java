@@ -6,7 +6,8 @@ package de.gobics.marvis.graph.gui;
 
 import de.gobics.marvis.graph.gui.graphvisualizer.VisualizationViewerGraph;
 import de.gobics.marvis.graph.*;
-import de.gobics.marvis.graph.graphview.GraphViewAbstract;
+import de.gobics.marvis.graph.graphview.GraphView;
+import de.gobics.marvis.graph.graphview.GraphViewDefault;
 import de.gobics.marvis.graph.graphview.GraphViewCustomizable;
 import de.gobics.marvis.utils.swing.DialogSaveGraphic;
 import java.awt.Point;
@@ -26,12 +27,12 @@ public class PopupMenuNetworkViewer extends JPopupMenu {
 
 	private final MarvisGraphMainWindow main_window;
 	private final VisualizationViewerGraph graphview;
-	private final GraphViewAbstract graph;
+	private final GraphView graph;
 	private GraphObject current_object = null;
 	private JMenuItem item_node_info = new JMenuItem("Node information"),
 			item_node_hide = new JMenuItem("Hide node");
 
-	public PopupMenuNetworkViewer(final MarvisGraphMainWindow main_window, final VisualizationViewerGraph graphview, GraphViewAbstract graph) {
+	public PopupMenuNetworkViewer(final MarvisGraphMainWindow main_window, final VisualizationViewerGraph graphview, GraphView graph) {
 		super("Network menu");
 		this.main_window = main_window;
 		this.graphview = graphview;

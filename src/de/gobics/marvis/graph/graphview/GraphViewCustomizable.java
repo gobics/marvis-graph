@@ -20,7 +20,7 @@ import java.util.logging.Logger;
  *
  * @author manuel
  */
-public class GraphViewCustomizable extends GraphViewAbstract<Relation> {
+public class GraphViewCustomizable extends GraphViewDefault<Relation> {
 
 	private static final Logger logger = Logger.getLogger(GraphViewCustomizable.class.
 			getName());

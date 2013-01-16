@@ -8,7 +8,6 @@ import de.gobics.marvis.graph.graphview.ReactionRelation;
 import edu.uci.ics.jung.algorithms.shortestpath.DijkstraDistance;
 import java.util.Collection;
 import java.util.Map;
-import java.util.TreeSet;
 
 /**
  * Calculates the diameter of a sub-networks. For all pairs of reactions the
@@ -33,15 +32,14 @@ public class NetworkSorterDiameter extends AbstractGraphScore {
 	@Override
 	public Integer calculateScore(MetabolicNetwork graph) {
 
-		DijkstraDistance<GraphObject, ReactionRelation> distance = new DijkstraDistance<GraphObject, ReactionRelation>(new GraphViewReactions(graph));
+		DijkstraDistance<Reaction, ReactionRelation> distance = new DijkstraDistance<Reaction, ReactionRelation>(new GraphViewReactions(graph));
 		int max_length = 0;
 
 		Collection<Reaction> reactions = graph.getReactions();
-		Collection<GraphObject> reactions_graphobjects = new TreeSet<GraphObject>(reactions);
 
 		for (Reaction r : reactions) {
 			// Calculate the distance
-			Map<GraphObject, Number> map = distance.getDistanceMap(r, reactions_graphobjects);
+			Map<Reaction, Number> map = distance.getDistanceMap(r, reactions);
 
 			// Find longest path in results
 			for (GraphObject go : map.keySet()) {

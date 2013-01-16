@@ -1,18 +1,19 @@
 package de.gobics.marvis.graph.gui;
 
-import de.gobics.marvis.graph.gui.graphvisualizer.VisualizationViewerGraph;
-import java.awt.*;
-import javax.swing.*;
 import de.gobics.marvis.graph.*;
 import de.gobics.marvis.graph.graphview.*;
 import de.gobics.marvis.graph.gui.actions.*;
+import de.gobics.marvis.graph.gui.graphvisualizer.VisualizationViewerGraph;
 import de.gobics.marvis.utils.swing.*;
 import edu.uci.ics.jung.visualization.GraphZoomScrollPane;
+import java.awt.*;
 import java.util.Collection;
+import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.*;
 import org.jfree.chart.ChartPanel;
 
-public class InternalFrameGraph extends JInternalFrame {
+public final class InternalFrameGraph extends JInternalFrame {
 
 	protected static final Logger logger = Logger.getLogger(InternalFrameGraph.class.
 			getName());
@@ -40,7 +41,7 @@ public class InternalFrameGraph extends JInternalFrame {
 			throw new NullPointerException("Given network is null");
 		}
 		this.main_window = main_window;
-		logger.finer("Creating internal frame for: " + network);
+		logger.log(Level.FINER, "Creating internal frame for: {0}", network);
 		this.network = network;
 		if (network == null) {
 			throw new NullPointerException("Given network is NULL");
@@ -63,7 +64,6 @@ public class InternalFrameGraph extends JInternalFrame {
 		getJMenuBar().add(menu);
 		menu.add(new JMenuItem(new ActionVisualizationDrawViewDefault(this)));
 		menu.add(new JMenuItem(new ActionVisualizationDrawViewReaction(this)));
-		menu.add(new JMenuItem(new ActionVisualizationDrawViewPathway(this)));
 
 		// Add notebook
 		add(notebook, BorderLayout.CENTER);
@@ -86,7 +86,7 @@ public class InternalFrameGraph extends JInternalFrame {
 		pack();
 
 		drawNetwork();
-		logger.finer(getClass().getSimpleName() + " is ready for graph: " + this.network);
+		logger.log(Level.FINER, "{0} is ready for graph: {1}", new Object[]{getClass().getSimpleName(), this.network});
 	}
 
 	/**
@@ -179,8 +179,8 @@ public class InternalFrameGraph extends JInternalFrame {
 	}
 
 	@SuppressWarnings("unchecked")
-	public void drawNetwork(GraphViewAbstract graph_view) {
-		logger.finer("Creating graph viewer for view: " + graph_view);
+	public void drawNetwork(GraphView graph_view) {
+		logger.log(Level.FINER, "Creating graph viewer for view: {0}", graph_view);
 		JPanel panel = new JPanel(new BorderLayout());
 
 		VisualizationViewerGraph viewer = new VisualizationViewerGraph(main_window, graph_view);
@@ -199,10 +199,6 @@ public class InternalFrameGraph extends JInternalFrame {
 
 		if (graph_view instanceof GraphViewReactions) {
 			addTab("Reaction network", panel);
-			panel.add(new ToolbarView(this, viewer), BorderLayout.PAGE_START);
-		}
-		else if (graph_view instanceof GraphViewPathways) {
-			addTab("Pathway network", panel);
 			panel.add(new ToolbarView(this, viewer), BorderLayout.PAGE_START);
 		}
 		else if (graph_view instanceof GraphViewCustomizable) {

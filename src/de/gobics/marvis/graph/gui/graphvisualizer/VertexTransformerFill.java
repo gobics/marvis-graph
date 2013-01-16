@@ -3,16 +3,17 @@ package de.gobics.marvis.graph.gui.graphvisualizer;
 import org.apache.commons.collections15.Transformer;
 
 import de.gobics.marvis.graph.*;
-import de.gobics.marvis.graph.graphview.GraphViewAbstract;
+import de.gobics.marvis.graph.graphview.GraphView;
+import de.gobics.marvis.graph.graphview.GraphViewDefault;
 import de.gobics.marvis.utils.ColorUtils;
 
 
 import java.awt.*;
 
 public class VertexTransformerFill implements Transformer<GraphObject, Paint> {
-	private final GraphViewAbstract view;
+	private final GraphView view;
 	
-	public VertexTransformerFill(GraphViewAbstract parent_graph){
+	public VertexTransformerFill(GraphView parent_graph){
 		this.view = parent_graph;
 	}
 
