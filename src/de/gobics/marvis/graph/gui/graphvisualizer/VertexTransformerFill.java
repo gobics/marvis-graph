@@ -4,7 +4,7 @@ import org.apache.commons.collections15.Transformer;
 
 import de.gobics.marvis.graph.*;
 import de.gobics.marvis.graph.graphview.GraphView;
-import de.gobics.marvis.graph.graphview.GraphViewDefault;
+import de.gobics.marvis.graph.graphview.FullGraph;
 import de.gobics.marvis.utils.ColorUtils;
 
 

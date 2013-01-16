@@ -7,7 +7,7 @@ package de.gobics.marvis.graph.gui;
 import de.gobics.marvis.graph.gui.graphvisualizer.VisualizationViewerGraph;
 import de.gobics.marvis.graph.*;
 import de.gobics.marvis.graph.graphview.GraphView;
-import de.gobics.marvis.graph.graphview.GraphViewDefault;
+import de.gobics.marvis.graph.graphview.FullGraph;
 import de.gobics.marvis.graph.graphview.GraphViewCustomizable;
 import de.gobics.marvis.utils.swing.DialogSaveGraphic;
 import java.awt.Point;

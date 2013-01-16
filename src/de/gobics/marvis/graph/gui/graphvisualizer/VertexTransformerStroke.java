@@ -5,7 +5,7 @@ import java.awt.Stroke;
 import org.apache.commons.collections15.Transformer;
 import de.gobics.marvis.graph.*;
 import de.gobics.marvis.graph.graphview.GraphView;
-import de.gobics.marvis.graph.graphview.GraphViewDefault;
+import de.gobics.marvis.graph.graphview.FullGraph;
 
 public class VertexTransformerStroke implements Transformer<GraphObject, Stroke> {
 	private GraphView graph;

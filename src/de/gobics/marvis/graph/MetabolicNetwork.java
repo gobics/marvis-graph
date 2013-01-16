@@ -687,6 +687,10 @@ public class MetabolicNetwork {
 		}
 	}
 
+	/**
+	 * Returns the number of {@link GraphObject}s in this network.
+	 * @return 
+	 */
 	synchronized public int size() {
 		int count = 0;
 		for (TreeMap<String, GraphObject> tmap : vertices.values()) {

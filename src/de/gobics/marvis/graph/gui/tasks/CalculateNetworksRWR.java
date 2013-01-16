@@ -1,7 +1,7 @@
 package de.gobics.marvis.graph.gui.tasks;
 
 import de.gobics.marvis.graph.*;
-import de.gobics.marvis.graph.graphview.GraphViewReactions;
+import de.gobics.marvis.graph.graphview.ReactionGraph;
 import de.gobics.marvis.utils.RandomWalkWithRestart;
 import de.gobics.marvis.utils.matrix.DenseDoubleMatrix1D;
 import de.gobics.marvis.utils.swing.AbstractTask;
@@ -24,7 +24,7 @@ public class CalculateNetworksRWR extends AbstractTask<MetabolicNetwork[], Void>
 	 * The base network to calculate from.
 	 */
 	private final MetabolicNetwork root_network;
-	private GraphViewReactions reactions_view;
+	private ReactionGraph reactions_view;
 	/**
 	 * Basic restart probability.
 	 */
@@ -40,7 +40,7 @@ public class CalculateNetworksRWR extends AbstractTask<MetabolicNetwork[], Void>
 	}
 
 	public void setCofactorThreshold(int cofactor_threshold) {
-		reactions_view = new GraphViewReactions(root_network, true, cofactor_threshold);
+		reactions_view = new ReactionGraph(root_network, true, cofactor_threshold);
 	}
 
 	@Override
@@ -102,11 +102,12 @@ public class CalculateNetworksRWR extends AbstractTask<MetabolicNetwork[], Void>
 				Reaction cur = to_visit.poll();
 				reactions_for_subnet.add(cur);
 
-				for (Reaction nr : reactions_view.getNeighbors(cur)) {
-					if (reactions.contains(nr) && !visited.contains(nr)) {
-						to_visit.add(nr);
+				for (GraphObject neighbor_object : reactions_view.getNeighbors(cur)) {
+					Reaction neighbor_reaction = (Reaction) neighbor_object;
+					if (reactions.contains(neighbor_reaction) && !visited.contains(neighbor_reaction)) {
+						to_visit.add(neighbor_reaction);
 					}
-					visited.add(nr);
+					visited.add(neighbor_reaction);
 				}
 			}
 

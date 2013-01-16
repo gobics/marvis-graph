@@ -15,7 +15,8 @@ public class Relation implements Comparable<Relation> {
 	/**
 	 * Create a new relation object of the given type to the start and end
 	 * points. It is not necessary to construct relations by one self. It is
-	 * prefered to call functions in the {@link MetabolicNetwork}, e.g {@link MetabolicNetwork#annotates(de.gobics.marvis.graph.Marker, de.gobics.marvis.graph.Compound)}.
+	 * prefered to call functions in the {@link MetabolicNetwork}, e.g
+	 * {@link MetabolicNetwork#annotates(de.gobics.marvis.graph.Marker, de.gobics.marvis.graph.Compound)}.
 	 *
 	 * @see RelationshipType
 	 * @see GraphObject
@@ -95,8 +96,9 @@ public class Relation implements Comparable<Relation> {
 	}
 
 	/**
-	 * Returns true if this relation equals the other. That is if the type, start
-	 * and end equal.
+	 * Returns true if this relation equals the other. That is if the type,
+	 * start and end equal.
+	 *
 	 * @param other the testee
 	 * @return true if this and other relation are equal
 	 */
@@ -116,8 +118,8 @@ public class Relation implements Comparable<Relation> {
 	}
 
 	/**
-	 * Returns true if the given type, start and end equal the internal type, start
-	 * end end.
+	 * Returns true if the given type, start and end equal the internal type,
+	 * start end end.
 	 */
 	public boolean equals(RelationshipType type, GraphObject start, GraphObject end) {
 		if (!this.getType().equals(type)) {

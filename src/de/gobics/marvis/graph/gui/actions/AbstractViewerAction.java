@@ -7,6 +7,7 @@ package de.gobics.marvis.graph.gui.actions;
 import java.awt.Image;
 import java.awt.Toolkit;
 import java.net.URL;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.AbstractAction;
 import javax.swing.ImageIcon;
@@ -39,7 +40,7 @@ public abstract class AbstractViewerAction extends AbstractAction {
 			putValue(SMALL_ICON, icon);
 		}
 		else {
-			logger.warning("Can not find icon: " + filename);
+			logger.log(Level.WARNING, "Can not find icon: {0}", filename);
 		}
 	}
 }

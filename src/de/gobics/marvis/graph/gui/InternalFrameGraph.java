@@ -1,7 +1,9 @@
 package de.gobics.marvis.graph.gui;
 
+import de.gobics.marvis.graph.graphview.GraphViewCustomizable;
+import de.gobics.marvis.graph.graphview.GraphView;
+import de.gobics.marvis.graph.graphview.ReactionGraph;
 import de.gobics.marvis.graph.*;
-import de.gobics.marvis.graph.graphview.*;
 import de.gobics.marvis.graph.gui.actions.*;
 import de.gobics.marvis.graph.gui.graphvisualizer.VisualizationViewerGraph;
 import de.gobics.marvis.utils.swing.*;
@@ -197,7 +199,7 @@ public final class InternalFrameGraph extends JInternalFrame {
 
 		panel.add(graphZoom, BorderLayout.CENTER);
 
-		if (graph_view instanceof GraphViewReactions) {
+		if (graph_view instanceof ReactionGraph) {
 			addTab("Reaction network", panel);
 			panel.add(new ToolbarView(this, viewer), BorderLayout.PAGE_START);
 		}

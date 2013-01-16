@@ -12,7 +12,7 @@ import java.util.TreeSet;
  *
  * @author manuel
  */
-public class PathwayRelation {
+public class PathwayGraph {
 
 	private final TreeSet<Reaction> reactions = new TreeSet<Reaction>();
 

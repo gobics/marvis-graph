@@ -4,15 +4,10 @@
  */
 package de.gobics.marvis.graph.gui.graphvisualizer;
 
-import de.gobics.marvis.graph.gui.graphvisualizer.EdgeTransformerLabel;
-import de.gobics.marvis.graph.gui.graphvisualizer.EdgeTransformerStroke;
-import de.gobics.marvis.graph.gui.graphvisualizer.VertexTransformerStroke;
-import de.gobics.marvis.graph.gui.graphvisualizer.VertexTransformerFill;
-import de.gobics.marvis.graph.gui.graphvisualizer.VertexTransformerLabel;
 import de.gobics.marvis.graph.GraphObject;
 import de.gobics.marvis.graph.Relation;
 import de.gobics.marvis.graph.graphview.GraphView;
-import de.gobics.marvis.graph.graphview.GraphViewDefault;
+import de.gobics.marvis.graph.graphview.GraphViewListener;
 import de.gobics.marvis.graph.gui.ErrorDialog;
 import de.gobics.marvis.graph.gui.GraphMouseListener;
 import de.gobics.marvis.graph.gui.MarvisGraphMainWindow;
@@ -30,6 +25,7 @@ import java.awt.Color;
 import java.awt.Point;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
+import java.awt.geom.Point2D;
 import java.util.LinkedList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -82,7 +78,14 @@ public class VisualizationViewerGraph<E> extends VisualizationViewer<GraphObject
 				MouseEvent.MOUSE_DRAGGED));
 		setGraphMouse(gm);
 
-		logger.log(Level.FINER, "Viewer for ready for: {0}", graph);
+		graph.addGraphViewListener(new GraphViewListener() {
+			@Override
+			public void graphChanged(GraphView parent) {
+				updateGraphLayout();
+			}
+		});
+
+		logger.log(Level.FINER, "Viewer ready for: {0}", graph);
 	}
 
 	public void updateGraphLayout() {
@@ -92,16 +95,28 @@ public class VisualizationViewerGraph<E> extends VisualizationViewer<GraphObject
 		layout.setInitializer(getGraphLayout());
 		layout.reset();
 
+		long time_start = System.currentTimeMillis();
+		while (System.currentTimeMillis() - time_start < 1000 && !layout.done()) {
+			layout.step();
+		}
+
+		if (layout.done()) {
+			drawLayout(layout);
+			return;
+		}
+		
+		logger.finer("Rendering takes to much time. Starting background Process");
+
+
 		final RenderGraphLayout process = new RenderGraphLayout(layout);
 		main_window.monitorTask(process);
 		process.addPropertyChangeListener(new ProcessListener() {
-
 			@Override
 			public void processDone() {
 				try {
 					Layout rendered = process.get();
 					if (rendered != null) {
-						VisualizationViewerGraph.this.setGraphLayout(rendered);
+						drawLayout(rendered);
 					}
 				}
 				catch (Exception exeption) {
@@ -116,6 +131,15 @@ public class VisualizationViewerGraph<E> extends VisualizationViewer<GraphObject
 			}
 		});
 		process.execute();
+	}
+
+	private void drawLayout(Layout layout) {
+		// Copy the information to the new layout
+		StaticLayout rendered = new StaticLayout(layout.getGraph(), layout.getSize());
+		for (Object o : layout.getGraph().getVertices()) {
+			rendered.setLocation(o, (Point2D) layout.transform(o));
+		}
+		VisualizationViewerGraph.this.setGraphLayout(rendered);
 	}
 
 	@Override

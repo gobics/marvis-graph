@@ -4,7 +4,7 @@
  */
 package de.gobics.marvis.graph.gui.actions;
 
-import de.gobics.marvis.graph.graphview.GraphViewReactions;
+import de.gobics.marvis.graph.graphview.ReactionGraph;
 import de.gobics.marvis.graph.gui.InternalFrameGraph;
 import java.awt.event.ActionEvent;
 import javax.swing.JOptionPane;
@@ -27,7 +27,7 @@ public class ActionVisualizationDrawViewReaction extends AbstractVisualizationAc
 			return;
 		}
 		boolean connect_only_explainable = response == JOptionPane.YES_OPTION;
-		getInternalFrameGraph().drawNetwork(new GraphViewReactions(getInternalFrameGraph().
+		getInternalFrameGraph().drawNetwork(new ReactionGraph(getInternalFrameGraph().
 				getMetabolicNetwork(), connect_only_explainable));
 	}
 }
