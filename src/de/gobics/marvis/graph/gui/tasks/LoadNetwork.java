@@ -1,16 +1,12 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
 package de.gobics.marvis.graph.gui.tasks;
 
-import de.gobics.marvis.utils.swing.AbstractTask;
 import de.gobics.marvis.graph.*;
-import java.util.logging.Logger;
+import de.gobics.marvis.utils.swing.AbstractTask;
 import java.io.*;
 import java.util.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.zip.*;
-import javax.swing.SwingWorker;
 import org.jdom.*;
 import org.jdom.input.*;
 
@@ -31,10 +27,6 @@ public class LoadNetwork extends AbstractTask<MetabolicNetwork, Void> {
 	}
 
 	public LoadNetwork(File input_file) {
-		// Runs on the EDT.  Copy GUI state that
-		// doInBackground() depends on from parameters
-		// to LoadNetwork fields, here.
-		super();
 		this.filename = input_file;
 	}
 
@@ -44,7 +36,8 @@ public class LoadNetwork extends AbstractTask<MetabolicNetwork, Void> {
 	}
 
 	public MetabolicNetwork load() throws Exception {
-		logger.info("Importing file " + filename);
+		sendTitle("Load network from file: " + filename.getName());
+		logger.log(Level.INFO, "Importing file {0}", filename);
 
 		sendDescription("Loading network");
 
@@ -59,8 +52,7 @@ public class LoadNetwork extends AbstractTask<MetabolicNetwork, Void> {
 			return this.loadFromInputstream(new FileInputStream(filename));
 		}
 
-		throw new IllegalArgumentException(
-				"Can not determine filetype of file: " + filename.getName());
+		throw new IllegalArgumentException("Can not determine filetype of file: " + filename.getName());
 	}
 
 	@SuppressWarnings("unchecked")
@@ -90,7 +82,7 @@ public class LoadNetwork extends AbstractTask<MetabolicNetwork, Void> {
 		List<Element> children = root.getChildren();
 		logger.fine("Importing " + children.size() + " objects");
 		setProgressMax(children.size());
-		
+
 		for (Element e : children) {
 			if (e.getName().equals("IntensityConfiguration")) {
 				continue;
@@ -98,7 +90,7 @@ public class LoadNetwork extends AbstractTask<MetabolicNetwork, Void> {
 
 			//logger.info("Importing object ("+ counter +"/"+ children.size()+"):" + e.getName());
 			this.create_object_from_element(e);
-			
+
 			incrementProgress();
 
 			if (this.isCancelled()) {

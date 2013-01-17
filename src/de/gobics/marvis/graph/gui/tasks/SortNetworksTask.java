@@ -1,10 +1,10 @@
 package de.gobics.marvis.graph.gui.tasks;
 
-import de.gobics.marvis.utils.swing.AbstractTask;
 import de.gobics.marvis.graph.MetabolicNetwork;
 import de.gobics.marvis.graph.sort.AbstractGraphScore;
 import de.gobics.marvis.graph.sort.NetworkSorterName;
 import de.gobics.marvis.graph.sort.NetworkSorterSEA;
+import de.gobics.marvis.utils.swing.AbstractTask;
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
@@ -14,7 +14,6 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.swing.SwingWorker;
 
 /**
  * A background task to sort networks. Calculation of network scores can be
@@ -52,6 +51,7 @@ public class SortNetworksTask extends AbstractTask<MetabolicNetwork[], Void> {
 	}
 
 	public MetabolicNetwork[] sortNetworks() throws Exception {
+		sendTitle("Sorting sub-networks");
 		sendDescription("Calculation scores");
 		ExecutorService pool = Executors.newFixedThreadPool(Math.max(1, Runtime.
 				getRuntime().availableProcessors() - 1));
@@ -64,7 +64,7 @@ public class SortNetworksTask extends AbstractTask<MetabolicNetwork[], Void> {
 
 		// Build the data storages
 		final Cache[] caches = new Cache[networks.length];
-		LinkedList<Callable<Cache>> jobs = new LinkedList<Callable<Cache>>();
+		LinkedList<Callable<Cache>> jobs = new LinkedList<>();
 		setProgressMax(jobs.size());
 
 		for (int i = 0; i < networks.length; i++) {
@@ -85,7 +85,6 @@ public class SortNetworksTask extends AbstractTask<MetabolicNetwork[], Void> {
 			List<Future<Cache>> results = pool.invokeAll(jobs);
 			for (Future<Cache> f : results) {
 				caches[idx] = f.get();
-				logger.finer("Fetched result " + (idx + 1) + ": " + caches[idx]);
 				idx++;
 			}
 		}
@@ -100,7 +99,7 @@ public class SortNetworksTask extends AbstractTask<MetabolicNetwork[], Void> {
 			return null;
 		}
 
-		logger.fine("Sorting (cached) networks using native array sort method with algorithm: " + sorter);
+		logger.log(Level.FINE, "Sorting (cached) networks using native array sort method with algorithm: {0}", sorter);
 		Arrays.sort(caches);
 
 		for (int idx = 0; idx < networks.length; idx++) {

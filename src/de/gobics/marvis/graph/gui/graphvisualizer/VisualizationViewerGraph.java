@@ -1,12 +1,9 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
 package de.gobics.marvis.graph.gui.graphvisualizer;
 
 import de.gobics.marvis.graph.GraphObject;
 import de.gobics.marvis.graph.Relation;
 import de.gobics.marvis.graph.graphview.GraphView;
+import de.gobics.marvis.graph.graphview.GraphViewCustomizable;
 import de.gobics.marvis.graph.graphview.GraphViewListener;
 import de.gobics.marvis.graph.gui.ErrorDialog;
 import de.gobics.marvis.graph.gui.GraphMouseListener;
@@ -31,6 +28,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
+ * A panel that displays the graph and its layout
  *
  * @author manuel
  */
@@ -38,13 +36,11 @@ public class VisualizationViewerGraph<E> extends VisualizationViewer<GraphObject
 
 	private static final Logger logger = Logger.getLogger(VisualizationViewerGraph.class.
 			getName());
-	private final LinkedList<GraphMouseListener> graph_action_listener = new LinkedList<>();
-	private final GraphView<? extends GraphObject, E> graph;
+	private final LinkedList<GraphMouseListener> graph_mouse_listener = new LinkedList<>();
 	private final MarvisGraphMainWindow main_window;
 
 	public VisualizationViewerGraph(MarvisGraphMainWindow main_window, GraphView<? extends GraphObject, E> graph) {
 		super(new StaticLayout(graph));
-		this.graph = graph;
 		this.main_window = main_window;
 		logger.log(Level.FINER, "Initializing graph viewer for graph: {0}", graph);
 		setBackground(Color.WHITE);
@@ -88,7 +84,13 @@ public class VisualizationViewerGraph<E> extends VisualizationViewer<GraphObject
 		logger.log(Level.FINER, "Viewer ready for: {0}", graph);
 	}
 
+	/**
+	 * Redraws the complete layout of the graph. Also the layout will be
+	 * reinitialized and recalculated. This is useful when the structure has
+	 * been changed e.g. in the {@link GraphViewCustomizable}.
+	 */
 	public void updateGraphLayout() {
+		logger.finer("Updating graph layout");
 		ISOMLayout layout = new ISOMLayout(getGraphLayout().getGraph());
 		layout.setSize(getSize());
 		layout.initialize();
@@ -104,10 +106,9 @@ public class VisualizationViewerGraph<E> extends VisualizationViewer<GraphObject
 			drawLayout(layout);
 			return;
 		}
-		
+
 		logger.finer("Rendering takes to much time. Starting background Process");
-
-
+		
 		final RenderGraphLayout process = new RenderGraphLayout(layout);
 		main_window.monitorTask(process);
 		process.addPropertyChangeListener(new ProcessListener() {
@@ -133,6 +134,12 @@ public class VisualizationViewerGraph<E> extends VisualizationViewer<GraphObject
 		process.execute();
 	}
 
+	/**
+	 * Method to simply create a new {@link StaticLayout} that will contain the
+	 * data of the given layout and
+	 *
+	 * @param layout the layout containing all vertex-positions.
+	 */
 	private void drawLayout(Layout layout) {
 		// Copy the information to the new layout
 		StaticLayout rendered = new StaticLayout(layout.getGraph(), layout.getSize());
@@ -175,14 +182,14 @@ public class VisualizationViewerGraph<E> extends VisualizationViewer<GraphObject
 			return;
 		}
 
-		for (GraphMouseListener l : graph_action_listener) {
+		for (GraphMouseListener l : graph_mouse_listener) {
 			l.doubleClick(o);
 		}
 	}
 
 	public void addGraphActionListener(GraphMouseListener graphActionListener) {
-		if (!graph_action_listener.contains(graphActionListener)) {
-			graph_action_listener.add(graphActionListener);
+		if (!graph_mouse_listener.contains(graphActionListener)) {
+			graph_mouse_listener.add(graphActionListener);
 		}
 	}
 }

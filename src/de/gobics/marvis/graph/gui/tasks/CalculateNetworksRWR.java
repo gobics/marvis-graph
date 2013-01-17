@@ -50,14 +50,15 @@ public class CalculateNetworksRWR extends AbstractTask<MetabolicNetwork[], Void>
 
 	public MetabolicNetwork[] calculateNetworks() throws Exception {
 		// Find explainable nodes
+		sendTitle("Calculate sub-networks with Random Walk");
 		sendDescription("Search start nodes");
 		setProgressMax(5);
-		setProgress(1);
+		incrementProgress();
 		logger.finer("Calculating reaction start probabilities");
 		Map<Reaction, Double> initial = calculateInitialScores();
 
 		sendDescription("Performing random walk for reaction scoring");
-		setProgress(2);
+		incrementProgress();
 		logger.log(Level.FINER, "Perfoming random walk process with {0} initial nodes and {1} edges", new Object[]{initial.size(), reactions_view.getEdgeCount()});
 		RandomWalkWithRestart process = new RandomWalkWithRestart(reactions_view, restart_probability, 0.0000001);
 		DenseDoubleMatrix1D result = process.walk(initial);
@@ -66,7 +67,7 @@ public class CalculateNetworksRWR extends AbstractTask<MetabolicNetwork[], Void>
 
 		// Build list of reactions above the threshold
 		LinkedList<Reaction> reactions_for_networks = new LinkedList<>();
-		setProgress(3);
+		incrementProgress();
 		for (int i = 0; i < result.size(); i++) {
 			if (result.getQuick(i) >= (1 - restart_probability)) {
 				reactions_for_networks.add((Reaction) result.getLabel(i));
@@ -75,10 +76,10 @@ public class CalculateNetworksRWR extends AbstractTask<MetabolicNetwork[], Void>
 		logger.log(Level.FINER, "Found {0} reactions for the subnetworks", reactions_for_networks.size());
 
 		sendDescription("Generating new metabolic sub-networks");
-		setProgressMax(4);
+		incrementProgress();
 		Collection<MetabolicNetwork> subs = getSubnetworks(reactions_for_networks);
 		logger.log(Level.FINER, "Found {0} subnetworks", subs.size());
-		setProgress(5);
+		incrementProgress();
 
 		return subs.toArray(new MetabolicNetwork[subs.size()]);
 	}
