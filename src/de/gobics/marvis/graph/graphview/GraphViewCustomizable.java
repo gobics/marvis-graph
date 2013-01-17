@@ -203,7 +203,6 @@ public class GraphViewCustomizable extends AbstractGraph {
 		//  Check if it might be excluded as cofactor
 		if (obj instanceof Compound && cofactor_limit > 0) {
 			if (getRootNetwork().getReactions((Compound) obj).size() >= cofactor_limit) {
-				logger.log(Level.FINER, "Will not display cofactor: {0}", obj);
 				return false;
 			}
 		}
