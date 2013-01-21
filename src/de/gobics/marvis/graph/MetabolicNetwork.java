@@ -1,6 +1,7 @@
 package de.gobics.marvis.graph;
 
 import java.util.*;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 public class MetabolicNetwork {
@@ -9,9 +10,9 @@ public class MetabolicNetwork {
 			getName());
 	private static int COUNTER = 0;
 	/**
-	 * Contains the threshold for compounds to be a "cofactor". A compound
-	 * occur in at least {@code cofactor_threshold} reactions will be treated
-	 * as a cofactor.
+	 * Contains the threshold for compounds to be a "cofactor". A compound occur
+	 * in at least {@code cofactor_threshold} reactions will be treated as a
+	 * cofactor.
 	 */
 	private MetabolicNetwork parent = null;
 	private String name = null;
@@ -247,18 +248,18 @@ public class MetabolicNetwork {
 	}
 
 	/*	public boolean expand(GraphObject graphobject) throws Exception {
-	logger.finer("Try to expand object: " + graphobject);
-	if (graphobject.isExpanded()) {
-	return false;
-	}
+	 logger.finer("Try to expand object: " + graphobject);
+	 if (graphobject.isExpanded()) {
+	 return false;
+	 }
 	
-	int old_size = size();
-	for (Expander e : expander) {
-	e.expand(graphobject);
-	}
-	graphobject.setExpanded(true);
-	return old_size != size();
-	}
+	 int old_size = size();
+	 for (Expander e : expander) {
+	 e.expand(graphobject);
+	 }
+	 graphobject.setExpanded(true);
+	 return old_size != size();
+	 }
 	 */
 	synchronized public LinkedList<GraphObject> getAllObjects() {
 		LinkedList<GraphObject> ret = new LinkedList<GraphObject>();
@@ -426,10 +427,11 @@ public class MetabolicNetwork {
 	}
 
 	synchronized public Collection<Marker> getMarkers() {
-		ArrayList<Marker> list = new ArrayList<Marker>();
+
 		if (!vertices.containsKey(Marker.class)) {
-			return list;
+			return new ArrayList<>(0);
 		}
+		ArrayList<Marker> list = new ArrayList<>(vertices.get(Marker.class).size());
 		for (GraphObject o : vertices.get(Marker.class).values()) {
 			list.add((Marker) o);
 		}
@@ -617,7 +619,7 @@ public class MetabolicNetwork {
 	}
 
 	synchronized private boolean isExplainableWithGap(GraphObject graphobject,
-			int allowed_gaps, LinkedList<GraphObject> former_path) {
+													  int allowed_gaps, LinkedList<GraphObject> former_path) {
 		//logger.finer("Try to explain " + graphobject + " with max " + allowed_gaps + ". Path is: " + former_path);
 		if (allowed_gaps <= 0) {
 			return explainer.evaluate(this, graphobject);
@@ -665,10 +667,10 @@ public class MetabolicNetwork {
 
 	synchronized public boolean removeRelation(Relation arg0) {
 		if (!relations.containsKey(arg0.getType())) {
-			logger.finer("Graph does not contain edges of type: " + arg0.getType());
+			logger.log(Level.FINER, "Graph does not contain edges of type: {0}", arg0.getType());
 			return true;
 		}
-		logger.finer("Removing edge: " + arg0);
+		//logger.finer("Removing edge: " + arg0);
 		relations.get(arg0.getType()).remove(arg0);
 		object_to_relation_mapping.get(arg0.getStart().getClass()).get(arg0.
 				getStart()).remove(arg0);
@@ -689,7 +691,8 @@ public class MetabolicNetwork {
 
 	/**
 	 * Returns the number of {@link GraphObject}s in this network.
-	 * @return 
+	 *
+	 * @return
 	 */
 	synchronized public int size() {
 		int count = 0;
@@ -745,7 +748,7 @@ public class MetabolicNetwork {
 		}
 		return ret;
 	}
-	
+
 	synchronized public LinkedList<Reaction> getReactions(Enzyme enzyme) {
 		LinkedList<Reaction> ret = new LinkedList<Reaction>();
 		for (Object o : object_to_relation_mapping.get(enzyme.getClass()).get(enzyme)) {
@@ -812,8 +815,9 @@ public class MetabolicNetwork {
 	}
 
 	synchronized public boolean hasTranscripts() {
-		if( parent != null)
+		if (parent != null) {
 			return parent.hasTranscripts();
+		}
 		return vertices.containsKey(Transcript.class);
 	}
 
@@ -824,8 +828,9 @@ public class MetabolicNetwork {
 	}
 
 	synchronized public boolean hasMarkers() {
-		if( parent != null)
+		if (parent != null) {
 			return parent.hasMarkers();
+		}
 		return vertices.containsKey(Marker.class);
 	}
 

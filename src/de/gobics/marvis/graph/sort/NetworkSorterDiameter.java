@@ -2,12 +2,9 @@ package de.gobics.marvis.graph.sort;
 
 import de.gobics.marvis.graph.GraphObject;
 import de.gobics.marvis.graph.MetabolicNetwork;
-import de.gobics.marvis.graph.Reaction;
 import de.gobics.marvis.graph.Relation;
 import de.gobics.marvis.graph.graphview.ReactionGraph;
-import de.gobics.marvis.graph.graphview.ReactionRelation;
 import edu.uci.ics.jung.algorithms.shortestpath.DijkstraDistance;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Map;
 
@@ -33,7 +30,7 @@ public class NetworkSorterDiameter extends AbstractGraphScore {
 
 	@Override
 	public Integer calculateScore(MetabolicNetwork graph) {
-		ReactionGraph reaction_graph = new ReactionGraph(graph);
+		ReactionGraph reaction_graph = new ReactionGraph(graph, false, 25);
 
 		DijkstraDistance<GraphObject, Relation> distance = new DijkstraDistance<>(reaction_graph);
 		int max_length = 0;
