@@ -40,7 +40,7 @@ public class CalculateNetworksRWR extends AbstractTask<MetabolicNetwork[], Void>
 	}
 
 	public void setCofactorThreshold(int cofactor_threshold) {
-		reactions_view = new ReactionGraph(root_network, true, cofactor_threshold);
+		reactions_view = new ReactionGraph(root_network, false, cofactor_threshold);
 	}
 
 	@Override
@@ -55,7 +55,7 @@ public class CalculateNetworksRWR extends AbstractTask<MetabolicNetwork[], Void>
 		setProgressMax(5);
 		incrementProgress();
 		logger.finer("Calculating reaction start probabilities");
-		Map<Reaction, Double> initial = calculateInitialScores(false);
+		Map<Reaction, Double> initial = calculateInitialScores(true);
 
 		sendDescription("Performing random walk for reaction scoring");
 		incrementProgress();
@@ -66,8 +66,8 @@ public class CalculateNetworksRWR extends AbstractTask<MetabolicNetwork[], Void>
 		System.gc();
 
 		// Build list of reactions above the threshold
-		LinkedList<Reaction> reactions_for_networks = new LinkedList<>();
 		incrementProgress();
+		LinkedList<Reaction> reactions_for_networks = new LinkedList<>();
 		for (int i = 0; i < result.size(); i++) {
 			if (result.getQuick(i) >= (1 - restart_probability)) {
 				reactions_for_networks.add((Reaction) result.getLabel(i));
