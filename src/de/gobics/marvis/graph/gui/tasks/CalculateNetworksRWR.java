@@ -55,14 +55,14 @@ public class CalculateNetworksRWR extends AbstractTask<MetabolicNetwork[], Void>
 		setProgressMax(5);
 		incrementProgress();
 		logger.finer("Calculating reaction start probabilities");
-		Map<Reaction, Double> initial = calculateInitialScores();
+		Map<Reaction, Double> initial = calculateInitialScores(false);
 
 		sendDescription("Performing random walk for reaction scoring");
 		incrementProgress();
 		logger.log(Level.FINER, "Perfoming random walk process with {0} initial nodes and {1} edges", new Object[]{initial.size(), reactions_view.getEdgeCount()});
 		RandomWalkWithRestart process = new RandomWalkWithRestart(reactions_view, restart_probability, 0.0000001);
 		DenseDoubleMatrix1D result = process.walk(initial);
-		logger.log(Level.FINER, "Process finished with {0} reactions with non-zero probability", result.cardinality());
+		logger.log(Level.FINER, "Random-walk finished with {0} reactions with non-zero probability", result.cardinality());
 		System.gc();
 
 		// Build list of reactions above the threshold
@@ -112,8 +112,10 @@ public class CalculateNetworksRWR extends AbstractTask<MetabolicNetwork[], Void>
 				}
 			}
 
-			MetabolicNetwork sub = generate_network(reactions_for_subnet);
-			subs.add(sub);
+			if (reactions_for_subnet.size() > 1) {
+				MetabolicNetwork sub = generate_network(reactions_for_subnet);
+				subs.add(sub);
+			}
 
 			for (Reaction r : reactions_for_subnet) {
 				reactions.remove(r);
@@ -137,7 +139,7 @@ public class CalculateNetworksRWR extends AbstractTask<MetabolicNetwork[], Void>
 		return network;
 	}
 
-	public Map<Reaction, Double> calculateInitialScores() {
+	public Map<Reaction, Double> calculateInitialScores(boolean normalize_to_1) {
 		Map<Reaction, Double> reaction_scores = new TreeMap<>();
 
 		for (Marker marker : root_network.getMarkers()) {
@@ -183,9 +185,11 @@ public class CalculateNetworksRWR extends AbstractTask<MetabolicNetwork[], Void>
 		}
 
 		// set maximum value to 1
-		Set<Reaction> reacs = reaction_scores.keySet();
-		for (Reaction r : reacs) {
-			reaction_scores.put(r, Math.min(1, reaction_scores.get(r)));
+		if (normalize_to_1) {
+			Set<Reaction> reacs = reaction_scores.keySet();
+			for (Reaction r : reacs) {
+				reaction_scores.put(r, Math.min(1, reaction_scores.get(r)));
+			}
 		}
 
 		return reaction_scores;
