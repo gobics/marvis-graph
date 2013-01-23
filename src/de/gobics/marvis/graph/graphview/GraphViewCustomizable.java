@@ -7,6 +7,7 @@ import de.gobics.marvis.graph.Relation;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.Set;
+import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -49,6 +50,8 @@ public class GraphViewCustomizable extends AbstractGraph {
 	 * decrease the density of the visualization.
 	 */
 	private int cofactor_limit = -1;
+	private final TreeSet<GraphObject> cache_vertices = new TreeSet<>();
+	private final TreeMap<GraphObject, Collection<Relation>> cache_relations = new TreeMap<>();
 
 	/**
 	 * Create a new customizable graphical view based on the given network.
@@ -216,6 +219,13 @@ public class GraphViewCustomizable extends AbstractGraph {
 	}
 
 	@Override
+	protected void fireGraphChangeEvent() {
+		cache_relations.clear();
+		cache_vertices.clear();
+		super.fireGraphChangeEvent();
+	}
+
+	@Override
 	public Collection<Relation> getEdges() {
 		Set<Relation> rels = new TreeSet<>();
 		for (GraphObject o : getParent().getAllObjects()) {
@@ -228,32 +238,37 @@ public class GraphViewCustomizable extends AbstractGraph {
 
 	@Override
 	public Collection<GraphObject> getVertices() {
-		if (drawSingleNodes()) {
-			Set<GraphObject> vertices = new TreeSet<>();
-			for (GraphObject o : getParent().getAllObjects()) {
-				if (acceptVertex(o)) {
-					vertices.add(o);
+		if (cache_vertices.isEmpty()) {
+			if (drawSingleNodes()) {
+				for (GraphObject o : getParent().getAllObjects()) {
+					if (acceptVertex(o)) {
+						cache_vertices.add(o);
+					}
+				}
+
+			}
+			else {
+				for (Relation r : getEdges()) {
+					cache_vertices.add(r.getStart());
+					cache_vertices.add(r.getEnd());
 				}
 			}
-			return vertices;
 		}
-
-		Set<GraphObject> vertices = new TreeSet<>();
-		for (Relation r : getEdges()) {
-			vertices.add(r.getStart());
-			vertices.add(r.getEnd());
-		}
-		return vertices;
+		return cache_vertices;
 	}
 
 	@Override
 	public Collection<Relation> getIncidentEdges(GraphObject v) {
+		if (cache_relations.containsKey(v)) {
+			return cache_relations.get(v);
+		}
 		Set<Relation> rels = new TreeSet<>();
 		for (Relation r : getParent().getRelations(v)) {
 			if (acceptVertex(r.getOther(v))) {
 				rels.add(r);
 			}
 		}
+		cache_relations.put(v, rels);
 		return rels;
 	}
 }
