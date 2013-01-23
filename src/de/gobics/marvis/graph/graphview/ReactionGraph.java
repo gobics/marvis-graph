@@ -119,6 +119,7 @@ public class ReactionGraph extends AbstractGraph {
 					}
 				}
 			}
+			relation_cache.put((Reaction) v, neighbors);
 
 		}
 		return neighbors;
