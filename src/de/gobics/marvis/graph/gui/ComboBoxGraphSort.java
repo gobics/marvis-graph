@@ -21,6 +21,7 @@ public class ComboBoxGraphSort extends JComboBox {
 		setRenderer(new GraphSortListCellRenderer());
 
 		addItem(new NetworkSorterDiameter());
+		addItem(new NetworkSorterSumOfWeights());
 		addItem(new NetworkSorterSEA());
 		//addItem(new ModularityScore());
 		addItem(new NetworkSorterName());
