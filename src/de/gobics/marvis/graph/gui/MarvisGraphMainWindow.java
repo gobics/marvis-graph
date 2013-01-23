@@ -81,7 +81,6 @@ public class MarvisGraphMainWindow extends JFrame {
 		getJMenuBar().add(new MenuWindows(this));
 
 
-
 		// Install Popup menu for JTree
 		new PopupMenuNetworksTree(this, jtree_networks);
 
@@ -914,6 +913,7 @@ public class MarvisGraphMainWindow extends JFrame {
 		}
 		catch (Exception ex) {
 			JTextArea area = new JTextArea(url.toASCIIString());
+			area.setLineWrap(true);
 			area.setWrapStyleWord(false);
 			JScrollPane spane = new JScrollPane(area);
 			spane.setPreferredSize(new Dimension(300, 100));
