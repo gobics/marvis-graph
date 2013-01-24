@@ -11,10 +11,7 @@ import de.gobics.marvis.graph.MetabolicNetwork;
 import de.gobics.marvis.graph.Relation;
 import de.gobics.marvis.graph.RelationshipType;
 import de.gobics.marvis.graph.Transcript;
-import de.gobics.marvis.graph.sort.AbstractGraphScore;
-import de.gobics.marvis.graph.sort.NetworkSorterDiameter;
 import de.gobics.marvis.graph.sort.NetworkSorterSumOfWeights;
-import de.gobics.marvis.graph.test;
 import de.gobics.marvis.utils.swing.AbstractTask;
 import java.io.BufferedWriter;
 import java.io.FileWriter;
@@ -28,7 +25,6 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Random;
 import java.util.Set;
-import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -40,7 +36,7 @@ import java.util.logging.Logger;
  *
  * @author manuel
  */
-public class PermutationTest extends AbstractTask<Map<MetabolicNetwork, Double>, Void> {
+public class PermutationTest extends AbstractTask<Set<PermutationResultFwer>, Void> {
 
 	private static final Random rand = new Random(System.currentTimeMillis());
 	private static final Logger logger = Logger.getLogger(PermutationTest.class.getName());
@@ -69,15 +65,12 @@ public class PermutationTest extends AbstractTask<Map<MetabolicNetwork, Double>,
 	}
 
 	@Override
-	protected Map<MetabolicNetwork, Double> performTask() throws Exception {
-		HashMap<MetabolicNetwork, Double> mapped = new HashMap<>();
-		for (Result r : calculateScores()) {
-			mapped.put(r.network, r.fwer);
-		}
-		return mapped;
+	protected Set<PermutationResultFwer> performTask() throws Exception {
+		return calculateScores();
 	}
 
-	public Set<Result> calculateScores() throws InterruptedException, Exception {
+	public Set<PermutationResultFwer> calculateScores() throws InterruptedException, Exception {
+		setProgressMax(NUM_PERMUTES);
 		sendDescription("Permuting network structure and calculating sub networks");
 		ExecutorService pool = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
 		for (int i = 0; i < NUM_PERMUTES; i++) {
@@ -102,13 +95,13 @@ public class PermutationTest extends AbstractTask<Map<MetabolicNetwork, Double>,
 
 
 		logger.info("Will now calculate the scores for the found subnetworks");
-		Set<Result> scores = new HashSet<>();
+		Set<PermutationResultFwer> scores = new HashSet<>();
 		NetworkSorterSumOfWeights scorer = new NetworkSorterSumOfWeights(root_network);
 		scorer.setParent(root_network);
 		for (MetabolicNetwork subnet : subnetworks) {
 			double score = scorer.calculateScore(subnet);
 			int errors = countErrors(permutation_scores, score);
-			Result r = new Result(subnet, score, errors);
+			PermutationResultFwer r = new PermutationResultFwer(subnet, score, errors, NUM_PERMUTES);
 			scores.add(r);
 		}
 		return scores;
@@ -146,6 +139,7 @@ public class PermutationTest extends AbstractTask<Map<MetabolicNetwork, Double>,
 			catch (Exception ex) {
 				logger.log(Level.SEVERE, null, ex);
 			}
+			incrementProgress();
 		}
 
 		private void toTask() throws Exception {
@@ -217,55 +211,6 @@ public class PermutationTest extends AbstractTask<Map<MetabolicNetwork, Double>,
 				iterator.next();
 			}
 			return iterator.next();
-		}
-	}
-
-	public class Result {
-
-		public final MetabolicNetwork network;
-		public final int errors;
-		public final double fwer;
-		public final double score;
-
-		public Result(MetabolicNetwork n, double score, int errors) {
-			this.network = n;
-			this.score = score;
-			this.errors = errors;
-			this.fwer = ((double) errors) / ((double) NUM_PERMUTES);
-		}
-
-		@Override
-		public boolean equals(Object obj) {
-			if (obj == null) {
-				return false;
-			}
-			if (getClass() != obj.getClass()) {
-				return false;
-			}
-			final Result other = (Result) obj;
-			if (!Objects.equals(this.network, other.network)) {
-				return false;
-			}
-			if (this.errors != other.errors) {
-				return false;
-			}
-			if (this.fwer != other.fwer) {
-				return false;
-			}
-			if (Double.doubleToLongBits(this.score) != Double.doubleToLongBits(other.score)) {
-				return false;
-			}
-			return true;
-		}
-
-		@Override
-		public int hashCode() {
-			int hash = 7;
-			hash = 97 * hash + Objects.hashCode(this.network);
-			hash = 97 * hash + this.errors;
-			hash = 97 * hash + (int) (Double.doubleToLongBits(this.fwer) ^ (Double.doubleToLongBits(this.fwer) >>> 32));
-			hash = 97 * hash + (int) (Double.doubleToLongBits(this.score) ^ (Double.doubleToLongBits(this.score) >>> 32));
-			return hash;
 		}
 	}
 }

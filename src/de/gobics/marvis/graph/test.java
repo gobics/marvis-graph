@@ -2,8 +2,8 @@ package de.gobics.marvis.graph;
 
 import de.gobics.marvis.graph.gui.tasks.CalculateNetworksRWR;
 import de.gobics.marvis.graph.gui.tasks.LoadNetwork;
+import de.gobics.marvis.graph.gui.tasks.PermutationResultFwer;
 import de.gobics.marvis.graph.gui.tasks.PermutationTest;
-import de.gobics.marvis.graph.gui.tasks.PermutationTest.Result;
 import de.gobics.marvis.utils.LoggingUtils;
 import java.io.BufferedWriter;
 import java.io.FileWriter;
@@ -38,11 +38,11 @@ public class test {
 		PermutationTest test = new PermutationTest(network, subs);
 		test.setNumberOfPermutations(NUM_PERMUTES);
 		test.setCofactorThreshold(COFACTOR_THRESHOLD);
-		Set<Result> networks = test.calculateScores();
+		Set<PermutationResultFwer> networks = test.calculateScores();
 
 		BufferedWriter out = new BufferedWriter(new FileWriter("scores.csv"));
 		out.write("Name\tnum_reactions\tscore\terrors\tfwer\n");
-		for (Result r : networks) {
+		for (PermutationResultFwer r : networks) {
 			out.write(r.network.getName() + "\t" +r.network.getReactions().size()+"\t"+ r.score + "\t" + r.errors + "\t" + r.fwer + "\n");
 		}
 		out.close();

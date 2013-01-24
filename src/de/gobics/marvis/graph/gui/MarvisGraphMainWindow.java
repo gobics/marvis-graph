@@ -4,10 +4,12 @@ import de.gobics.marvis.graph.*;
 import de.gobics.marvis.graph.downloader.MetabolicNetworkTester;
 import de.gobics.marvis.graph.downloader.NetworkDownloaderDialog;
 import de.gobics.marvis.graph.gui.actions.*;
+import de.gobics.marvis.graph.gui.evaluation.TableModelResults;
 import de.gobics.marvis.graph.gui.tasks.*;
 import de.gobics.marvis.graph.sort.AbstractGraphScore;
 import de.gobics.marvis.utils.LoggingUtils;
 import de.gobics.marvis.utils.swing.AbstractTaskListener;
+import de.gobics.marvis.utils.swing.SpringUtilities;
 import de.gobics.marvis.utils.swing.Statusbar;
 import de.gobics.marvis.utils.swing.Statusdialog;
 import de.gobics.marvis.utils.swing.filechooser.ChooserAbstract;
@@ -25,7 +27,9 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Set;
 import java.util.TreeSet;
+import java.util.concurrent.ExecutionException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.*;
@@ -850,7 +854,7 @@ public class MarvisGraphMainWindow extends JFrame {
 		Pathway pathway = pathways.iterator().next();
 		if (pathways.size() > 1) {
 			ComboBoxGraphobject<Pathway> cb = new ComboBoxGraphobject<Pathway>(pathways);
-			if( JOptionPane.showConfirmDialog(this, cb, "Select pathway", JOptionPane.OK_CANCEL_OPTION) != JOptionPane.OK_OPTION ){
+			if (JOptionPane.showConfirmDialog(this, cb, "Select pathway", JOptionPane.OK_CANCEL_OPTION) != JOptionPane.OK_OPTION) {
 				return;
 			}
 			pathway = cb.getSelectGraphObject();
@@ -922,5 +926,89 @@ public class MarvisGraphMainWindow extends JFrame {
 			JOptionPane.showConfirmDialog(this, spane, "URL", JOptionPane.OK_OPTION);
 		}
 		return false;
+	}
+
+	public void performPermutationTest() {
+		MetabolicNetwork main = getMainNetwork();
+		if (main == null) {
+			display_error("Please load a network first");
+			return;
+		}
+		MetabolicNetwork[] subs = getSubnetworks();
+		if (subs == null || subs.length == 0) {
+			display_error("Please calculate subnetworks first");
+			return;
+		}
+
+		// Fetch options for permutation testing
+		SpinnerNumberModel sm_cofactor = new SpinnerNumberModel(10, 1, Integer.MAX_VALUE, 1);
+		SpinnerNumberModel sm_rwr = new SpinnerNumberModel(0.8, 0, 1, 0.1);
+		JPanel message = new JPanel(new SpringLayout());
+		message.add(new JLabel("Restart-Probability:"));
+		message.add(new JSpinner(sm_rwr));
+		message.add(new JLabel("Cofactor-Threshold:"));
+		message.add(new JSpinner(sm_cofactor));
+		SpringUtilities.makeCompactGrid(message);
+
+		if (JOptionPane.showConfirmDialog(this, message, "Select options", JOptionPane.OK_CANCEL_OPTION, JOptionPane.QUESTION_MESSAGE) != JOptionPane.OK_OPTION) {
+			return;
+		}
+
+		performPermutationTest(main, subs, sm_rwr.getNumber().doubleValue(), sm_cofactor.getNumber().intValue());
+	}
+
+	private void performPermutationTest(MetabolicNetwork main, MetabolicNetwork[] subs, double restart_probability, int cofactor_threshold) {
+		SpinnerNumberModel sm_permutations = new SpinnerNumberModel(1000, 1, Integer.MAX_VALUE, 1000);
+		if (JOptionPane.showConfirmDialog(this, new JSpinner(sm_permutations), "Set permutations", JOptionPane.OK_CANCEL_OPTION, JOptionPane.QUESTION_MESSAGE) != JOptionPane.OK_OPTION) {
+			return;
+		}
+		performPermutationTest(main, subs, restart_probability, cofactor_threshold, sm_permutations.getNumber().intValue());
+	}
+
+	private void performPermutationTest(MetabolicNetwork main, MetabolicNetwork[] subs, double restart_probability, int cofactor_threshold, int permutations) {
+		final PermutationTest process = new PermutationTest(main, subs);
+		process.setRestartProbability(restart_probability);
+		process.setCofactorThreshold(cofactor_threshold);
+		process.setNumberOfPermutations(permutations);
+
+		monitorTask(process);
+		process.addPropertyChangeListener(new AbstractTaskListener() {
+			@Override
+			public void receiveStatusDone() {
+				if (process.isCancelled()) {
+					return;
+				}
+				try {
+					Set<PermutationResultFwer> results = process.get();
+					displayPermutationResults(results);
+				}
+				catch (Exception ex) {
+					display_error("Calculation interupted");
+					logger.log(Level.SEVERE, null, ex);
+				}
+			}
+
+			@Override
+			public void receiveError(String msg) {
+				display_error(msg);
+			}
+
+			@Override
+			public void receiveException(Exception ex) {
+				display_error("Can not calculate permutations", ex);
+			}
+		});
+	}
+
+	public void displayPermutationResults(Set<PermutationResultFwer> results) {
+		JInternalFrame iframe = new JInternalFrame("Permutation Results");
+		iframe.getContentPane().setLayout(new BorderLayout());
+
+		JTable table = new JTable(new TableModelResults(results));
+		iframe.getContentPane().add(table, BorderLayout.CENTER);
+
+		table.setAutoCreateRowSorter(true);
+
+		desktop.add(iframe);
 	}
 }
