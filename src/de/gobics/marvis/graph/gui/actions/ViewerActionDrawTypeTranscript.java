@@ -27,7 +27,7 @@ public class ViewerActionDrawTypeTranscript extends AbstractViewerAction {
 		this.view = view;
 		putValue(LONG_DESCRIPTION, "Select this to display transcript nodes");
 
-		if (!view.getParent().hasTranscripts()) {
+		if (!view.getMetabolicNetwork().hasTranscripts()) {
 			putValue(SELECTED_KEY, false);
 			view.hideClass(Transcript.class, true);
 		}

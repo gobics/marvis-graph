@@ -26,7 +26,7 @@ public class ViewerActionDrawTypeEnzyme extends AbstractViewerAction {
 		this.viewer = viewer;
 		this.view = gview;
 		putValue(LONG_DESCRIPTION, "Select this to display enzyme nodes");
-		if (!view.getParent().hasTranscripts()) {
+		if (!view.getMetabolicNetwork().hasTranscripts()) {
 			putValue(SELECTED_KEY, false);
 			view.hideClass(Enzyme.class, true);
 		}

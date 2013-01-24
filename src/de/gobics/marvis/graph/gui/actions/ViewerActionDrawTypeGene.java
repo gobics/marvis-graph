@@ -27,7 +27,7 @@ public class ViewerActionDrawTypeGene extends AbstractViewerAction {
 		this.view = view;
 		putValue(LONG_DESCRIPTION, "Select this to display gene nodes");
 
-		if (!view.getParent().hasTranscripts()) {
+		if (!view.getMetabolicNetwork().hasTranscripts()) {
 			putValue(SELECTED_KEY, false);
 			view.hideClass(Gene.class, true);
 		}

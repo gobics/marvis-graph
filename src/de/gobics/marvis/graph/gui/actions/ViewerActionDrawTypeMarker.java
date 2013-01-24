@@ -25,7 +25,7 @@ public class ViewerActionDrawTypeMarker extends AbstractViewerAction {
 		this.viewer = viewer;
 		this.view = view;
 		putValue(LONG_DESCRIPTION, "Select this to display m/z marker nodes");
-		if (!view.getParent().hasMarkers()) {
+		if (!view.getMetabolicNetwork().hasMarkers()) {
 			putValue(SELECTED_KEY, false);
 			view.hideClass(Marker.class, true);
 		}
