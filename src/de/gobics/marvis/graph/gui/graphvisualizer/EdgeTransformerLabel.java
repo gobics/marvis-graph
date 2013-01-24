@@ -19,6 +19,10 @@ public class EdgeTransformerLabel<E> implements Transformer<E, String> {
 		show_label = selected;
 	}
 
+	public boolean isShowLabel() {
+		return show_label;
+	}
+
 	@Override
 	public String transform(E edge) {
 		if( ! show_label )

@@ -274,6 +274,18 @@ class ToolbarViewDefault extends ToolbarView {
 		button.setHideActionText(true);
 		add(button);
 
+		add(new JSeparator());
+		
+		button = new JToggleButton(new ViewerActionDisplayVertexLabels(viewer));
+		button.setHideActionText(true);
+		add(button);
+		
+		button = new JToggleButton(new ViewerActionDisplayEdgeLabels(viewer));
+		button.setHideActionText(true);
+		add(button);
+		
+		add(new JSeparator());
+		
 		JButton button2 = new JButton(new ViewerActionDrawDefineCofactor(viewer, view));
 		add(button2);
 	}

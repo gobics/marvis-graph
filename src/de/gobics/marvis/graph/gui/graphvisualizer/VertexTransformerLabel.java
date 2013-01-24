@@ -19,6 +19,11 @@ public class VertexTransformerLabel implements Transformer<GraphObject, String> 
 		show_label = selected;
 	}
 
+	public boolean isShowLabel(){
+		return show_label;
+	}
+	
+	
 	@Override
 	public String transform(GraphObject o) {
 		if (!show_label) {
