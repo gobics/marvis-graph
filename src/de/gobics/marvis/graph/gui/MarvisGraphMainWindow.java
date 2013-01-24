@@ -71,6 +71,7 @@ public class MarvisGraphMainWindow extends JFrame {
 		menu.add(new JMenuItem(new ActionCreateNetwork(this)));
 		menu.add(new JSeparator());
 		menu.add(new JMenuItem(new ActionCalculateNetworks(this, treemodel_networks)));
+		menu.add(new JMenuItem(new ActionPermutationTest(this, treemodel_networks)));
 		menu.add(new JSeparator());
 		menu.add(new JMenuItem(new ActionExit(this)));
 
@@ -980,6 +981,7 @@ public class MarvisGraphMainWindow extends JFrame {
 				}
 				try {
 					Set<PermutationResultFwer> results = process.get();
+					logger.log(Level.FINER, "Permutation test returned {0} results", results.size());
 					displayPermutationResults(results);
 				}
 				catch (Exception ex) {
@@ -998,17 +1000,17 @@ public class MarvisGraphMainWindow extends JFrame {
 				display_error("Can not calculate permutations", ex);
 			}
 		});
+		process.execute();
 	}
 
 	public void displayPermutationResults(Set<PermutationResultFwer> results) {
 		JInternalFrame iframe = new JInternalFrame("Permutation Results");
-		iframe.getContentPane().setLayout(new BorderLayout());
-
 		JTable table = new JTable(new TableModelResults(results));
-		iframe.getContentPane().add(table, BorderLayout.CENTER);
-
 		table.setAutoCreateRowSorter(true);
+		iframe.add(new JScrollPane(table));
 
 		desktop.add(iframe);
+		desktop.moveToFront(iframe);
+		iframe.setVisible(true);
 	}
 }
