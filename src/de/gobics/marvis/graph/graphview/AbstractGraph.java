@@ -37,7 +37,8 @@ public abstract class AbstractGraph implements GraphView<GraphObject, Relation> 
 	 *
 	 * @return
 	 */
-	public final MetabolicNetwork getParent() {
+	@Override
+	public final MetabolicNetwork getMetabolicNetwork() {
 		return parent;
 	}
 
@@ -51,7 +52,7 @@ public abstract class AbstractGraph implements GraphView<GraphObject, Relation> 
 	 * @return
 	 */
 	public final MetabolicNetwork getRootNetwork() {
-		MetabolicNetwork n = getParent();
+		MetabolicNetwork n = getMetabolicNetwork();
 		while (n.isSubnetwork()) {
 			n = n.getParent();
 		}
@@ -99,12 +100,12 @@ public abstract class AbstractGraph implements GraphView<GraphObject, Relation> 
 
 	@Override
 	public final boolean containsVertex(GraphObject v) {
-		return getParent().containsObject(v);
+		return getMetabolicNetwork().containsObject(v);
 	}
 
 	@Override
 	public final boolean containsEdge(Relation e) {
-		return getParent().containsRelation(e);
+		return getMetabolicNetwork().containsRelation(e);
 	}
 
 	@Override

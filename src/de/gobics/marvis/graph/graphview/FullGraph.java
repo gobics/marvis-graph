@@ -19,17 +19,17 @@ public class FullGraph extends AbstractGraph {
 
 	@Override
 	public Collection<Relation> getEdges() {
-		return getParent().getRelations();
+		return getMetabolicNetwork().getRelations();
 	}
 
 	@Override
 	public Collection<GraphObject> getVertices() {
-		return getParent().getAllObjects();
+		return getMetabolicNetwork().getAllObjects();
 	}
 
 	
 	@Override
 	public Collection<Relation> getIncidentEdges(GraphObject v) {
-		return getParent().getRelations(v);
+		return getMetabolicNetwork().getRelations(v);
 	}
 }

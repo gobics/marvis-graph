@@ -101,7 +101,7 @@ public class ReactionGraph extends AbstractGraph {
 
 	@Override
 	public Collection<GraphObject> getVertices() {
-		return new TreeSet<GraphObject>(getParent().getReactions());
+		return new TreeSet<GraphObject>(getMetabolicNetwork().getReactions());
 	}
 
 	@Override
@@ -112,9 +112,9 @@ public class ReactionGraph extends AbstractGraph {
 		TreeSet<Relation> neighbors = relation_cache.get((Reaction) v);
 		if (neighbors == null) {
 			neighbors = new TreeSet<>();
-			for (Compound compound : getParent().getCompounds((Reaction) v)) {
+			for (Compound compound : getMetabolicNetwork().getCompounds((Reaction) v)) {
 				if (accept(compound)) {
-					for (Reaction neighbor : getParent().getReactions(compound)) {
+					for (Reaction neighbor : getMetabolicNetwork().getReactions(compound)) {
 						neighbors.add(new ReactionRelation((Reaction) v, neighbor));
 					}
 				}

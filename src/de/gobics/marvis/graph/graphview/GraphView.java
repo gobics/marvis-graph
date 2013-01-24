@@ -1,6 +1,7 @@
 package de.gobics.marvis.graph.graphview;
 
 import de.gobics.marvis.graph.GraphObject;
+import de.gobics.marvis.graph.MetabolicNetwork;
 import edu.uci.ics.jung.graph.Graph;
 
 /**
@@ -10,6 +11,8 @@ import edu.uci.ics.jung.graph.Graph;
  * @author manuel
  */
 public interface GraphView<V extends GraphObject, E> extends Graph<V, E> {
+	
+	public MetabolicNetwork getMetabolicNetwork();
 
     public boolean isExplainable(GraphObject o);
 	

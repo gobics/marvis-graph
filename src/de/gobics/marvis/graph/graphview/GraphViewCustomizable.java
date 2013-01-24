@@ -50,8 +50,8 @@ public class GraphViewCustomizable extends AbstractGraph {
 	 * decrease the density of the visualization.
 	 */
 	private int cofactor_limit = -1;
-	private final TreeSet<GraphObject> cache_vertices = new TreeSet<>();
-	private final TreeMap<GraphObject, Collection<Relation>> cache_relations = new TreeMap<>();
+	protected final TreeSet<GraphObject> cache_vertices = new TreeSet<>();
+	protected final TreeMap<GraphObject, Collection<Relation>> cache_relations = new TreeMap<>();
 
 	/**
 	 * Create a new customizable graphical view based on the given network.
@@ -186,7 +186,7 @@ public class GraphViewCustomizable extends AbstractGraph {
 	 * @param obj The object to check.
 	 * @return true if the vertex should be display.
 	 */
-	private boolean acceptVertex(GraphObject obj) {
+	protected boolean acceptVertex(GraphObject obj) {
 		// Check if the complete class is hidden
 		try {
 			if (classes_to_hide.contains(obj.getClass())) {
@@ -212,7 +212,7 @@ public class GraphViewCustomizable extends AbstractGraph {
 
 		// Check if it needs to be excluded based on the 
 		if (drawExplainableNodesOnly()) {
-			return getParent().isExplainable(obj);
+			return getMetabolicNetwork().isExplainable(obj);
 		}
 
 		return true;
@@ -228,7 +228,7 @@ public class GraphViewCustomizable extends AbstractGraph {
 	@Override
 	public Collection<Relation> getEdges() {
 		Set<Relation> rels = new TreeSet<>();
-		for (GraphObject o : getParent().getAllObjects()) {
+		for (GraphObject o : getMetabolicNetwork().getAllObjects()) {
 			if (acceptVertex(o)) {
 				rels.addAll(getIncidentEdges(o));
 			}
@@ -240,7 +240,7 @@ public class GraphViewCustomizable extends AbstractGraph {
 	public Collection<GraphObject> getVertices() {
 		if (cache_vertices.isEmpty()) {
 			if (drawSingleNodes()) {
-				for (GraphObject o : getParent().getAllObjects()) {
+				for (GraphObject o : getMetabolicNetwork().getAllObjects()) {
 					if (acceptVertex(o)) {
 						cache_vertices.add(o);
 					}
@@ -263,7 +263,7 @@ public class GraphViewCustomizable extends AbstractGraph {
 			return cache_relations.get(v);
 		}
 		Set<Relation> rels = new TreeSet<>();
-		for (Relation r : getParent().getRelations(v)) {
+		for (Relation r : getMetabolicNetwork().getRelations(v)) {
 			if (acceptVertex(r.getOther(v))) {
 				rels.add(r);
 			}
