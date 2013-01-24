@@ -25,7 +25,7 @@ public class ViewerActionDrawDefineCofactor extends AbstractViewerAction {
 	private final GraphViewCustomizable view;
 
 	public ViewerActionDrawDefineCofactor(final VisualizationViewerGraph viewer, GraphViewCustomizable view) {
-		super("Define cofactor limit", "pathway.png");
+		super("Define cofactor limit", "cofactor.png");
 		this.viewer = viewer;
 		this.view = view;
 		putValue(LONG_DESCRIPTION, "Change the number of reactions to set a compound a cofactor");
@@ -35,7 +35,7 @@ public class ViewerActionDrawDefineCofactor extends AbstractViewerAction {
 	public void actionPerformed(ActionEvent e) {
 		int current_value = view.getCofactorLimit();
 		if (current_value < 0) {
-			current_value = 25;
+			current_value = 10;
 		}
 
 		SpinnerNumberModel model = new SpinnerNumberModel(current_value, 0, Integer.MAX_VALUE, 1);

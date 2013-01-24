@@ -25,7 +25,7 @@ public class DialogCalculateNetworks extends DialogAbstract {
 
     private final ComboboxAlgorithm cb_algorithm = new ComboboxAlgorithm();
     private final SpinnerNumberModel sm_gaps = new SpinnerNumberModel(0, 0, Integer.MAX_VALUE, 1);
-    private final SpinnerNumberModel sm_cofactor = new SpinnerNumberModel(25, 1, Integer.MAX_VALUE, 1);
+    private final SpinnerNumberModel sm_cofactor = new SpinnerNumberModel(10, 1, Integer.MAX_VALUE, 1);
     private final SpinnerNumberModel sm_rwr = new SpinnerNumberModel(0.8, 0, 1, 0.1);
     private final JPanel options_panel = new JPanel(new BorderLayout());
     private final JPanel options_rwr = new OptionsRWR();
