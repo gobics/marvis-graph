@@ -20,7 +20,7 @@ public class ViewerActionDisplayEdgeLabels extends AbstractViewerAction {
 		super("Draw edge label", "show_edge_label.png");
 		this.viewer = viewer;
 		putValue(LONG_DESCRIPTION, "Display labels of the edges");
-		putValue(SELECTED_KEY, true);
+		putValue(SELECTED_KEY, false);
 	}
 
 	@Override

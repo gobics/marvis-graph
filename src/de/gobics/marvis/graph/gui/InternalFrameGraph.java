@@ -4,6 +4,7 @@ import de.gobics.marvis.graph.graphview.GraphViewCustomizable;
 import de.gobics.marvis.graph.graphview.GraphView;
 import de.gobics.marvis.graph.graphview.ReactionGraph;
 import de.gobics.marvis.graph.*;
+import de.gobics.marvis.graph.graphview.GraphViewNeigborhood;
 import de.gobics.marvis.graph.gui.actions.*;
 import de.gobics.marvis.graph.gui.graphvisualizer.VisualizationViewerGraph;
 import de.gobics.marvis.utils.swing.*;
@@ -13,6 +14,8 @@ import java.util.Collection;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.*;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import org.jfree.chart.ChartPanel;
 
 public final class InternalFrameGraph extends JInternalFrame {
@@ -171,7 +174,7 @@ public final class InternalFrameGraph extends JInternalFrame {
 		 * @Override public void heatmapDoubleClicked(HeatmapEvent event) {
 		 * Object o = event.getLabelX(); if (o instanceof GraphObject) {
 		 * main_window.createGraphobjectVisualization((GraphObject) o); } }
-		});
+		 });
 		 */
 		addTab("Transcript heatmap", heatmap_transcripts);
 	}
@@ -190,7 +193,6 @@ public final class InternalFrameGraph extends JInternalFrame {
 		graphZoom.setPreferredSize(new Dimension(400, 400));
 
 		viewer.addGraphActionListener(new GraphMouseListener() {
-
 			@Override
 			public void doubleClick(GraphObject o) {
 				main_window.createGraphobjectVisualization(o);
@@ -203,6 +205,10 @@ public final class InternalFrameGraph extends JInternalFrame {
 			addTab("Reaction network", panel);
 			panel.add(new ToolbarView(this, viewer), BorderLayout.PAGE_START);
 		}
+		else if (graph_view instanceof GraphViewNeigborhood) {
+			addTab("Neighborhood network", panel);
+			panel.add(new ToolbarViewNeighborhood(this, viewer, (GraphViewNeigborhood) graph_view), BorderLayout.PAGE_START);
+		}
 		else if (graph_view instanceof GraphViewCustomizable) {
 			addTab("Metabolic network", panel);
 			panel.add(new ToolbarViewDefault(this, viewer, (GraphViewCustomizable) graph_view), BorderLayout.PAGE_START);
@@ -211,7 +217,7 @@ public final class InternalFrameGraph extends JInternalFrame {
 			addTab("Metabolic network", panel);
 		}
 
-		new PopupMenuNetworkViewer(main_window, viewer, graph_view);
+		new PopupMenuNetworkViewer(main_window, this, viewer, graph_view);
 		viewer.updateGraphLayout();
 	}
 
@@ -275,18 +281,40 @@ class ToolbarViewDefault extends ToolbarView {
 		add(button);
 
 		add(new JSeparator());
-		
+
 		button = new JToggleButton(new ViewerActionDisplayVertexLabels(viewer));
 		button.setHideActionText(true);
 		add(button);
-		
+
 		button = new JToggleButton(new ViewerActionDisplayEdgeLabels(viewer));
 		button.setHideActionText(true);
 		add(button);
-		
+
 		add(new JSeparator());
-		
+
 		JButton button2 = new JButton(new ViewerActionDrawDefineCofactor(viewer, view));
 		add(button2);
+	}
+}
+
+class ToolbarViewNeighborhood extends ToolbarViewDefault {
+
+	final SpinnerNumberModel distance_model = new SpinnerNumberModel(1, 1, Integer.MAX_VALUE, 1);
+
+	public ToolbarViewNeighborhood(final InternalFrameGraph parent, final VisualizationViewerGraph viewer, final GraphViewNeigborhood view) {
+		super(parent, viewer, view);
+
+		add(new JSeparator());
+		add(new JLabel("Maximum distance:"));
+		JSpinner spinner = new JSpinner(distance_model);
+		add(spinner);
+
+		distance_model.addChangeListener(new ChangeListener() {
+			@Override
+			public void stateChanged(ChangeEvent ce) {
+				System.out.println("Setting distance to: "+distance_model.getNumber().intValue());
+				view.setMaximumDistance(distance_model.getNumber().intValue());
+			}
+		});
 	}
 }

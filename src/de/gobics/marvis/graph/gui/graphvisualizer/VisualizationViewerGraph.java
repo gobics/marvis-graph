@@ -41,6 +41,7 @@ public class VisualizationViewerGraph<E> extends VisualizationViewer<GraphObject
 
 	public VisualizationViewerGraph(MarvisGraphMainWindow main_window, GraphView<? extends GraphObject, E> graph) {
 		super(new StaticLayout(graph));
+		setDoubleBuffered(true);
 		this.main_window = main_window;
 		logger.log(Level.FINER, "Initializing graph viewer for graph: {0}", graph);
 		setBackground(Color.WHITE);
@@ -57,7 +58,7 @@ public class VisualizationViewerGraph<E> extends VisualizationViewer<GraphObject
 		getRenderContext().setEdgeStrokeTransformer(
 				new EdgeTransformerStroke(graph));
 		getRenderContext().setEdgeLabelTransformer(
-				new EdgeTransformerLabel());
+				new EdgeTransformerLabel(false));
 		getRenderContext().setEdgeShapeTransformer(
 				new EdgeShape.Line<GraphObject, E>());
 		getRenderContext().setEdgeStrokeTransformer(
