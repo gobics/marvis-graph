@@ -850,7 +850,9 @@ public class MarvisGraphMainWindow extends JFrame {
 		Pathway pathway = pathways.iterator().next();
 		if (pathways.size() > 1) {
 			ComboBoxGraphobject<Pathway> cb = new ComboBoxGraphobject<Pathway>(pathways);
-			JOptionPane.showMessageDialog(this, cb);
+			if( JOptionPane.showConfirmDialog(this, cb, "Select pathway", JOptionPane.OK_CANCEL_OPTION) != JOptionPane.OK_OPTION ){
+				return;
+			}
 			pathway = cb.getSelectGraphObject();
 		}
 
@@ -917,7 +919,7 @@ public class MarvisGraphMainWindow extends JFrame {
 			area.setWrapStyleWord(false);
 			JScrollPane spane = new JScrollPane(area);
 			spane.setPreferredSize(new Dimension(300, 100));
-			JOptionPane.showConfirmDialog(this, new JScrollPane(area), "URL", JOptionPane.OK_OPTION);
+			JOptionPane.showConfirmDialog(this, spane, "URL", JOptionPane.OK_OPTION);
 		}
 		return false;
 	}
