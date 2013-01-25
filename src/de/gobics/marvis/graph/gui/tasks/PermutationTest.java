@@ -1,7 +1,3 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
 package de.gobics.marvis.graph.gui.tasks;
 
 import de.gobics.marvis.graph.Compound;
@@ -25,11 +21,11 @@ import java.util.Set;
 import java.util.TreeSet;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
+ * Background task to perform a permutation test on previously calculated
  *
  * @author manuel
  */
@@ -86,10 +82,16 @@ public class PermutationTest extends AbstractTask<Set<PermutationTestResult>, Vo
 		sendDescription("Permuting network structure and calculating sub networks");
 		ExecutorService pool = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
 		for (int i = 0; i < NUM_PERMUTES; i++) {
-			pool.execute(new PermutationThread());
+			pool.execute(new PermutationThread(i));
 		}
 		pool.shutdown();
-		pool.awaitTermination(NUM_PERMUTES, TimeUnit.DAYS); // wait for a more-or-less infinite time
+		while (!pool.isTerminated()) {
+			if (isCancelled()) {
+				pool.shutdownNow();
+				return null;
+			}
+			Thread.sleep(1000);
+		}
 
 		sendDescription("Calculating Family-Wise-Error-Rate");
 		System.out.println(permutation_scores);
@@ -113,8 +115,11 @@ public class PermutationTest extends AbstractTask<Set<PermutationTestResult>, Vo
 		for (MetabolicNetwork subnet : subnetworks) {
 			Comparable score = current_scorer.calculateScore(subnet);
 			int fwer_errors = countFamilyWiseErrors(permutation_scores, score);
+			double fwer = ((double) fwer_errors) / NUM_PERMUTES;
 			int fdr_errors = countFalseDiscoveryErrors(permutation_scores, score);
-			PermutationTestResult r = new PermutationTestResult(subnet, score, fdr_errors, fwer_errors, NUM_PERMUTES);
+			double fdr = ((double) fdr_errors) / NUM_PERMUTES;
+
+			PermutationTestResult r = new PermutationTestResult(subnet, score, fdr, fwer);
 			scores.add(r);
 		}
 		return scores;
@@ -124,7 +129,7 @@ public class PermutationTest extends AbstractTask<Set<PermutationTestResult>, Vo
 		permutation_scores.add(scores);
 	}
 
-	private int countFamilyWiseErrors(LinkedList<Collection<Comparable>> counts, Comparable score) {
+	public int countFamilyWiseErrors(LinkedList<Collection<Comparable>> counts, Comparable score) {
 		int counter = 0;
 		for (Collection<Comparable> cs : counts) {
 			counter += hasHigherEqual(cs, score) ? 1 : 0;
@@ -133,7 +138,15 @@ public class PermutationTest extends AbstractTask<Set<PermutationTestResult>, Vo
 		return counter;
 	}
 
-	private boolean hasHigherEqual(Collection<Comparable> scores, Comparable score) {
+	/**
+	 * Returns true if the collection contains an object that is higher or equal
+	 * the given score.
+	 *
+	 * @param scores the scores to search
+	 * @param score the comparative score
+	 * @return true if such a score exists in {@code scores}
+	 */
+	public boolean hasHigherEqual(Collection<Comparable> scores, Comparable score) {
 		for (Comparable i : scores) {
 			if (i.compareTo(score) >= 0) {
 				return true;
@@ -142,7 +155,7 @@ public class PermutationTest extends AbstractTask<Set<PermutationTestResult>, Vo
 		return false;
 	}
 
-	private int countFalseDiscoveryErrors(LinkedList<Collection<Comparable>> counts, Comparable score) {
+	public int countFalseDiscoveryErrors(LinkedList<Collection<Comparable>> counts, Comparable score) {
 		int counter = 0;
 		for (Collection<Comparable> cs : counts) {
 			for (Comparable c : cs) {
@@ -161,6 +174,12 @@ public class PermutationTest extends AbstractTask<Set<PermutationTestResult>, Vo
 	 */
 	private class PermutationThread implements Runnable {
 
+		private final int permutation_number;
+
+		public PermutationThread(int permutation) {
+			this.permutation_number = permutation;
+		}
+
 		@Override
 		public void run() {
 			try {
@@ -173,14 +192,15 @@ public class PermutationTest extends AbstractTask<Set<PermutationTestResult>, Vo
 		}
 
 		private void toTask() throws Exception {
+			logger.log(Level.FINE, "Thread for permutation {0} started", permutation_number);
 			long curtime = System.currentTimeMillis();
 			MetabolicNetwork permuted_network = root_network.clone();
 			permuteNetwork(permuted_network);
-			MetabolicNetwork[] networks = calculator.doInBackground();
+			MetabolicNetwork[] networks = calculator.like(permuted_network).doInBackground();
 			Set<Comparable> score_dist = calculateScores(root_network, networks);
 			addPermutationScore(score_dist);
 			incrementProgress();
-			logger.log(Level.FINER, "Calculation of one permutation took {0} seconds", (System.currentTimeMillis() - curtime) / 1000);
+			logger.log(Level.FINER, "Calculation for permutation " + permutation_number + " took {0} seconds", (System.currentTimeMillis() - curtime) / 1000);
 		}
 
 		/**

@@ -8,9 +8,7 @@ import de.gobics.marvis.graph.gui.evaluation.TableModelResults;
 import de.gobics.marvis.graph.gui.tasks.*;
 import de.gobics.marvis.graph.sort.AbstractGraphScore;
 import de.gobics.marvis.utils.LoggingUtils;
-import de.gobics.marvis.utils.swing.AbstractTask;
 import de.gobics.marvis.utils.swing.AbstractTaskListener;
-import de.gobics.marvis.utils.swing.SpringUtilities;
 import de.gobics.marvis.utils.swing.Statusbar;
 import de.gobics.marvis.utils.swing.Statusdialog;
 import de.gobics.marvis.utils.swing.filechooser.ChooserAbstract;
@@ -921,12 +919,13 @@ public class MarvisGraphMainWindow extends JFrame {
 			return true;
 		}
 		catch (Exception ex) {
+			logger.log(Level.WARNING, "Can not open URL: ", ex);
 			JTextArea area = new JTextArea(url.toASCIIString());
 			area.setLineWrap(true);
 			area.setWrapStyleWord(false);
 			JScrollPane spane = new JScrollPane(area);
 			spane.setPreferredSize(new Dimension(300, 100));
-			JOptionPane.showConfirmDialog(this, spane, "URL", JOptionPane.OK_OPTION);
+			JOptionPane.showMessageDialog(this, spane, "URL", JOptionPane.INFORMATION_MESSAGE);
 		}
 		return false;
 	}

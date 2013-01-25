@@ -16,15 +16,13 @@ public class PermutationTestResult {
 	public final MetabolicNetwork network;
 	public final double fdr;
 	public final double fwer;
-	public final int num_permutations;
 	public final Comparable score;
 
-	public PermutationTestResult(MetabolicNetwork n, Comparable score, int fdr_errors, int fwer_errors, int NUM_PERMUTES) {
+	public PermutationTestResult(MetabolicNetwork n, Comparable score, double fdr, double fwer) {
 		this.network = n;
 		this.score = score;
-		this.num_permutations = NUM_PERMUTES;
-		this.fdr = ((double) fdr_errors) / ((double) NUM_PERMUTES);
-		this.fwer = ((double) fwer_errors) / ((double) NUM_PERMUTES);
+		this.fdr = fdr;
+		this.fwer = fwer;
 	}
 
 	@Override
@@ -33,7 +31,6 @@ public class PermutationTestResult {
 		hash = 97 * hash + Objects.hashCode(this.network);
 		hash = 97 * hash + (int) (Double.doubleToLongBits(this.fdr) ^ (Double.doubleToLongBits(this.fdr) >>> 32));
 		hash = 97 * hash + (int) (Double.doubleToLongBits(this.fwer) ^ (Double.doubleToLongBits(this.fwer) >>> 32));
-		hash = 97 * hash + this.num_permutations;
 		return hash;
 	}
 
@@ -55,14 +52,9 @@ public class PermutationTestResult {
 		if (Double.doubleToLongBits(this.fwer) != Double.doubleToLongBits(other.fwer)) {
 			return false;
 		}
-		if (this.num_permutations != other.num_permutations) {
-			return false;
-		}
 		if (!Objects.equals(this.score, other.score)) {
 			return false;
 		}
 		return true;
 	}
-
-
 }

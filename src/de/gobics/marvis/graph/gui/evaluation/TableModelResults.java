@@ -12,12 +12,11 @@ import javax.swing.table.TableModel;
 public class TableModelResults implements TableModel {
 
 	private static final String[] COL_NAMES = new String[]{
-		"Network name", "Score", "Number of permutations", "Family-Wise-Error-Rate", "False-Discovery-Rate"
+		"Network name", "Score", "Family-Wise-Error-Rate", "False-Discovery-Rate"
 	};
 	private static final int COL_NAME = 0;
 	private static final int COL_SCORE = 1;
-	private static final int COL_PERMUTES = 2;
-	private static final int COL_FWER = 3;
+	private static final int COL_FWER = 2;
 	private static final int COL_FDR = 3;
 	private final PermutationTestResult[] results;
 
@@ -36,7 +35,7 @@ public class TableModelResults implements TableModel {
 
 	@Override
 	public int getColumnCount() {
-		return 5;
+		return 4;
 	}
 
 	@Override
@@ -51,9 +50,6 @@ public class TableModelResults implements TableModel {
 		}
 		if( i == COL_SCORE){
 			return Comparable.class;
-		}
-		if (i == COL_PERMUTES) {
-			return Integer.class;
 		}
 		return Double.class;
 	}
@@ -70,9 +66,6 @@ public class TableModelResults implements TableModel {
 		}
 		if (col == COL_SCORE) {
 			return results[i].score;
-		}
-		if (col == COL_PERMUTES) {
-			return results[i].num_permutations;
 		}
 		if (col == COL_FWER) {
 			return results[i].fwer;
