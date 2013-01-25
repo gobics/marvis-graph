@@ -967,6 +967,7 @@ public class MarvisGraphMainWindow extends JFrame {
 	 */
 	private void performPermutationTest(MetabolicNetwork main, MetabolicNetwork[] subs, int number_of_permutations) {
 		final PermutationTest process = new PermutationTest(main, subs, calculate_network_task, combobox_graph_sort.getSorterFor(main));
+		process.setNumberOfPermutations(number_of_permutations);
 
 		monitorTask(process);
 		process.addPropertyChangeListener(new AbstractTaskListener() {
