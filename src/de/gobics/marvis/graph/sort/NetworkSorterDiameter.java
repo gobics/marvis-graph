@@ -59,4 +59,9 @@ public class NetworkSorterDiameter extends AbstractGraphScore {
 	public String getDescription() {
 		return "Features networks with long reaction chains";
 	}
+
+	@Override
+	public AbstractGraphScore like(MetabolicNetwork new_parent) {
+		return new NetworkSorterDiameter(new_parent);
+	}
 }

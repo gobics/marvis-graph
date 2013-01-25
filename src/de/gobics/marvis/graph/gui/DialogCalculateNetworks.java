@@ -1,9 +1,11 @@
 package de.gobics.marvis.graph.gui;
 
 import de.gobics.marvis.graph.MetabolicNetwork;
+import de.gobics.marvis.graph.gui.tasks.AbstractNetworkCalculation;
 import de.gobics.marvis.graph.gui.tasks.CalculateNetworksPathway;
 import de.gobics.marvis.graph.gui.tasks.CalculateNetworksRWR;
 import de.gobics.marvis.graph.gui.tasks.CalculateNetworksReaction;
+import de.gobics.marvis.utils.swing.AbstractTask;
 import de.gobics.marvis.utils.swing.SpringUtilities;
 import java.awt.BorderLayout;
 import java.awt.Frame;
@@ -63,7 +65,7 @@ public class DialogCalculateNetworks extends DialogAbstract {
 	});
     }
 
-    public SwingWorker<MetabolicNetwork[], Void> getTask(MetabolicNetwork n) {
+    public AbstractNetworkCalculation getTask(MetabolicNetwork n) {
 	if (cb_algorithm.getSelectedIndex() == 0) {
 	    CalculateNetworksRWR process = new CalculateNetworksRWR(n);
 	    process.setRestartProbability(sm_rwr.getNumber().doubleValue());

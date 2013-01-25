@@ -8,6 +8,7 @@ import de.gobics.marvis.graph.gui.evaluation.TableModelResults;
 import de.gobics.marvis.graph.gui.tasks.*;
 import de.gobics.marvis.graph.sort.AbstractGraphScore;
 import de.gobics.marvis.utils.LoggingUtils;
+import de.gobics.marvis.utils.swing.AbstractTask;
 import de.gobics.marvis.utils.swing.AbstractTaskListener;
 import de.gobics.marvis.utils.swing.SpringUtilities;
 import de.gobics.marvis.utils.swing.Statusbar;
@@ -29,7 +30,6 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Set;
 import java.util.TreeSet;
-import java.util.concurrent.ExecutionException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.*;
@@ -46,6 +46,7 @@ public class MarvisGraphMainWindow extends JFrame {
 	private final PanelGraphInformation panel_graph_information = new PanelGraphInformation(jtree_networks);
 	private final JDesktopPane desktop = new JDesktopPane();
 	private final Statusdialog status_dialog = new Statusdialog(this);
+	private AbstractNetworkCalculation calculate_network_task = null;
 
 	public MarvisGraphMainWindow() {
 		super("MarVis-Graph v0.2");
@@ -309,7 +310,8 @@ public class MarvisGraphMainWindow extends JFrame {
 		}
 
 		// Create the process
-		final SwingWorker<MetabolicNetwork[], Void> process = dialog.getTask(n);
+		final AbstractNetworkCalculation process = dialog.getTask(n);
+		calculate_network_task = process;
 
 		// Asynchronous fetching of the result
 		process.addPropertyChangeListener(new PropertyChangeListener() {
@@ -940,37 +942,31 @@ public class MarvisGraphMainWindow extends JFrame {
 			display_error("Please calculate subnetworks first");
 			return;
 		}
-
-		// Fetch options for permutation testing
-		SpinnerNumberModel sm_cofactor = new SpinnerNumberModel(10, 1, Integer.MAX_VALUE, 1);
-		SpinnerNumberModel sm_rwr = new SpinnerNumberModel(0.8, 0, 1, 0.1);
-		JPanel message = new JPanel(new SpringLayout());
-		message.add(new JLabel("Restart-Probability:"));
-		message.add(new JSpinner(sm_rwr));
-		message.add(new JLabel("Cofactor-Threshold:"));
-		message.add(new JSpinner(sm_cofactor));
-		SpringUtilities.makeCompactGrid(message);
-
-		if (JOptionPane.showConfirmDialog(this, message, "Select options", JOptionPane.OK_CANCEL_OPTION, JOptionPane.QUESTION_MESSAGE) != JOptionPane.OK_OPTION) {
+		
+		if( calculate_network_task == null ){
+			display_error("Have no calculator stored. ");
 			return;
 		}
 
-		performPermutationTest(main, subs, sm_rwr.getNumber().doubleValue(), sm_cofactor.getNumber().intValue());
-	}
-
-	private void performPermutationTest(MetabolicNetwork main, MetabolicNetwork[] subs, double restart_probability, int cofactor_threshold) {
 		SpinnerNumberModel sm_permutations = new SpinnerNumberModel(1000, 1, Integer.MAX_VALUE, 1000);
 		if (JOptionPane.showConfirmDialog(this, new JSpinner(sm_permutations), "Set permutations", JOptionPane.OK_CANCEL_OPTION, JOptionPane.QUESTION_MESSAGE) != JOptionPane.OK_OPTION) {
 			return;
 		}
-		performPermutationTest(main, subs, restart_probability, cofactor_threshold, sm_permutations.getNumber().intValue());
+		performPermutationTest(main, subs, sm_permutations.getNumber().intValue());
 	}
 
-	private void performPermutationTest(MetabolicNetwork main, MetabolicNetwork[] subs, double restart_probability, int cofactor_threshold, int permutations) {
-		final PermutationTest process = new PermutationTest(main, subs);
-		process.setRestartProbability(restart_probability);
-		process.setCofactorThreshold(cofactor_threshold);
-		process.setNumberOfPermutations(permutations);
+	/**
+	 * Perform an permutation test on the given networks with the given set of
+	 * parameter.
+	 *
+	 * @param main the main/root network
+	 * @param subs the identified sub-networks
+	 * @param restart_probability restart-probability for the
+	 * @param cofactor_threshold
+	 * @param permutations
+	 */
+	private void performPermutationTest(MetabolicNetwork main, MetabolicNetwork[] subs, int number_of_permutations) {
+		final PermutationTest process = new PermutationTest(main, subs, calculate_network_task, combobox_graph_sort.getSorterFor(main));
 
 		monitorTask(process);
 		process.addPropertyChangeListener(new AbstractTaskListener() {
@@ -980,7 +976,7 @@ public class MarvisGraphMainWindow extends JFrame {
 					return;
 				}
 				try {
-					Set<PermutationResultFwer> results = process.get();
+					Set<PermutationTestResult> results = process.get();
 					logger.log(Level.FINER, "Permutation test returned {0} results", results.size());
 					displayPermutationResults(results);
 				}
@@ -1003,14 +999,18 @@ public class MarvisGraphMainWindow extends JFrame {
 		process.execute();
 	}
 
-	public void displayPermutationResults(Set<PermutationResultFwer> results) {
-		JInternalFrame iframe = new JInternalFrame("Permutation Results");
+	/**
+	 * Displays the results of a permutation test in a new
+	 * {@link JInternalFrame}.
+	 *
+	 * @param results
+	 */
+	public void displayPermutationResults(Set<PermutationTestResult> results) {
+		logger.log(Level.FINE, "Will now display {0} permutation results", results.size());
 		JTable table = new JTable(new TableModelResults(results));
 		table.setAutoCreateRowSorter(true);
-		iframe.add(new JScrollPane(table));
-
-		desktop.add(iframe);
-		desktop.moveToFront(iframe);
-		iframe.setVisible(true);
+		JScrollPane spane = new JScrollPane(table);
+		spane.setPreferredSize(new Dimension(500, 400));
+		JOptionPane.showMessageDialog(this, spane, "Results from permutation test", JOptionPane.INFORMATION_MESSAGE);
 	}
 }

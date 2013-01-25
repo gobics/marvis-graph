@@ -17,18 +17,22 @@ import javax.swing.SwingWorker;
  *
  * @author manuel
  */
-public class CalculateNetworksPathway extends AbstractTask<MetabolicNetwork[], Void> {
+public class CalculateNetworksPathway extends AbstractNetworkCalculation {
 
 	private static final Logger logger = Logger.getLogger(CalculateNetworksPathway.class.
 			getName());
 	private final MetabolicNetwork root_network;
 	private final LinkedList<MetabolicNetwork> found_networks = new LinkedList<MetabolicNetwork>();
-	private int max_gaps = 0;
-
+	
 	public CalculateNetworksPathway(MetabolicNetwork network) {
 		this.root_network = network;
 	}
 
+	@Override
+	public AbstractNetworkCalculation like(MetabolicNetwork network){
+		return new CalculateNetworksPathway(network);
+	}
+	
 	@Override
 	protected MetabolicNetwork[] performTask() throws Exception {
 		return calculateNetworks();
@@ -76,9 +80,5 @@ public class CalculateNetworksPathway extends AbstractTask<MetabolicNetwork[], V
 		}
 
 		return network;
-	}
-
-	public void setMaximumGaps(int intValue) {
-		this.max_gaps = Math.abs(intValue);
 	}
 }

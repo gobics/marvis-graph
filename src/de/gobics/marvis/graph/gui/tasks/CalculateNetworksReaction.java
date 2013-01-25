@@ -14,7 +14,7 @@ import javax.swing.SwingWorker;
  *
  * @author manuel
  */
-public class CalculateNetworksReaction extends AbstractTask<MetabolicNetwork[], Void> {
+public class CalculateNetworksReaction extends AbstractNetworkCalculation {
 
 	private static final Logger logger = Logger.getLogger(CalculateNetworksReaction.class.
 			getName());
@@ -25,6 +25,14 @@ public class CalculateNetworksReaction extends AbstractTask<MetabolicNetwork[], 
 
 	public CalculateNetworksReaction(MetabolicNetwork network) {
 		this.root_network = network;
+	}
+
+	@Override
+	public AbstractNetworkCalculation like(MetabolicNetwork new_root_network) {
+		CalculateNetworksReaction clone = new CalculateNetworksReaction(root_network);
+		clone.setMaximumGaps(max_gaps);
+		clone.setCofactorTreshold(cofactor_treshold);
+		return clone;
 	}
 
 	@Override
@@ -117,7 +125,7 @@ public class CalculateNetworksReaction extends AbstractTask<MetabolicNetwork[], 
 		}
 
 		logger.finer("Visited nodes: " + (subnetwork_nodes.size() + not_explainable.
-				size()));
+										  size()));
 		logger.fine("Found subnetwork containing " + subnetwork_nodes.size() + " reaction nodes: " + subnetwork_nodes);
 
 		return subnetwork_nodes;

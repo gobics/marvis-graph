@@ -16,7 +16,7 @@ import java.util.logging.Logger;
  *
  * @author manuel
  */
-public class CalculateNetworksRWR extends AbstractTask<MetabolicNetwork[], Void> {
+public class CalculateNetworksRWR extends AbstractNetworkCalculation {
 
 	private static final Logger logger = Logger.getLogger(CalculateNetworksRWR.class.
 			getName());
@@ -24,6 +24,10 @@ public class CalculateNetworksRWR extends AbstractTask<MetabolicNetwork[], Void>
 	 * The base network to calculate from.
 	 */
 	private final MetabolicNetwork root_network;
+	/**
+	 * A reaction based view on the metabolic network. This view depends on the
+	 * co-factor setting.
+	 */
 	private ReactionGraph reactions_view;
 	/**
 	 * Basic restart probability.
@@ -33,6 +37,14 @@ public class CalculateNetworksRWR extends AbstractTask<MetabolicNetwork[], Void>
 	public CalculateNetworksRWR(MetabolicNetwork network) {
 		this.root_network = network;
 		setCofactorThreshold(-1);
+	}
+
+	@Override
+	public CalculateNetworksRWR like(MetabolicNetwork network) {
+		CalculateNetworksRWR clone = new CalculateNetworksRWR(network);
+		clone.setCofactorThreshold(reactions_view.getCofactorThreshold());
+		clone.setRestartProbability(restart_probability);
+		return clone;
 	}
 
 	public void setRestartProbability(double probability) {
@@ -45,10 +57,10 @@ public class CalculateNetworksRWR extends AbstractTask<MetabolicNetwork[], Void>
 
 	@Override
 	protected MetabolicNetwork[] performTask() throws Exception {
-		return calculateNetworks();
+		return calculateNetworks(root_network);
 	}
 
-	public MetabolicNetwork[] calculateNetworks() throws Exception {
+	public MetabolicNetwork[] calculateNetworks(MetabolicNetwork root) throws Exception {
 		// Find explainable nodes
 		sendTitle("Calculate sub-networks with Random Walk");
 		sendDescription("Search start nodes");

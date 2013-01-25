@@ -87,4 +87,9 @@ public class NetworkSorterSEA extends AbstractGraphScore {
 	public String getDescription() {
 		return "Applies variant of set enrichment analysis using hypergeometric distribution";
 	}
+
+	@Override
+	public AbstractGraphScore like(MetabolicNetwork new_parent) {
+		return new NetworkSorterSEA(new_parent);
+	}
 }

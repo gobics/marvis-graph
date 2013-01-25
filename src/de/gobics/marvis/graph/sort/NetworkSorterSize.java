@@ -37,5 +37,10 @@ public class NetworkSorterSize extends AbstractGraphScore {
 		
 	}
 
+	@Override
+	public AbstractGraphScore like(MetabolicNetwork new_parent) {
+		return new NetworkSorterSize(new_parent);
+	}
+
 
 }

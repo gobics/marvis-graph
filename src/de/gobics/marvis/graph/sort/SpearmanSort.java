@@ -104,4 +104,9 @@ public class SpearmanSort extends AbstractGraphScore {
 		return "Calculate Spearman rank correlations between metabolic markers and transcripts";
 
 	}
+
+	@Override
+	public AbstractGraphScore like(MetabolicNetwork new_parent) {
+		return new SpearmanSort(new_parent);
+	}
 }

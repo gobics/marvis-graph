@@ -2,8 +2,9 @@ package de.gobics.marvis.graph;
 
 import de.gobics.marvis.graph.gui.tasks.CalculateNetworksRWR;
 import de.gobics.marvis.graph.gui.tasks.LoadNetwork;
-import de.gobics.marvis.graph.gui.tasks.PermutationResultFwer;
+import de.gobics.marvis.graph.gui.tasks.PermutationTestResult;
 import de.gobics.marvis.graph.gui.tasks.PermutationTest;
+import de.gobics.marvis.graph.sort.NetworkSorterSumOfWeights;
 import de.gobics.marvis.utils.LoggingUtils;
 import java.io.BufferedWriter;
 import java.io.FileWriter;
@@ -19,7 +20,7 @@ public class test {
 
 	private final static Logger logger = Logger.getLogger(test.class.getName());
 	private static double restart_probability = 0.8;
-	private static final int NUM_PERMUTES = 3000;
+	private static final int NUM_PERMUTES = 10;
 	private static final int COFACTOR_THRESHOLD = 10;
 
 	public static void main(String[] args) throws Exception {
@@ -33,17 +34,16 @@ public class test {
 		CalculateNetworksRWR process = new CalculateNetworksRWR(network);
 		process.setCofactorThreshold(COFACTOR_THRESHOLD);
 		process.setRestartProbability(restart_probability);
-		MetabolicNetwork[] subs = process.calculateNetworks();
+		MetabolicNetwork[] subs = process.calculateNetworks(network);
 
-		PermutationTest test = new PermutationTest(network, subs);
+		PermutationTest test = new PermutationTest(network, subs, process, new NetworkSorterSumOfWeights(network));
 		test.setNumberOfPermutations(NUM_PERMUTES);
-		test.setCofactorThreshold(COFACTOR_THRESHOLD);
-		Set<PermutationResultFwer> networks = test.calculateScores();
+		Set<PermutationTestResult> networks = test.calculateScores();
 
 		BufferedWriter out = new BufferedWriter(new FileWriter("scores.csv"));
-		out.write("Name\tnum_reactions\tscore\terrors\tfwer\n");
-		for (PermutationResultFwer r : networks) {
-			out.write(r.network.getName() + "\t" +r.network.getReactions().size()+"\t"+ r.score + "\t" + r.errors + "\t" + r.fwer + "\n");
+		out.write("Name\tnum_reactions\tscore\tfwer\nfdr\n");
+		for (PermutationTestResult r : networks) {
+			out.write(r.network.getName() + "\t" +r.network.getReactions().size()+"\t"+ r.score + "\t" + r.fwer + "\t" + r.fdr + "\n");
 		}
 		out.close();
 	}

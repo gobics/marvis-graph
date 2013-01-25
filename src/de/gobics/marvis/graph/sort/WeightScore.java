@@ -47,4 +47,9 @@ public class WeightScore extends AbstractGraphScore {
 	public String getDescription() {
 		return "Sort by the given weight (e.g. from MarVis-Filter)";
 	}
+
+	@Override
+	public AbstractGraphScore like(MetabolicNetwork new_parent) {
+		return new WeightScore(new_parent);
+	}
 }

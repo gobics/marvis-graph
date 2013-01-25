@@ -11,18 +11,15 @@ import de.gobics.marvis.graph.MetabolicNetwork;
 import de.gobics.marvis.graph.Relation;
 import de.gobics.marvis.graph.RelationshipType;
 import de.gobics.marvis.graph.Transcript;
-import de.gobics.marvis.graph.sort.NetworkSorterSumOfWeights;
+import de.gobics.marvis.graph.sort.AbstractGraphScore;
 import de.gobics.marvis.utils.swing.AbstractTask;
 import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
-import java.util.Map;
-import java.util.Objects;
 import java.util.Random;
 import java.util.Set;
 import java.util.TreeSet;
@@ -36,40 +33,55 @@ import java.util.logging.Logger;
  *
  * @author manuel
  */
-public class PermutationTest extends AbstractTask<Set<PermutationResultFwer>, Void> {
+public class PermutationTest extends AbstractTask<Set<PermutationTestResult>, Void> {
 
-	private static final Random rand = new Random(System.currentTimeMillis());
 	private static final Logger logger = Logger.getLogger(PermutationTest.class.getName());
+	/**
+	 * Random number generator for permutation selection.
+	 */
+	private static final Random rand = new Random(System.currentTimeMillis());
+	/**
+	 * The basic root network to use.
+	 */
 	private final MetabolicNetwork root_network;
+	/**
+	 * List of sub-networks to evaluate.
+	 */
 	private final MetabolicNetwork[] subnetworks;
-	private double restart_probability = 0.8;
+	/**
+	 * Number of permutations to perform.
+	 */
 	private int NUM_PERMUTES = 1000;
-	private int COFACTOR_THRESHOLD = 25;
-	private final LinkedList<Collection<Double>> permutation_scores = new LinkedList<>();
+	/**
+	 * A list of found scores.
+	 */
+	private final LinkedList<Collection<Comparable>> permutation_scores = new LinkedList<>();
+	/**
+	 * The sub-network calculator for detection of the subnetworks.
+	 */
+	private final AbstractNetworkCalculation calculator;
+	/**
+	 * The scoring mechanism to score the graphs.
+	 */
+	private final AbstractGraphScore scorer;
 
-	public PermutationTest(MetabolicNetwork roo, MetabolicNetwork[] subs) {
+	public PermutationTest(MetabolicNetwork roo, MetabolicNetwork[] subs, AbstractNetworkCalculation calculator_process, AbstractGraphScore scorer) {
 		this.root_network = roo;
 		this.subnetworks = subs;
-	}
-
-	public void setRestartProbability(double restart_probability) {
-		this.restart_probability = restart_probability;
+		this.calculator = calculator_process;
+		this.scorer = scorer;
 	}
 
 	public void setNumberOfPermutations(int NUM_PERMUTES) {
 		this.NUM_PERMUTES = NUM_PERMUTES;
 	}
 
-	public void setCofactorThreshold(int COFACTOR_THRESHOLD) {
-		this.COFACTOR_THRESHOLD = COFACTOR_THRESHOLD;
-	}
-
 	@Override
-	protected Set<PermutationResultFwer> performTask() throws Exception {
+	protected Set<PermutationTestResult> performTask() throws Exception {
 		return calculateScores();
 	}
 
-	public Set<PermutationResultFwer> calculateScores() throws InterruptedException, Exception {
+	public Set<PermutationTestResult> calculateScores() throws InterruptedException, Exception {
 		setProgressMax(NUM_PERMUTES);
 		sendDescription("Permuting network structure and calculating sub networks");
 		ExecutorService pool = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
@@ -83,10 +95,10 @@ public class PermutationTest extends AbstractTask<Set<PermutationResultFwer>, Vo
 		System.out.println(permutation_scores);
 
 		BufferedWriter out = new BufferedWriter(new FileWriter("fwer_scores.csv"));
-		for (Collection<Double> col : permutation_scores) {
-			Double[] array = col.toArray(new Double[col.size()]);
+		for (Collection<Comparable> col : permutation_scores) {
+			Comparable[] array = col.toArray(new Comparable[col.size()]);
 			Arrays.sort(array);
-			for (Double value : array) {
+			for (Comparable value : array) {
 				out.write(value + " \t");
 			}
 			out.write("\n");
@@ -95,32 +107,33 @@ public class PermutationTest extends AbstractTask<Set<PermutationResultFwer>, Vo
 
 
 		logger.info("Will now calculate the scores for the found subnetworks");
-		Set<PermutationResultFwer> scores = new HashSet<>();
-		NetworkSorterSumOfWeights scorer = new NetworkSorterSumOfWeights(root_network);
-		scorer.setParent(root_network);
+		Set<PermutationTestResult> scores = new HashSet<>();
+		AbstractGraphScore current_scorer = this.scorer.like(root_network);
+		current_scorer.setParent(root_network);
 		for (MetabolicNetwork subnet : subnetworks) {
-			double score = scorer.calculateScore(subnet);
-			int errors = countErrors(permutation_scores, score);
-			PermutationResultFwer r = new PermutationResultFwer(subnet, score, errors, NUM_PERMUTES);
+			Comparable score = current_scorer.calculateScore(subnet);
+			int fwer_errors = countFamilyWiseErrors(permutation_scores, score);
+			int fdr_errors = countFalseDiscoveryErrors(permutation_scores, score);
+			PermutationTestResult r = new PermutationTestResult(subnet, score, fdr_errors, fwer_errors, NUM_PERMUTES);
 			scores.add(r);
 		}
 		return scores;
 	}
 
-	synchronized private void addPermutationScore(Collection<Double> scores) {
+	synchronized private void addPermutationScore(Collection<Comparable> scores) {
 		permutation_scores.add(scores);
 	}
 
-	private int countErrors(LinkedList<Collection<Double>> counts, double score) {
+	private int countFamilyWiseErrors(LinkedList<Collection<Comparable>> counts, Comparable score) {
 		int counter = 0;
-		for (Collection<Double> cs : counts) {
+		for (Collection<Comparable> cs : counts) {
 			counter += hasHigherEqual(cs, score) ? 1 : 0;
 		}
 
 		return counter;
 	}
 
-	private boolean hasHigherEqual(Collection<Double> scores, Comparable score) {
+	private boolean hasHigherEqual(Collection<Comparable> scores, Comparable score) {
 		for (Comparable i : scores) {
 			if (i.compareTo(score) >= 0) {
 				return true;
@@ -129,6 +142,23 @@ public class PermutationTest extends AbstractTask<Set<PermutationResultFwer>, Vo
 		return false;
 	}
 
+	private int countFalseDiscoveryErrors(LinkedList<Collection<Comparable>> counts, Comparable score) {
+		int counter = 0;
+		for (Collection<Comparable> cs : counts) {
+			for (Comparable c : cs) {
+				if (c.compareTo(score) >= 0) {
+					counter++;
+				}
+			}
+		}
+
+		return counter;
+	}
+
+	/**
+	 * A thread to calculate a single permutation and extract the networks
+	 * afterwards.
+	 */
 	private class PermutationThread implements Runnable {
 
 		@Override
@@ -146,11 +176,8 @@ public class PermutationTest extends AbstractTask<Set<PermutationResultFwer>, Vo
 			long curtime = System.currentTimeMillis();
 			MetabolicNetwork permuted_network = root_network.clone();
 			permuteNetwork(permuted_network);
-			CalculateNetworksRWR process = new CalculateNetworksRWR(permuted_network);
-			process.setRestartProbability(restart_probability);
-			process.setCofactorThreshold(COFACTOR_THRESHOLD);
-			MetabolicNetwork[] networks = process.calculateNetworks();
-			Set<Double> score_dist = calculateScores(root_network, networks);
+			MetabolicNetwork[] networks = calculator.doInBackground();
+			Set<Comparable> score_dist = calculateScores(root_network, networks);
 			addPermutationScore(score_dist);
 			incrementProgress();
 			logger.log(Level.FINER, "Calculation of one permutation took {0} seconds", (System.currentTimeMillis() - curtime) / 1000);
@@ -185,13 +212,13 @@ public class PermutationTest extends AbstractTask<Set<PermutationResultFwer>, Vo
 			}
 		}
 
-		private Set<Double> calculateScores(MetabolicNetwork root, MetabolicNetwork[] networks) {
+		private Set<Comparable> calculateScores(MetabolicNetwork root, MetabolicNetwork[] networks) {
 			logger.fine("Calculating scores");
-			NetworkSorterSumOfWeights scorer = new NetworkSorterSumOfWeights(root);
+			AbstractGraphScore curscorer = scorer.like(root);
 			scorer.setParent(root);
-			Set<Double> dist = new TreeSet<>();
+			Set<Comparable> dist = new TreeSet<>();
 			for (MetabolicNetwork n : networks) {
-				double score = scorer.calculateScore(n);
+				Comparable score = curscorer.calculateScore(n);
 				dist.add(score);
 			}
 			return dist;

@@ -7,7 +7,6 @@ import de.gobics.marvis.graph.Marker;
 import de.gobics.marvis.graph.MetabolicNetwork;
 import de.gobics.marvis.graph.Reaction;
 import de.gobics.marvis.graph.Transcript;
-import de.gobics.marvis.graph.gui.tasks.CalculateNetworksRWR;
 import java.util.LinkedList;
 import java.util.Map;
 import java.util.Set;
@@ -107,5 +106,10 @@ public class NetworkSorterSumOfWeights extends AbstractGraphScore {
 	@Override
 	public String getDescription() {
 		return "Sums up the scores for reactions delivered by markers and transcripts";
+	}
+
+	@Override
+	public AbstractGraphScore like(MetabolicNetwork new_parent) {
+		return new NetworkSorterSumOfWeights(new_parent);
 	}
 }

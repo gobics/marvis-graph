@@ -8,7 +8,6 @@ import de.gobics.marvis.graph.*;
 import java.util.Collection;
 import java.util.TreeMap;
 import java.util.TreeSet;
-import java.util.logging.Logger;
 
 /**
  *
@@ -16,8 +15,6 @@ import java.util.logging.Logger;
  */
 public class ReactionGraph extends AbstractGraph {
 
-	private static final Logger logger = Logger.getLogger(ReactionGraph.class.
-			getName());
 	private final int cofactor_threshold;
 	private final boolean conntect_via_explainable_compounds_only;
 	private final TreeMap<Reaction, TreeSet<Relation>> relation_cache = new TreeMap<>();
@@ -52,6 +49,14 @@ public class ReactionGraph extends AbstractGraph {
 	 */
 	public ReactionGraph(MetabolicNetwork parent, int cofactor_threshold) {
 		this(parent, false, cofactor_threshold);
+	}
+
+	public int getCofactorThreshold() {
+		return cofactor_threshold;
+	}
+
+	public boolean isConntectViaExplainableCompoundsOnly() {
+		return conntect_via_explainable_compounds_only;
 	}
 
 	/**

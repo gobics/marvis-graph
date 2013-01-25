@@ -36,5 +36,10 @@ public class NetworkSorterRelativeSize extends AbstractGraphScore {
 		return "Size devided by the number of markers and transcripts";
 	}
 
+	@Override
+	public AbstractGraphScore like(MetabolicNetwork new_parent) {
+		return new NetworkSorterRelativeSize(new_parent);
+	}
+
 
 }

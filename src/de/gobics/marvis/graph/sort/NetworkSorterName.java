@@ -34,4 +34,9 @@ public class NetworkSorterName extends AbstractGraphScore {
 	public String getDescription() {
 		return "Sort by name";
 	}
+
+	@Override
+	public AbstractGraphScore like(MetabolicNetwork new_parent) {
+		return new NetworkSorterName(new_parent);
+	}
 }
