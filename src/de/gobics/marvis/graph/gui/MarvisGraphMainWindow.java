@@ -641,22 +641,20 @@ public class MarvisGraphMainWindow extends JFrame {
 		}
 
 		// Ask for range accuracy
-		JPanel dialog_panel = new JPanel();
-		dialog_panel.setLayout(new BoxLayout(dialog_panel, BoxLayout.PAGE_AXIS));
+		JPanel dialog_panel = new JPanel(new BorderLayout());
+		dialog_panel.add(new JLabel("Specify the mass range (in u):"), BorderLayout.PAGE_START);
 		SpinnerNumberModel spinner_model = new SpinnerNumberModel(0.005, 0, Double.MAX_VALUE, 0.001);
-		dialog_panel.add(new JLabel("Specify the mass range (in u):"));
 		JSpinner spinner = new JSpinner(spinner_model);
-		Dimension size = spinner.getSize();
-		size.width = 50;
-		spinner.setSize(size);
-		spinner.setPreferredSize(size);
-		spinner.setMaximumSize(size);
-		dialog_panel.add(spinner);
-		JOptionPane.showMessageDialog(this, dialog_panel, "Annotate marker", JOptionPane.QUESTION_MESSAGE);
-		Number range = spinner_model.getNumber();
+		spinner.setPreferredSize(new Dimension(200, 50));
+		dialog_panel.add(spinner, BorderLayout.CENTER);
+		int res = JOptionPane.showConfirmDialog(this, dialog_panel, "Annotate marker", JOptionPane.OK_CANCEL_OPTION, JOptionPane.QUESTION_MESSAGE);
+		if (res != JOptionPane.OK_OPTION) {
+			return;
+		}
+		double range = Math.abs(spinner_model.getNumber().doubleValue());
 
 		final AnnotateMarker annotate_process = new AnnotateMarker(network);
-		annotate_process.setMassRange(Math.abs(range.doubleValue()));
+		annotate_process.setMassRange(range);
 
 		monitorTask(annotate_process);
 		// Asynchronous fetching of the result
@@ -941,8 +939,8 @@ public class MarvisGraphMainWindow extends JFrame {
 			display_error("Please calculate subnetworks first");
 			return;
 		}
-		
-		if( calculate_network_task == null ){
+
+		if (calculate_network_task == null) {
 			display_error("Have no calculator stored. ");
 			return;
 		}
