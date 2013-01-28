@@ -33,6 +33,7 @@ public class CalculateNetworksRWR extends AbstractNetworkCalculation {
 	 * Basic restart probability.
 	 */
 	private double restart_probability = 0.8;
+	private boolean use_input_weights;
 
 	public CalculateNetworksRWR(MetabolicNetwork network) {
 		this.root_network = network;
@@ -156,20 +157,22 @@ public class CalculateNetworksRWR extends AbstractNetworkCalculation {
 
 		for (Marker marker : root_network.getMarkers()) {
 			LinkedList<Compound> compounds = root_network.getAnnotations(marker);
+			double score_per_compound = getInitialScore(marker) / compounds.size();
+
 
 			for (Compound compound : compounds) {
 				LinkedList<Reaction> reactions = new LinkedList<>();
 				reactions.addAll(root_network.getSubstrateToReaction(compound));
 				reactions.addAll(root_network.getProductToReaction(compound));
 
-				double addscore = (1d / compounds.size()) / reactions.size();
+				double score_per_reaction = score_per_compound / reactions.size();
 				for (Reaction r : reactions) {
 
 					if (!reaction_scores.containsKey(r)) {
-						reaction_scores.put(r, addscore);
+						reaction_scores.put(r, score_per_reaction);
 					}
 					else {
-						reaction_scores.put(r, reaction_scores.get(r) + addscore);
+						reaction_scores.put(r, reaction_scores.get(r) + score_per_reaction);
 					}
 				}
 			}
@@ -177,12 +180,15 @@ public class CalculateNetworksRWR extends AbstractNetworkCalculation {
 
 		for (Transcript transcript : root_network.getTranscripts()) {
 			LinkedList<Gene> genes = root_network.getGenes(transcript);
+			double score_for_gene = getInitialScore(transcript) / genes.size();
 
 			for (Gene gene : genes) {
 				LinkedList<Enzyme> enzymes = root_network.getEncodedEnzymes(gene);
+				double score_for_enzyme = score_for_gene / enzymes.size();
+				
 				for (Enzyme enzyme : enzymes) {
 					LinkedList<Reaction> reactions = root_network.getReactions(enzyme);
-					double addscore = ((1d / genes.size()) / enzymes.size()) / reactions.size();
+					double addscore = score_for_enzyme / reactions.size();
 					for (Reaction r : reactions) {
 
 						if (!reaction_scores.containsKey(r)) {
@@ -205,5 +211,13 @@ public class CalculateNetworksRWR extends AbstractNetworkCalculation {
 		}
 
 		return reaction_scores;
+	}
+
+	public void useInputWeights(boolean use_input_weights) {
+		this.use_input_weights = use_input_weights;
+	}
+
+	private double getInitialScore(InputObject io) {
+		return use_input_weights ? io.getWeight() : 1;
 	}
 }
