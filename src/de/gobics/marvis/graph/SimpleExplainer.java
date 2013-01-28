@@ -22,19 +22,26 @@ public class SimpleExplainer implements ExplainablePredicate {
 
 		if (graphobject instanceof Compound) {
 			is_explainable = evaluateCompound(graph, (Compound) graphobject);
-		} else if (graphobject instanceof Enzyme) {
+		}
+		else if (graphobject instanceof Enzyme) {
 			is_explainable = evaluateEnzyme(graph, (Enzyme) graphobject);
-		} else if (graphobject instanceof Gene) {
+		}
+		else if (graphobject instanceof Gene) {
 			is_explainable = evaluateGene(graph, (Gene) graphobject);
-		} else if (graphobject instanceof Marker) {
+		}
+		else if (graphobject instanceof Marker) {
 			is_explainable = true;
-		} else if (graphobject instanceof Pathway) {
+		}
+		else if (graphobject instanceof Pathway) {
 			is_explainable = evaluatePathway(graph, (Pathway) graphobject);
-		} else if (graphobject instanceof Reaction) {
+		}
+		else if (graphobject instanceof Reaction) {
 			is_explainable = evaluateReaction(graph, (Reaction) graphobject);
-		} else if (graphobject instanceof Transcript) {
+		}
+		else if (graphobject instanceof Transcript) {
 			is_explainable = true;
-		} else {
+		}
+		else {
 			throw new IllegalArgumentException("Can not evaluate object of unkown Class: " + graphobject);
 		}
 
@@ -99,23 +106,23 @@ public class SimpleExplainer implements ExplainablePredicate {
 	protected boolean evaluateCompound(MetabolicNetwork graph, Compound m) {
 		if (!graph.hasMarkers()) {
 			/*if (!graph.hasTranscripts()) {
-			logger.finer("MetabolicNetwork does not contain input");
-			return true;
-			}
+			 logger.finer("MetabolicNetwork does not contain input");
+			 return true;
+			 }
 			
-			logger.finer("Evaluating transcript only");
-			for (Reaction r : graph.getProductToReaction(m)) {
-			if (evaluateReaction(graph, r)) {
-			logger.finer("Compound is explainable because reaction " + r + " is");
-			return true;
-			}
-			}
-			for (Reaction r : graph.getSubstrateToReaction(m)) {
-			if (evaluateReaction(graph, r)) {
-			logger.finer("Compound is explainable because reaction " + r + " is");
-			return true;
-			}
-			}*/
+			 logger.finer("Evaluating transcript only");
+			 for (Reaction r : graph.getProductToReaction(m)) {
+			 if (evaluateReaction(graph, r)) {
+			 logger.finer("Compound is explainable because reaction " + r + " is");
+			 return true;
+			 }
+			 }
+			 for (Reaction r : graph.getSubstrateToReaction(m)) {
+			 if (evaluateReaction(graph, r)) {
+			 logger.finer("Compound is explainable because reaction " + r + " is");
+			 return true;
+			 }
+			 }*/
 			return true;
 		}
 
@@ -124,10 +131,12 @@ public class SimpleExplainer implements ExplainablePredicate {
 	}
 
 	protected boolean evaluateEnzyme(MetabolicNetwork graph, Enzyme enzyme) {
+		// If there is no encoding Gene, assume existence.
 		if (graph.getEncodingGenes(enzyme).isEmpty()) {
 			return true;
 		}
 
+		// Find at least one explainable gene.
 		for (Gene g : graph.encodedByGenes(enzyme)) {
 			if (evaluateGene(graph, g)) {
 				//logger.finer(enzyme + " evaluates true by gene " + g);
@@ -147,34 +156,22 @@ public class SimpleExplainer implements ExplainablePredicate {
 	}
 
 	protected boolean evaluateReaction(MetabolicNetwork graph, Reaction r) {
-		boolean has_substrate = false, has_product = false, has_enzyme = false;
+		boolean has_molecule = false, has_enzyme = false;
 
-		//logger.finer("Enzymes of "+r+": "+graph.getEnzymes(r));
 		for (Enzyme enzyme : graph.getEnzymes(r)) {
-			if (!evaluateEnzyme(graph, enzyme)) {
-				//logger.finer("The enzyme "+enzyme+" is NOT explainable => aborting");
-				return false;
-			}
-		}
-
-		//logger.finer("Substrates of "+r+": "+graph.getSubstrates(r));
-		for (Compound c : graph.getSubstrates(r)) {
-			if (evaluateCompound(graph, c)) {
-				//logger.finer("The substrate "+c+" is explainable");
-				has_substrate = true;
+			if (evaluateEnzyme(graph, enzyme)) {
+				has_enzyme = true;
 				break;
 			}
 		}
 
-		//logger.finer("Products of "+r+": "+graph.getProducts(r));
-		for (Compound c : graph.getProducts(r)) {
+		for (Compound c : graph.getCompounds(r)) {
 			if (evaluateCompound(graph, c)) {
-				//logger.finer("The product "+c+" is explainable");
-				has_product = true;
+				has_molecule = true;
 				break;
 			}
 		}
 
-		return (has_product && has_substrate);
+		return has_enzyme && has_molecule;
 	}
 }
