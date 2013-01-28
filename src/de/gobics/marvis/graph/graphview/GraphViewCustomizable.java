@@ -55,10 +55,11 @@ public class GraphViewCustomizable extends AbstractGraph {
 	 */
 	protected final TreeSet<GraphObject> cache_vertices = new TreeSet<>();
 	/**
-	 * A cache mapping {@link GraphObject}s to the {@link Relation}s, they occur in.
-	 * This is to speed the system up.
+	 * A cache mapping {@link GraphObject}s to the {@link Relation}s, they occur
+	 * in. This is to speed the system up.
 	 */
 	protected final TreeMap<GraphObject, Collection<Relation>> cache_relations = new TreeMap<>();
+	protected final TreeSet<Relation> cache_all_relations = new TreeSet<>();
 
 	/**
 	 * Create a new customizable graphical view based on the given network.
@@ -229,22 +230,25 @@ public class GraphViewCustomizable extends AbstractGraph {
 	protected void fireGraphChangeEvent() {
 		cache_relations.clear();
 		cache_vertices.clear();
+		cache_all_relations.clear();
 		super.fireGraphChangeEvent();
 	}
 
 	@Override
 	public Collection<Relation> getEdges() {
-		Set<Relation> rels = new TreeSet<>();
-		for (GraphObject o : getMetabolicNetwork().getAllObjects()) {
-			if (acceptVertex(o)) {
-				rels.addAll(getIncidentEdges(o));
+		if (cache_all_relations.isEmpty()) {
+			for (GraphObject o : getMetabolicNetwork().getAllObjects()) {
+				if (acceptVertex(o)) {
+					cache_all_relations.addAll(getIncidentEdges(o));
+				}
 			}
 		}
-		return rels;
+		return cache_all_relations;
 	}
 
 	@Override
 	public Collection<GraphObject> getVertices() {
+		//logger.log(Level.FINE, "Require list of vertices: ", new Exception());
 		if (cache_vertices.isEmpty()) {
 			if (drawSingleNodes()) {
 				for (GraphObject o : getMetabolicNetwork().getAllObjects()) {
@@ -266,6 +270,7 @@ public class GraphViewCustomizable extends AbstractGraph {
 
 	@Override
 	public Collection<Relation> getIncidentEdges(GraphObject v) {
+		//logger.log(Level.FINE, "Require list of edges to " + v + ": ", new Exception());
 		if (cache_relations.containsKey(v)) {
 			return cache_relations.get(v);
 		}
