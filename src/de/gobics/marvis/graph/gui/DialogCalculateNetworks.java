@@ -11,6 +11,7 @@ import java.awt.BorderLayout;
 import java.awt.Frame;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -29,6 +30,7 @@ public class DialogCalculateNetworks extends DialogAbstract {
     private final SpinnerNumberModel sm_gaps = new SpinnerNumberModel(0, 0, Integer.MAX_VALUE, 1);
     private final SpinnerNumberModel sm_cofactor = new SpinnerNumberModel(10, 1, Integer.MAX_VALUE, 1);
     private final SpinnerNumberModel sm_rwr = new SpinnerNumberModel(0.8, 0, 1, 0.1);
+	private final JCheckBox use_input_weights = new JCheckBox("", true);
     private final JPanel options_panel = new JPanel(new BorderLayout());
     private final JPanel options_rwr = new OptionsRWR();
     private final JPanel options_reaction = new OptionsReaction();
@@ -70,6 +72,7 @@ public class DialogCalculateNetworks extends DialogAbstract {
 	    CalculateNetworksRWR process = new CalculateNetworksRWR(n);
 	    process.setRestartProbability(sm_rwr.getNumber().doubleValue());
 	    process.setCofactorThreshold(sm_cofactor.getNumber().intValue());
+		process.useInputWeights(use_input_weights.isSelected());
 	    return process;
 	}
 	if (cb_algorithm.getSelectedIndex() == 1) {
@@ -111,6 +114,8 @@ public class DialogCalculateNetworks extends DialogAbstract {
 	    add(new JSpinner(sm_rwr));
 	    add(new JLabel("Cofactor treshold:"));
 	    add(new JSpinner(sm_cofactor));
+		add(new JLabel("Use input weights for initial scoring:"));
+		add(use_input_weights);
 	    SpringUtilities.makeCompactGrid(this);
 	}
     }
