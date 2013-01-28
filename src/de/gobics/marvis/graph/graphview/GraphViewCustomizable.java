@@ -50,7 +50,14 @@ public class GraphViewCustomizable extends AbstractGraph {
 	 * decrease the density of the visualization.
 	 */
 	private int cofactor_limit = -1;
+	/**
+	 * A cache containing all vertices. This is for speeding the system up.
+	 */
 	protected final TreeSet<GraphObject> cache_vertices = new TreeSet<>();
+	/**
+	 * A cache mapping {@link GraphObject}s to the {@link Relation}s, they occur in.
+	 * This is to speed the system up.
+	 */
 	protected final TreeMap<GraphObject, Collection<Relation>> cache_relations = new TreeMap<>();
 
 	/**
