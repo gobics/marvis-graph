@@ -94,7 +94,7 @@ public class PermutationTest extends AbstractTask<Set<PermutationTestResult>, Vo
 		}
 
 		sendDescription("Calculating Family-Wise-Error-Rate");
-		System.out.println(permutation_scores);
+	//	System.out.println(permutation_scores);
 
 		BufferedWriter out = new BufferedWriter(new FileWriter("fwer_scores.csv"));
 		for (Collection<Comparable> col : permutation_scores) {
