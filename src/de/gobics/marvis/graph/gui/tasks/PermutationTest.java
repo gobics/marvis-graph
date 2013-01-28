@@ -199,7 +199,6 @@ public class PermutationTest extends AbstractTask<Set<PermutationTestResult>, Vo
 			MetabolicNetwork[] networks = calculator.like(permuted_network).doInBackground();
 			Set<Comparable> score_dist = calculateScores(root_network, networks);
 			addPermutationScore(score_dist);
-			incrementProgress();
 			logger.log(Level.FINER, "Calculation for permutation " + permutation_number + " took {0} seconds", (System.currentTimeMillis() - curtime) / 1000);
 		}
 
