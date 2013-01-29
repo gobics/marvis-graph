@@ -117,6 +117,12 @@ public class PermutationTest extends AbstractTask<Set<PermutationTestResult>, Vo
 
 
 		logger.info("Will now calculate the scores for the found subnetworks");
+		// Calculate overall number of detected subnetworks
+		int fdr_divisor = 0;
+		for(Collection<Comparable> cs : permutation_scores){
+			fdr_divisor += cs.size();
+		}
+		
 		Set<PermutationTestResult> scores = new HashSet<>();
 		AbstractGraphScore current_scorer = this.scorer.like(root_network);
 		current_scorer.setParent(root_network);
@@ -125,7 +131,7 @@ public class PermutationTest extends AbstractTask<Set<PermutationTestResult>, Vo
 			int fwer_errors = countFamilyWiseErrors(permutation_scores, score);
 			double fwer = ((double) fwer_errors) / NUM_PERMUTES;
 			int fdr_errors = countFalseDiscoveryErrors(permutation_scores, score);
-			double fdr = ((double) fdr_errors) / NUM_PERMUTES;
+			double fdr = ((double) fdr_errors) / fdr_divisor;
 
 			PermutationTestResult r = new PermutationTestResult(subnet, score, fdr, fwer);
 			scores.add(r);
