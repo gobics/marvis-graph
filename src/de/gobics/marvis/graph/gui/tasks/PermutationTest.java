@@ -49,6 +49,10 @@ public class PermutationTest extends AbstractTask<Set<PermutationTestResult>, Vo
 	 */
 	private int NUM_PERMUTES = 1000;
 	/**
+	 * Number of parallel threads to run.
+	 */
+	private int num_threads = Runtime.getRuntime().availableProcessors();
+	/**
 	 * A list of found scores.
 	 */
 	private final LinkedList<Collection<Comparable>> permutation_scores = new LinkedList<>();
@@ -72,6 +76,10 @@ public class PermutationTest extends AbstractTask<Set<PermutationTestResult>, Vo
 		this.NUM_PERMUTES = NUM_PERMUTES;
 	}
 
+	public void setNumberOfThreads(int num_threads) {
+		this.num_threads = num_threads > 0 ? num_threads : 1;
+	}
+
 	@Override
 	protected Set<PermutationTestResult> performTask() throws Exception {
 		return calculateScores();
@@ -80,7 +88,7 @@ public class PermutationTest extends AbstractTask<Set<PermutationTestResult>, Vo
 	public Set<PermutationTestResult> calculateScores() throws InterruptedException, Exception {
 		setProgressMax(NUM_PERMUTES);
 		sendDescription("Permuting network structure and calculating sub networks");
-		ExecutorService pool = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
+		ExecutorService pool = Executors.newFixedThreadPool(num_threads);
 		for (int i = 0; i < NUM_PERMUTES; i++) {
 			pool.execute(new PermutationThread(i));
 		}
@@ -94,7 +102,7 @@ public class PermutationTest extends AbstractTask<Set<PermutationTestResult>, Vo
 		}
 
 		sendDescription("Calculating Family-Wise-Error-Rate");
-	//	System.out.println(permutation_scores);
+		//	System.out.println(permutation_scores);
 
 		BufferedWriter out = new BufferedWriter(new FileWriter("fwer_scores.csv"));
 		for (Collection<Comparable> col : permutation_scores) {
@@ -212,21 +220,26 @@ public class PermutationTest extends AbstractTask<Set<PermutationTestResult>, Vo
 			Collection<Transcript> transcripts = network.getTranscripts();
 			Collection<Compound> compounds = network.getCompounds();
 			Collection<Gene> genes = network.getGenes();
+			int num_annotations;
 
-			// Remove relations
-			int num_annotations = network.getRelations(RelationshipType.MARKER_ANNOTATION_COMPOUND).size();
+			// Permute marker annotations
+			num_annotations = 0;
 			for (Relation r : network.getRelations(RelationshipType.MARKER_ANNOTATION_COMPOUND)) {
 				network.removeRelation(r);
+				num_annotations++;
 			}
-			for (Relation r : network.getRelations(RelationshipType.TRANSCRIPT_ISFROM_GENE)) {
-				network.removeRelation(r);
-			}
-
-			// Add new relations
 			for (int idx = 0; idx < num_annotations; idx++) {
 				network.addRelation(new Relation(RelationshipType.MARKER_ANNOTATION_COMPOUND, random(markers), random(compounds)));
 			}
-			for (Transcript t : transcripts) {
+
+			num_annotations = 0;
+			for (Relation r : network.getRelations(RelationshipType.TRANSCRIPT_ISFROM_GENE)) {
+				network.removeRelation(r);
+				num_annotations++;
+			}
+			Iterator<Transcript> titer = transcripts.iterator();
+			for (int idx = 0; idx < num_annotations; idx++) {
+				Transcript t = titer.next(); // Transcript is always only connected to one gene, therefore we just use the next one.
 				network.addRelation(new Relation(RelationshipType.TRANSCRIPT_ISFROM_GENE, t, random(genes)));
 			}
 		}

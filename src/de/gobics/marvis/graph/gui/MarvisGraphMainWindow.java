@@ -9,6 +9,7 @@ import de.gobics.marvis.graph.gui.tasks.*;
 import de.gobics.marvis.graph.sort.AbstractGraphScore;
 import de.gobics.marvis.utils.LoggingUtils;
 import de.gobics.marvis.utils.swing.AbstractTaskListener;
+import de.gobics.marvis.utils.swing.SpringUtilities;
 import de.gobics.marvis.utils.swing.Statusbar;
 import de.gobics.marvis.utils.swing.Statusdialog;
 import de.gobics.marvis.utils.swing.filechooser.ChooserAbstract;
@@ -947,11 +948,19 @@ public class MarvisGraphMainWindow extends JFrame {
 			return;
 		}
 
+		JPanel options_panel = new JPanel(new SpringLayout());
 		SpinnerNumberModel sm_permutations = new SpinnerNumberModel(1000, 1, Integer.MAX_VALUE, 1000);
-		if (JOptionPane.showConfirmDialog(this, new JSpinner(sm_permutations), "Set permutations", JOptionPane.OK_CANCEL_OPTION, JOptionPane.QUESTION_MESSAGE) != JOptionPane.OK_OPTION) {
+		SpinnerNumberModel sm_threads = new SpinnerNumberModel(Runtime.getRuntime().availableProcessors(), 1, Integer.MAX_VALUE, 1);
+		options_panel.add(new JLabel("No. of permutations:"));
+		options_panel.add(new JSpinner(sm_permutations));
+		options_panel.add(new JLabel("No. of CPUs to use:"));
+		options_panel.add(new JSpinner(sm_threads));
+		SpringUtilities.makeCompactGrid(options_panel);
+		
+		if (JOptionPane.showConfirmDialog(this, options_panel, "Set permutation options", JOptionPane.OK_CANCEL_OPTION, JOptionPane.QUESTION_MESSAGE) != JOptionPane.OK_OPTION) {
 			return;
 		}
-		performPermutationTest(main, subs, sm_permutations.getNumber().intValue());
+		performPermutationTest(main, subs, sm_permutations.getNumber().intValue(), sm_threads.getNumber().intValue());
 	}
 
 	/**
@@ -964,9 +973,10 @@ public class MarvisGraphMainWindow extends JFrame {
 	 * @param cofactor_threshold
 	 * @param permutations
 	 */
-	private void performPermutationTest(MetabolicNetwork main, MetabolicNetwork[] subs, int number_of_permutations) {
+	private void performPermutationTest(MetabolicNetwork main, MetabolicNetwork[] subs, int number_of_permutations, int num_threads) {
 		final PermutationTest process = new PermutationTest(main, subs, calculate_network_task, combobox_graph_sort.getSorterFor(main));
 		process.setNumberOfPermutations(number_of_permutations);
+		process.setNumberOfThreads(num_threads);
 
 		monitorTask(process);
 		process.addPropertyChangeListener(new AbstractTaskListener() {
