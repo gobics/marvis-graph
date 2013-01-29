@@ -35,9 +35,10 @@ public class test {
 			process.setCofactorThreshold(COFACTOR_THRESHOLD);
 			process.setRestartProbability(restart_probability);
 			MetabolicNetwork[] subs = process.calculateNetworks(network);
-
+			
 			PermutationTest test = new PermutationTest(network, subs, process, new NetworkSorterSumOfWeights(network));
 			test.setNumberOfPermutations(NUM_PERMUTES);
+			
 			Set<PermutationTestResult> networks = test.calculateScores();
 
 			BufferedWriter out = new BufferedWriter(new FileWriter(file + ".scores.csv"));

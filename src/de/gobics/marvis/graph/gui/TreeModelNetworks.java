@@ -98,7 +98,7 @@ public class TreeModelNetworks implements TreeModel {
 	}
 	
 	void setSubnetworks(MetabolicNetwork[] new_networks) {
-		logger.finer("Setting "+new_networks.length+" new subnetworks: "+Arrays.toString(new_networks));
+		//logger.finer("Setting "+new_networks.length+" new subnetworks: "+Arrays.toString(new_networks));
 		subgraphs = new_networks.clone();
 		fireTreeModelEvent();
 	}
