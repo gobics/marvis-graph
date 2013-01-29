@@ -4,7 +4,6 @@ import de.gobics.marvis.graph.*;
 import de.gobics.marvis.graph.graphview.ReactionGraph;
 import de.gobics.marvis.utils.RandomWalkWithRestart;
 import de.gobics.marvis.utils.matrix.DenseDoubleMatrix1D;
-import de.gobics.marvis.utils.swing.AbstractTask;
 import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -45,6 +44,7 @@ public class CalculateNetworksRWR extends AbstractNetworkCalculation {
 		CalculateNetworksRWR clone = new CalculateNetworksRWR(network);
 		clone.setCofactorThreshold(reactions_view.getCofactorThreshold());
 		clone.setRestartProbability(restart_probability);
+		clone.useInputWeights(use_input_weights);
 		return clone;
 	}
 
