@@ -430,7 +430,9 @@ public class MarvisGraphMainWindow extends JFrame {
 	public void importMetabolites() {
 		ChooserAbstract chooser = FileChooserMetabolicMarker.getInstance();
 		chooser.setMultiSelectionEnabled(true);
-		chooser.showOpenDialog(this);
+		if( chooser.showOpenDialog(this) != JFileChooser.APPROVE_OPTION ){
+			return;
+		}
 		File[] files = chooser.getSelectedFiles();
 
 		if (files.length == 0) {
