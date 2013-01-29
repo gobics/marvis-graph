@@ -30,7 +30,7 @@ public class DialogCalculateNetworks extends DialogAbstract {
     private final SpinnerNumberModel sm_gaps = new SpinnerNumberModel(0, 0, Integer.MAX_VALUE, 1);
     private final SpinnerNumberModel sm_cofactor = new SpinnerNumberModel(10, 1, Integer.MAX_VALUE, 1);
     private final SpinnerNumberModel sm_rwr = new SpinnerNumberModel(0.8, 0, 1, 0.1);
-	private final JCheckBox use_input_weights = new JCheckBox("", true);
+	private final JCheckBox use_input_weights = new JCheckBox("", false);
     private final JPanel options_panel = new JPanel(new BorderLayout());
     private final JPanel options_rwr = new OptionsRWR();
     private final JPanel options_reaction = new OptionsReaction();
