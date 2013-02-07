@@ -227,20 +227,7 @@ public class KeggCreateNetworkProcess extends AbstractNetworkCreator {
 
 		// Compounds
 		setTaskDescription("Fetching compounds of '" + organism + "'");
-		links = api.link_as_map("compound", organism);
-		for (TreeSet<String> set : links.values()) {
-			for (String compound_id : set) {
-				graph.createCompound(compound_id);
-			}
-		}
-		links = api.link_as_map(organism, "compound");
-		for (String compound_id : links.keySet()) {
-			graph.createCompound(compound_id);
-		}
 		for (String cid : api.fetch_list(0, "list", "compound")) {
-			graph.createCompound(cid);
-		}
-		for (String cid : api.fetch_list(0, "list", "glycan")) {
 			graph.createCompound(cid);
 		}
 		
