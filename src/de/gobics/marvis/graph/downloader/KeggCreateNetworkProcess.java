@@ -87,6 +87,7 @@ public class KeggCreateNetworkProcess extends AbstractNetworkCreator {
 
 		LinkedList<GraphObject> objects = graph.getAllObjects();
 		setProgressMax(objects.size());
+		setProgress(0);
 		logger.finer("Invoking parallel jobs for data fetching");
 		ExecutorService workerpool = Executors.newFixedThreadPool(10);
 		
@@ -236,6 +237,13 @@ public class KeggCreateNetworkProcess extends AbstractNetworkCreator {
 		for (String compound_id : links.keySet()) {
 			graph.createCompound(compound_id);
 		}
+		for (String cid : api.fetch_list(0, "list", "compound")) {
+			graph.createCompound(cid);
+		}
+		for (String cid : api.fetch_list(0, "list", "glycan")) {
+			graph.createCompound(cid);
+		}
+		
 
 		// Iterate the reactions to find compounds
 		setProgressMax(graph.getReactions().size());
@@ -408,7 +416,7 @@ public class KeggCreateNetworkProcess extends AbstractNetworkCreator {
 		 * @throws Exception
 		 */
 		private void expand(Pathway pathway) throws Exception {
-			KeggEntry info = api.get(pathway.getId().replace(organism, "map"));
+			KeggEntry info = api.get(pathway.getId().replace(":"+organism, ":map"));
 			if (info.getId() == null) {
 				logger.log(Level.WARNING, "Can not fetch general (map) info for: {0}", pathway.getId());
 				return;
