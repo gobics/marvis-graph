@@ -20,7 +20,7 @@ public class test {
 
 	private final static Logger logger = Logger.getLogger(test.class.getName());
 	private static double restart_probability = 0.8;
-	private static final int NUM_PERMUTES = 1000;
+	private static final int NUM_PERMUTES = 100;
 	private static final int COFACTOR_THRESHOLD = 10;
 
 	public static void main(String[] args) throws Exception {
@@ -42,7 +42,7 @@ public class test {
 			Set<PermutationTestResult> networks = test.calculateScores();
 
 			BufferedWriter out = new BufferedWriter(new FileWriter(file + ".scores.csv"));
-			out.write("Name\tnum_reactions\tscore\tfwer\nfdr\n");
+			out.write("Name\tnum_reactions\tscore\tfwer\tfdr\n");
 			for (PermutationTestResult r : networks) {
 				out.write(r.network.getName() + "\t" + r.network.getReactions().size() + "\t" + r.score + "\t" + r.fwer + "\t" + r.fdr + "\n");
 			}

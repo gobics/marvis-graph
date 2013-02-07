@@ -10,6 +10,8 @@ import de.gobics.marvis.graph.gui.GraphMouseListener;
 import de.gobics.marvis.graph.gui.MarvisGraphMainWindow;
 import de.gobics.marvis.graph.gui.ProcessListener;
 import de.gobics.marvis.graph.gui.tasks.RenderGraphLayout;
+import de.gobics.marvis.utils.task.AbstractTask.State;
+import de.gobics.marvis.utils.task.TaskListener;
 import edu.uci.ics.jung.algorithms.layout.*;
 import edu.uci.ics.jung.visualization.VisualizationViewer;
 import edu.uci.ics.jung.visualization.control.CrossoverScalingControl;
@@ -111,28 +113,44 @@ public class VisualizationViewerGraph<E> extends VisualizationViewer<GraphObject
 		logger.finer("Rendering takes to much time. Starting background Process");
 		
 		final RenderGraphLayout process = new RenderGraphLayout(layout);
-		main_window.monitorTask(process);
-		process.addPropertyChangeListener(new ProcessListener() {
+		process.addTaskListener(new TaskListener<Void>() {
+
 			@Override
-			public void processDone() {
-				try {
-					Layout rendered = process.get();
+			public void setTaskProgress(int percentage) {
+				throw new UnsupportedOperationException("Not supported yet.");
+			}
+
+			@Override
+			public void addTaskResult(Void result) {
+				throw new UnsupportedOperationException("Not supported yet.");
+			}
+
+			@Override
+			public void setTaskDescription(String new_description) {
+				throw new UnsupportedOperationException("Not supported yet.");
+			}
+
+			@Override
+			public void setTaskTitle(String new_title) {
+				throw new UnsupportedOperationException("Not supported yet.");
+			}
+
+			@Override
+			public void log(Level level, String message) {
+				throw new UnsupportedOperationException("Not supported yet.");
+			}
+
+			@Override
+			public void setTaskState(State state) {
+				if(process.isDone()){
+					Layout rendered = process.getTaskResult();
 					if (rendered != null) {
 						drawLayout(rendered);
 					}
 				}
-				catch (Exception exeption) {
-					logger.log(Level.SEVERE, "Can not render graph layout: {0}", exeption);
-					ErrorDialog.show(null, "Can not get rendered graph layout", exeption);
-				}
-			}
-
-			@Override
-			public void processError(Exception exeption) {
-				ErrorDialog.show(null, "Can not render graph", exeption);
 			}
 		});
-		process.execute();
+		main_window.executeTask(process);
 	}
 
 	/**

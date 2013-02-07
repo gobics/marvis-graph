@@ -12,9 +12,15 @@ import de.gobics.marvis.utils.swing.AbstractTaskListener;
 import de.gobics.marvis.utils.swing.SpringUtilities;
 import de.gobics.marvis.utils.swing.Statusbar;
 import de.gobics.marvis.utils.swing.Statusdialog;
+import de.gobics.marvis.utils.swing.Statusdialog2;
+import de.gobics.marvis.utils.swing.TaskWrapper;
 import de.gobics.marvis.utils.swing.filechooser.ChooserAbstract;
 import de.gobics.marvis.utils.swing.filechooser.ChooserExcel;
 import de.gobics.marvis.utils.swing.filechooser.FileFilterCef;
+import de.gobics.marvis.utils.task.AbstractTask;
+import de.gobics.marvis.utils.task.AbstractTask.State;
+import de.gobics.marvis.utils.task.TaskListener;
+import de.gobics.marvis.utils.task.TaskResultListener;
 import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Desktop;
@@ -44,7 +50,7 @@ public class MarvisGraphMainWindow extends JFrame {
 	private final JTree jtree_networks = new JTree(treemodel_networks);
 	private final PanelGraphInformation panel_graph_information = new PanelGraphInformation(jtree_networks);
 	private final JDesktopPane desktop = new JDesktopPane();
-	private final Statusdialog status_dialog = new Statusdialog(this);
+	private final Statusdialog2 status_dialog = new Statusdialog2(this);
 	private AbstractNetworkCalculation calculate_network_task = null;
 
 	public MarvisGraphMainWindow() {
@@ -136,36 +142,41 @@ public class MarvisGraphMainWindow extends JFrame {
 		}
 
 		final LoadNetwork process = new LoadNetwork(input);
-		process.addPropertyChangeListener(new AbstractTaskListener() {
+		process.addTaskListener(new TaskListener<Void>() {
 			@Override
-			public void receiveStatusDone() {
-				if (process.isCancelled()) {
-					return;
-				}
-				try {
-					setNetwork(process.get());
-				}
-				catch (Throwable ex) {
-					logger.log(Level.SEVERE, "can not load network from '" + input.
-							getAbsolutePath() + "': ", ex);
-					display_error("Can not load graph", ex);
-				}
+			public void setTaskProgress(int percentage) {
+				throw new UnsupportedOperationException("Not supported yet.");
 			}
 
 			@Override
-			public void receiveError(String msg) {
-				display_error(msg);
+			public void addTaskResult(Void result) {
+				throw new UnsupportedOperationException("Not supported yet.");
 			}
 
 			@Override
-			public void receiveException(Exception ex) {
-				display_error("Can not load network", ex);
+			public void setTaskDescription(String new_description) {
+				throw new UnsupportedOperationException("Not supported yet.");
+			}
+
+			@Override
+			public void setTaskTitle(String new_title) {
+				throw new UnsupportedOperationException("Not supported yet.");
+			}
+
+			@Override
+			public void log(Level level, String message) {
+				throw new UnsupportedOperationException("Not supported yet.");
+			}
+
+			@Override
+			public void setTaskState(State state) {
+				if (process.isDone()) {
+					setNetwork(process.getTaskResult());
+				}
 			}
 		});
 
-		monitorTask(process);
-
-		process.execute();
+		executeTask(process);
 	}
 
 	public void saveNetwork() {
@@ -182,8 +193,7 @@ public class MarvisGraphMainWindow extends JFrame {
 			return;
 		}
 		final SaveNetwork process = new SaveNetwork(n, output_file);
-		monitorTask(process);
-		process.execute();
+		executeTask(process);
 	}
 
 	/**
@@ -309,38 +319,23 @@ public class MarvisGraphMainWindow extends JFrame {
 		}
 
 		// Create the process
-		final AbstractNetworkCalculation process = dialog.getTask(n);
-		calculate_network_task = process;
-
-		// Asynchronous fetching of the result
-		process.addPropertyChangeListener(new PropertyChangeListener() {
+		final AbstractNetworkCalculation task = dialog.getTask(n);
+		calculate_network_task = task;
+		task.addTaskListener(new TaskResultListener<Void>() {
 			@Override
-			public void propertyChange(PropertyChangeEvent evt) {
-				if (evt.getPropertyName().equals("state") && evt.getNewValue().
-						equals(SwingWorker.StateValue.DONE)) {
-					try {
-						MetabolicNetwork[] networks = process.get();
-						logger.log(Level.FINER, "Got results: {0}", Arrays.toString(networks));
-						//sortSubnetworks(networks);
-						if (networks != null) {
-							treemodel_networks.setSubnetworks(networks);
-						}
-
-						sort_subnetworks();
-					}
-					catch (Exception ex) {
-						logger.log(Level.SEVERE, "Can not get calculated networks: ", ex);
-					}
+			public void taskDone() {
+				MetabolicNetwork[] networks = task.getTaskResult();
+				logger.log(Level.FINER, "Got results: {0}", Arrays.toString(networks));
+				//sortSubnetworks(networks);
+				if (networks != null) {
+					treemodel_networks.setSubnetworks(networks);
 				}
+
+				sort_subnetworks();
 			}
 		});
 
-		// Initialize monitoring features
-		monitorTask(process);
-
-		// Start the process
-		process.execute();
-
+		executeTask(task);
 	}
 
 	/**
@@ -387,41 +382,16 @@ public class MarvisGraphMainWindow extends JFrame {
 		}
 
 		final AbstractGraphScore sorter = combobox_graph_sort.getSorterFor(main);
-		final SortNetworksTask process = new SortNetworksTask(sorter, getMainNetwork(), subnetworks);
-		process.addPropertyChangeListener(new AbstractTaskListener() {
+		final SortNetworksTask task = new SortNetworksTask(sorter, getMainNetwork(), subnetworks);
+		task.addTaskListener(new TaskResultListener<Void>() {
 			@Override
-			public void receiveStatusDone() {
-				logger.finer("Sorted networks are ready. Will now display the results.");
-				if (process.isCancelled()) {
-					return;
-				}
-
-				MetabolicNetwork[] networks = null;
-				try {
-					networks = process.get();
-				}
-				catch (Exception ex) {
-					logger.log(Level.SEVERE, "", ex);
-				}
-				if (networks == null) {
-					return;
-				}
+			public void taskDone() {
+				MetabolicNetwork[] networks = task.getTaskResult();
 				treemodel_networks.setSubnetworks(networks);
-
-			}
-
-			@Override
-			public void receiveError(String msg) {
-				MarvisGraphMainWindow.this.display_error(msg);
-			}
-
-			@Override
-			public void receiveException(Exception ex) {
-				MarvisGraphMainWindow.this.display_error("Exception during sub-network sort", ex);
 			}
 		});
-		monitorTask(process);
-		process.execute();
+
+		executeTask(task);
 	}
 
 	/**
@@ -431,7 +401,7 @@ public class MarvisGraphMainWindow extends JFrame {
 	public void importMetabolites() {
 		ChooserAbstract chooser = FileChooserMetabolicMarker.getInstance();
 		chooser.setMultiSelectionEnabled(true);
-		if( chooser.showOpenDialog(this) != JFileChooser.APPROVE_OPTION ){
+		if (chooser.showOpenDialog(this) != JFileChooser.APPROVE_OPTION) {
 			return;
 		}
 		File[] files = chooser.getSelectedFiles();
@@ -508,47 +478,25 @@ public class MarvisGraphMainWindow extends JFrame {
 			return;
 		}
 		process.setInputFiles(input_files);
-
-		monitorTask(process);
-
-		// Asynchronous fetching of the result
-		process.addPropertyChangeListener(new AbstractTaskListener() {
+		process.addTaskListener(new TaskResultListener<Void>() {
 			@Override
-			public void receiveStatusDone() {
-				try {
-
-					MetabolicNetwork network = process.get();
-					if (network == null) {
-						return;
-					}
-
-					if (MarvisGraphMainWindow.this.confirm("Imported " + network.
-							getMarkers().size() + " metabolic marker. Accept?", "Import result")) {
-						setNetwork(network);
-						if (MarvisGraphMainWindow.this.confirm("Perform an annotation of the metabolic marker?", "Perform annotation")) {
-							annotateMarker();
-						}
-					}
-
-				}
-				catch (Exception ex) {
-					display_error("Can not import metabolic marker: ", ex);
-					logger.log(Level.SEVERE, "Can not import metabolic marker: ", ex);
+			public void taskDone() {
+				MetabolicNetwork network = process.getTaskResult();
+				if (network == null) {
+					return;
 				}
 
-			}
-
-			@Override
-			public void receiveError(String msg) {
-				display_error(msg);
-			}
-
-			@Override
-			public void receiveException(Exception ex) {
-				display_error("Exception during import of metabolic data", ex);
+				if (confirm("Imported " + network.
+						getMarkers().size() + " metabolic marker. Accept?", "Import result")) {
+					setNetwork(network);
+					if (confirm("Perform an annotation of the metabolic marker?", "Perform annotation")) {
+						annotateMarker();
+					}
+				}
 			}
 		});
-		process.execute();
+
+		executeTask(process);
 	}
 
 	/**
@@ -579,46 +527,23 @@ public class MarvisGraphMainWindow extends JFrame {
 
 		final ImportMetabolicMarkerCef process = new ImportMetabolicMarkerCef(network);
 		process.setInputFiles(input_files);
-		monitorTask(process);
-
-		// Asynchronous fetching of the result
-		process.addPropertyChangeListener(new AbstractTaskListener() {
+		process.addTaskListener(new TaskResultListener<Void>() {
 			@Override
-			public void receiveStatusDone() {
-				try {
-
-					MetabolicNetwork network = process.get();
-					if (network == null) {
-						return;
-					}
-
-					if (MarvisGraphMainWindow.this.confirm("Imported " + network.
-							getMarkers().size() + " metabolic marker. Accept?", "Import result")) {
-						setNetwork(network);
-						if (MarvisGraphMainWindow.this.confirm("Perform an annotation of the metabolic marker?")) {
-							annotateMarker();
-						}
-					}
-
-				}
-				catch (Exception ex) {
-					display_error("Can not import metabolic marker: ", ex);
-					logger.log(Level.SEVERE, "Can not import metabolic marker: ", ex);
+			public void taskDone() {
+				MetabolicNetwork network = process.getTaskResult();
+				if (network == null) {
+					return;
 				}
 
-			}
-
-			@Override
-			public void receiveError(String msg) {
-				display_error(msg);
-			}
-
-			@Override
-			public void receiveException(Exception ex) {
-				display_error("Can not import metabolic marker: ", ex);
+				if (MarvisGraphMainWindow.this.confirm("Imported " + network.
+						getMarkers().size() + " metabolic marker. Accept?", "Import result")) {
+					setNetwork(network);
+					if (MarvisGraphMainWindow.this.confirm("Perform an annotation of the metabolic marker?")) {
+						annotateMarker();
+					}
+				}
 			}
 		});
-		process.execute();
 	}
 
 	/**
@@ -658,42 +583,22 @@ public class MarvisGraphMainWindow extends JFrame {
 
 		final AnnotateMarker annotate_process = new AnnotateMarker(network);
 		annotate_process.setMassRange(range);
-
-		monitorTask(annotate_process);
-		// Asynchronous fetching of the result
-		annotate_process.addPropertyChangeListener(new AbstractTaskListener() {
+		annotate_process.addTaskListener(new TaskResultListener<Void>() {
 			@Override
-			public void receiveStatusDone() {
-				try {
-					MetabolicNetwork network = annotate_process.get();
-					if (network == null) {
-						return;
-					}
-					int count_annotations = network.getRelations(RelationshipType.MARKER_ANNOTATION_COMPOUND).
-							size();
-
-					if (confirm("Found " + count_annotations + " annotations. Accept?", "Check annotations")) {
-						setNetwork(network);
-					}
+			public void taskDone() {
+				MetabolicNetwork network = annotate_process.getTaskResult();
+				if (network == null) {
+					return;
 				}
-				catch (Exception ex) {
-					display_error("Can not get annotate markers: ", ex);
-					logger.log(Level.SEVERE, "Can not get annotate markers: ", ex);
+				int count_annotations = network.getRelations(RelationshipType.MARKER_ANNOTATION_COMPOUND).
+						size();
+
+				if (confirm("Found " + count_annotations + " annotations. Accept?", "Check annotations")) {
+					setNetwork(network);
 				}
-			}
-
-			@Override
-			public void receiveError(String msg) {
-				display_error(msg);
-			}
-
-			@Override
-			public void receiveException(Exception ex) {
-				display_error("Can not annotate metabolic marker: ", ex);
 			}
 		});
-
-		annotate_process.execute();
+		executeTask(annotate_process);
 	}
 
 	public void importTranscripts() {
@@ -745,39 +650,15 @@ public class MarvisGraphMainWindow extends JFrame {
 		if (process == null) {
 			return;
 		}
-
-		monitorTask(process);
-		// Asynchronous fetching of the result
-		process.addPropertyChangeListener(new AbstractTaskListener() {
+		process.addTaskListener(new TaskResultListener<Void>() {
 			@Override
-			public void receiveError(String msg) {
-				MarvisGraphMainWindow.this.display_error(msg);
-			}
-
-			@Override
-			public void receiveException(Exception ex) {
-				MarvisGraphMainWindow.this.display_error("Exception during transcript import", ex);
-			}
-
-			@Override
-			public void receiveStatusDone() {
-				if (process.isCancelled()) {
-					return;
-				}
-				MetabolicNetwork network = null;
-				try {
-					network = process.get();
-				}
-				catch (Exception ex) {
-					logger.log(Level.SEVERE, "Import canceled: ", ex);
-				}
+			public void taskDone() {
+				MetabolicNetwork network = process.getTaskResult();
 				if (network == null) {
 					return;
 				}
 
-
 				int counter_transcripts = 0;
-				int counter_annotated = 0;
 				TreeSet<Reaction> reactions = new TreeSet<Reaction>();
 				for (Transcript t : network.getTranscripts()) {
 					counter_transcripts++;
@@ -795,16 +676,27 @@ public class MarvisGraphMainWindow extends JFrame {
 				}
 			}
 		});
-		process.execute();
+
+		executeTask(process);
 	}
 
 	public void createNewNetwork() {
 		new NetworkDownloaderDialog(this).setVisible(true);
 	}
 
-	public void monitorTask(SwingWorker process) {
-		statusbar.monitorTask(process);
-		status_dialog.monitorTask(process);
+	/**
+	 * Ensures, that the task is monitored and the run through a SwingWorker for
+	 * background calculation. <strong>Note:</strong> it is not necessary to
+	 * call
+	 * <code>monitorTask()</code> separately, because this method will do this
+	 * automatically.
+	 *
+	 * @param task
+	 */
+	public void executeTask(AbstractTask task) {
+		statusbar.monitorTask(task);
+		status_dialog.monitorTask(task);
+		new TaskWrapper<>(task).execute();
 	}
 
 	public boolean confirm(String question) {
@@ -956,7 +848,7 @@ public class MarvisGraphMainWindow extends JFrame {
 		options_panel.add(new JLabel("No. of CPUs to use:"));
 		options_panel.add(new JSpinner(sm_threads));
 		SpringUtilities.makeCompactGrid(options_panel);
-		
+
 		if (JOptionPane.showConfirmDialog(this, options_panel, "Set permutation options", JOptionPane.OK_CANCEL_OPTION, JOptionPane.QUESTION_MESSAGE) != JOptionPane.OK_OPTION) {
 			return;
 		}
@@ -977,36 +869,17 @@ public class MarvisGraphMainWindow extends JFrame {
 		final PermutationTest process = new PermutationTest(main, subs, calculate_network_task, combobox_graph_sort.getSorterFor(main));
 		process.setNumberOfPermutations(number_of_permutations);
 		process.setNumberOfThreads(num_threads);
-
-		monitorTask(process);
-		process.addPropertyChangeListener(new AbstractTaskListener() {
+		process.addTaskListener(new TaskResultListener<Void>() {
 			@Override
-			public void receiveStatusDone() {
-				if (process.isCancelled()) {
-					return;
-				}
-				try {
-					Set<PermutationTestResult> results = process.get();
-					logger.log(Level.FINER, "Permutation test returned {0} results", results.size());
-					displayPermutationResults(results);
-				}
-				catch (Exception ex) {
-					display_error("Calculation interupted");
-					logger.log(Level.SEVERE, null, ex);
-				}
-			}
+			public void taskDone() {
+				Set<PermutationTestResult> results = process.getTaskResult();
+				logger.log(Level.FINER, "Permutation test returned {0} results", results.size());
+				displayPermutationResults(results);
 
-			@Override
-			public void receiveError(String msg) {
-				display_error(msg);
-			}
-
-			@Override
-			public void receiveException(Exception ex) {
-				display_error("Can not calculate permutations", ex);
 			}
 		});
-		process.execute();
+
+		executeTask(process);
 	}
 
 	/**

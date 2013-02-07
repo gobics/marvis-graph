@@ -47,7 +47,7 @@ public class BiocycCreateNetworkProcess extends AbstractNetworkCreator {
 	}
 
 	@Override
-	public MetabolicNetwork performTask() throws Exception {
+	public MetabolicNetwork doTask() throws Exception {
 		// Initialize variables for a new run
 		graph = new MetabolicNetwork();
 		graph.setName("Biocyc");

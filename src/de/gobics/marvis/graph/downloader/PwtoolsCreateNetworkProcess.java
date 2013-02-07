@@ -66,7 +66,7 @@ public class PwtoolsCreateNetworkProcess extends AbstractNetworkCreator {
 	}
 
 	@Override
-	public MetabolicNetwork performTask() throws Exception {
+	public MetabolicNetwork doTask() throws Exception {
 		// Initialize variables for a new run
 		graph = new MetabolicNetwork();
 		graph.setName(StringUtils.ucfirst(organism) + "Cyc");
@@ -74,33 +74,34 @@ public class PwtoolsCreateNetworkProcess extends AbstractNetworkCreator {
 		checked.clear();
 
 		// Download all pathways
-		getPropertyChangeSupport().firePropertyChange("description", "", "Fetching list of pathways");
+		setTaskDescription("Fetching list of pathways");
 		for (Object pid : javacyc.allPathways()) {
 			graph.createPathway(pid.toString());
 		}
-		getPropertyChangeSupport().firePropertyChange("description", "", "Fetching list of reactions");
+		setTaskDescription("Fetching list of reactions");
 		for (Object rid : javacyc.allRxns()) {
 			graph.createReaction(rid.toString());
 		}
-		getPropertyChangeSupport().firePropertyChange("description", "", "Fetching list of enzymes");
+		setTaskDescription("Fetching list of enzymes");
 		for (Object eid : javacyc.allEnzymes()) {
 			graph.createEnzyme(eid.toString());
 		}
-		getPropertyChangeSupport().firePropertyChange("description", "", "Fetching gene list for '" + organism + "' from KEGG");
+		setTaskDescription("Fetching gene list for '" + organism + "' from KEGG");
 		//for (String gid : javacyc.api.get_genes_by_organism(organism, 1, Integer.MAX_VALUE)) {
 		//	graph.createGene(gid);
 		//}
 		to_check.addAll(graph.getAllObjects());
 
-		getPropertyChangeSupport().firePropertyChange("description", "", "Fetching data");
+		setTaskDescription("Fetching data");
 
 		while (to_check.size() > 0) {
 			GraphObject go = to_check.first();
-			setProgress(checked.size() / (checked.size() + to_check.size()));
+			setProgressMax(checked.size()+to_check.size());
+			setProgress(checked.size());
 			expand(go);
 			checked(go);
 
-			if (isCancelled()) {
+			if (isCanceled()) {
 				return null;
 			}
 		}
@@ -341,18 +342,5 @@ public class PwtoolsCreateNetworkProcess extends AbstractNetworkCreator {
 	private boolean valid(String s) {
 		return s != null && !s.isEmpty() && !s.toLowerCase().equals(":error") && !s.
 				toLowerCase().equals("nil");
-	}
-
-	public static void main(String[] args) throws Exception {
-		PwtoolsCreateNetworkProcess process = new PwtoolsCreateNetworkProcess("ARA");
-		process.test();
-	}
-
-	private void test() throws Exception {
-		graph = new MetabolicNetwork();
-		Compound c = graph.createCompound("UDP");
-		System.out.println("Compound is: " + c);
-		expand(c);
-		System.out.println("Compound is: " + c);
 	}
 }

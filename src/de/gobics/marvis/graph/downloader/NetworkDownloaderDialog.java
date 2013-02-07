@@ -4,6 +4,8 @@ import de.gobics.marvis.graph.MetabolicNetwork;
 import de.gobics.marvis.graph.gui.MarvisGraphMainWindow;
 import de.gobics.marvis.utils.swing.AbstractTaskListener;
 import de.gobics.marvis.utils.swing.Statusdialog;
+import de.gobics.marvis.utils.task.AbstractTask.State;
+import de.gobics.marvis.utils.task.TaskListener;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -33,7 +35,6 @@ public class NetworkDownloaderDialog extends JDialog {
 		getContentPane().add(source);
 		source.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
 		source.addActionListener(new ActionListener() {
-
 			@Override
 			public void actionPerformed(ActionEvent ae) {
 				NetworkDownloaderDialog.this.updateOptions();
@@ -64,7 +65,6 @@ public class NetworkDownloaderDialog extends JDialog {
 		pack();
 
 		SwingWorker<Void, Void> process = new SwingWorker<Void, Void>() {
-
 			@Override
 			protected Void doInBackground() {
 				panel.updateOptions();
@@ -78,41 +78,48 @@ public class NetworkDownloaderDialog extends JDialog {
 
 	public void performDownload() {
 		final AbstractNetworkCreator process = options_panel.getProcess();
-		getMainWindow().monitorTask(process);
-		process.addPropertyChangeListener(new AbstractTaskListener() {
-
+		process.addTaskListener(new TaskListener<Void>() {
 			@Override
-			public void receiveError(String msg) {
-				getMainWindow().display_error(msg);
+			public void setTaskProgress(int percentage) {
+				//ignore
 			}
 
 			@Override
-			public void receiveException(Exception ex) {
-				getMainWindow().display_error("Exception during download", ex);
+			public void addTaskResult(Void result) {
+			//ignore
 			}
 
 			@Override
-			public void receiveStatusDone() {
-				if (process.isCancelled()) {
-					return;
-				}
-				try {
-					MetabolicNetwork network = process.get();
+			public void setTaskDescription(String new_description) {
+				//ignore
+			}
+
+			@Override
+			public void setTaskTitle(String new_title) {
+				//ignore
+			}
+
+			@Override
+			public void log(Level level, String message) {
+				//ignore
+			}
+
+			@Override
+			public void setTaskState(State state) {
+				if (!process.isDone()) {
+					MetabolicNetwork network = process.getTaskResult();
 					if (network != null) {
 						getMainWindow().setNetwork(network);
 						NetworkDownloaderDialog.this.dispose();
 						getMainWindow().displayNetworkReport(network);
 					}
 				}
-				catch (Exception ex) {
-					logger.log(Level.SEVERE, "Can not download network: ", ex);
-					getMainWindow().display_error("Can not download network", ex);
-				}
 			}
 		});
+		
 
 		dispose();
-		process.execute();
+		getMainWindow().executeTask(process);
 	}
 
 	private MarvisGraphMainWindow getMainWindow() {

@@ -6,7 +6,7 @@ package de.gobics.marvis.graph.downloader;
 
 import de.gobics.marvis.graph.gui.ErrorDialog;
 import de.gobics.marvis.graph.gui.MarvisGraphMainWindow;
-import de.gobics.marvis.utils.swing.AbstractTask;
+import de.gobics.marvis.utils.task.AbstractTask;
 import de.gobics.marvis.utils.swing.Statusdialog;
 import java.awt.BorderLayout;
 import java.io.File;
@@ -38,10 +38,9 @@ public class PwtoolsOptionsPanel extends AbstractOptionsPanel {
 			ErrorDialog.show(null, "No running Pathway Tools instance found");
 			return;
 		}
-		SwingWorker<OrganismDescription[], Void> process = new AbstractTask<OrganismDescription[], Void>() {
-
+		AbstractTask<OrganismDescription[], Void> process = new AbstractTask<OrganismDescription[], Void>() {
 			@Override
-			public OrganismDescription[] performTask() throws Exception {
+			public OrganismDescription[] doTask() throws Exception {
 				Javacyc cyc = new Javacyc("META");
 				ArrayList<String> pgdbs = cyc.allPGDBs();
 				OrganismDescription[] orgs = new OrganismDescription[pgdbs.size()];
@@ -56,14 +55,9 @@ public class PwtoolsOptionsPanel extends AbstractOptionsPanel {
 			}
 		};
 
-		getMainWindow().monitorTask(process);
-		process.execute();
-		try {
-			organisms.setOrganisms(process.get());
-		}
-		catch (Exception ex) {
-			logger.log(Level.SEVERE, "Can not get result of Orgism listing: ", ex);
-			getMainWindow().display_error("Can not get result of organism listing", ex);
+		getMainWindow().executeTask(process);
+		if (process.isDone()) {
+			organisms.setOrganisms(process.getTaskResult());
 		}
 
 	}

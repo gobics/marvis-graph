@@ -8,7 +8,7 @@ import de.gobics.marvis.graph.Relation;
 import de.gobics.marvis.graph.RelationshipType;
 import de.gobics.marvis.graph.Transcript;
 import de.gobics.marvis.graph.sort.AbstractGraphScore;
-import de.gobics.marvis.utils.swing.AbstractTask;
+import de.gobics.marvis.utils.task.AbstractTask;
 import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.util.Arrays;
@@ -81,27 +81,27 @@ public class PermutationTest extends AbstractTask<Set<PermutationTestResult>, Vo
 	}
 
 	@Override
-	protected Set<PermutationTestResult> performTask() throws Exception {
+	protected Set<PermutationTestResult> doTask() throws Exception {
 		return calculateScores();
 	}
 
 	public Set<PermutationTestResult> calculateScores() throws InterruptedException, Exception {
 		setProgressMax(NUM_PERMUTES);
-		sendDescription("Permuting network structure and calculating sub networks");
+		setTaskDescription("Permuting network structure and calculating sub networks");
 		ExecutorService pool = Executors.newFixedThreadPool(num_threads);
 		for (int i = 0; i < NUM_PERMUTES; i++) {
 			pool.execute(new PermutationThread(i));
 		}
 		pool.shutdown();
 		while (!pool.isTerminated()) {
-			if (isCancelled()) {
+			if (isCanceled()) {
 				pool.shutdownNow();
 				return null;
 			}
 			Thread.sleep(1000);
 		}
 
-		sendDescription("Calculating Family-Wise-Error-Rate");
+		setTaskDescription("Calculating Family-Wise-Error-Rate");
 		//	System.out.println(permutation_scores);
 
 		BufferedWriter out = new BufferedWriter(new FileWriter("fwer_scores.csv"));
