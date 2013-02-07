@@ -57,20 +57,20 @@ public class CalculateNetworksRWR extends AbstractNetworkCalculation {
 	}
 
 	@Override
-	protected MetabolicNetwork[] performTask() throws Exception {
+	protected MetabolicNetwork[] doTask() throws Exception {
 		return calculateNetworks(root_network);
 	}
 
 	public MetabolicNetwork[] calculateNetworks(MetabolicNetwork root) throws Exception {
 		// Find explainable nodes
-		sendTitle("Calculate sub-networks with Random Walk");
-		sendDescription("Search start nodes");
+		setTaskTitle("Calculate sub-networks with Random Walk");
+		setTaskDescription("Search start nodes");
 		setProgressMax(5);
 		incrementProgress();
 		logger.finer("Calculating reaction start probabilities");
 		Map<Reaction, Double> initial = calculateInitialScores(true);
 
-		sendDescription("Performing random walk for reaction scoring");
+		setTaskDescription("Performing random walk for reaction scoring");
 		incrementProgress();
 		logger.log(Level.FINER, "Perfoming random walk process with {0} initial nodes and {1} edges", new Object[]{initial.size(), reactions_view.getEdgeCount()});
 		RandomWalkWithRestart process = new RandomWalkWithRestart(reactions_view, restart_probability, 0.0000001);
@@ -88,7 +88,7 @@ public class CalculateNetworksRWR extends AbstractNetworkCalculation {
 		}
 		logger.log(Level.FINER, "Found {0} reactions for the subnetworks", reactions_for_networks.size());
 
-		sendDescription("Generating new metabolic sub-networks");
+		setTaskDescription("Generating new metabolic sub-networks");
 		incrementProgress();
 		Collection<MetabolicNetwork> subs = getSubnetworks(reactions_for_networks);
 		logger.log(Level.FINER, "Found {0} subnetworks", subs.size());

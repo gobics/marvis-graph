@@ -23,30 +23,30 @@ public class CalculateNetworksPathway extends AbstractNetworkCalculation {
 			getName());
 	private final MetabolicNetwork root_network;
 	private final LinkedList<MetabolicNetwork> found_networks = new LinkedList<MetabolicNetwork>();
-	
+
 	public CalculateNetworksPathway(MetabolicNetwork network) {
 		this.root_network = network;
 	}
 
 	@Override
-	public AbstractNetworkCalculation like(MetabolicNetwork network){
+	public AbstractNetworkCalculation like(MetabolicNetwork network) {
 		return new CalculateNetworksPathway(network);
 	}
-	
+
 	@Override
-	protected MetabolicNetwork[] performTask() throws Exception {
+	protected MetabolicNetwork[] doTask() throws Exception {
 		return calculateNetworks();
 	}
 
 	public MetabolicNetwork[] calculateNetworks() throws Exception {
 		logger.fine("Searching start nodes");
-		sendDescription("Searching start nodes");
+		setTaskDescription("Searching start nodes");
 		TreeSet<Pathway> possible_start_nodes = new TreeSet<Pathway>(root_network.
 				getPathways());
 
 		logger.fine("Beginning calculation of subnetworks with " + possible_start_nodes.
 				size() + " possible start nodes: " + possible_start_nodes);
-		sendDescription("Calculating sub networks");
+		setTaskDescription("Calculating sub networks");
 		setProgressMax(possible_start_nodes.size());
 
 
@@ -58,17 +58,16 @@ public class CalculateNetworksPathway extends AbstractNetworkCalculation {
 			possible_start_nodes.remove(next_vertex);
 			MetabolicNetwork new_network = generate_network(next_vertex);
 			new_network.setName("Subnetwork: " + (next_vertex.getName() != null ? next_vertex.
-					getName() : next_vertex.getId()));
+												  getName() : next_vertex.getId()));
 			found_networks.add(new_network);
 
-			if (isCancelled()) {
+			if (isCanceled()) {
 				return null;
 			}
 
 			incrementProgress();
 		}
 
-		setProgress(100);
 		return found_networks.toArray(new MetabolicNetwork[found_networks.size()]);
 	}
 

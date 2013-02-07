@@ -1,6 +1,6 @@
 package de.gobics.marvis.graph.gui.tasks;
 
-import de.gobics.marvis.utils.swing.AbstractTask;
+import de.gobics.marvis.utils.task.AbstractTask;
 import java.io.*;
 import de.gobics.marvis.graph.*;
 import java.util.List;
@@ -51,8 +51,6 @@ public class ImportMetabolicMarkerCef extends AbstractTask<MetabolicNetwork, Voi
 		Document doc = builder.build(new FileInputStream(current_file));
 		Element root = doc.getRootElement();
 
-		setProgress(0);
-
 		logger.finer("Importing objects");
 		List<Element> children = root.getChildren("Compound");
 		int counter = 1;
@@ -76,9 +74,11 @@ public class ImportMetabolicMarkerCef extends AbstractTask<MetabolicNetwork, Voi
 			//FIXME: Ich brauch intensitaeten
 			
 			incrementProgress();
+			if(isCanceled()){
+				return null;
+			}
 		}
 
-		setProgress(100);
 		logger.info("MetabolicNetwork ready");
 		return network;
 	}
@@ -94,7 +94,7 @@ public class ImportMetabolicMarkerCef extends AbstractTask<MetabolicNetwork, Voi
 	}
 
 	@Override
-	protected MetabolicNetwork performTask() throws Exception {
+	protected MetabolicNetwork doTask() throws Exception {
 		return importMarker();
 	}
 }

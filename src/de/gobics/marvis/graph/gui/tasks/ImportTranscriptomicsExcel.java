@@ -1,5 +1,5 @@
 package de.gobics.marvis.graph.gui.tasks;
-import de.gobics.marvis.utils.swing.AbstractTask;
+import de.gobics.marvis.utils.task.AbstractTask;
 import de.gobics.marvis.graph.Gene;
 import de.gobics.marvis.graph.MetabolicNetwork;
 import de.gobics.marvis.graph.Transcript;
@@ -46,7 +46,7 @@ public class ImportTranscriptomicsExcel extends AbstractTask<MetabolicNetwork, V
 	}
 
 	public MetabolicNetwork importTranscripts() throws Exception {
-		sendDescription("Importing transcriptomic data");
+		setTaskDescription("Importing transcriptomic data");
 		Workbook workbook = Workbook.getWorkbook(this.transcriptomicsFile);
 
 		logger.finer("Try to open the excel file");
@@ -99,7 +99,7 @@ public class ImportTranscriptomicsExcel extends AbstractTask<MetabolicNetwork, V
 			transcript.setIntensity(condition_names, intensity_data);
 
 			incrementProgress();
-			if (isCancelled()) {
+			if (isCanceled()) {
 				return null;
 			}
 
@@ -111,7 +111,7 @@ public class ImportTranscriptomicsExcel extends AbstractTask<MetabolicNetwork, V
 	}
 
 	@Override
-	protected MetabolicNetwork performTask() throws Exception {
+	protected MetabolicNetwork doTask() throws Exception {
 		return importTranscripts();
 	}
 }

@@ -1,6 +1,6 @@
 package de.gobics.marvis.graph.gui.tasks;
 
-import de.gobics.marvis.utils.swing.AbstractTask;
+import de.gobics.marvis.utils.task.AbstractTask;
 import java.io.*;
 
 import org.jdom.*;
@@ -32,13 +32,13 @@ public class SaveNetwork extends AbstractTask<Void, Void> {
 	}
 
 	@Override
-	protected Void performTask() throws Exception {
+	protected Void doTask() throws Exception {
 		save();
 		return null;
 	}
 
 	public void save() throws Exception {
-		sendDescription("Save network to file");
+		setTaskDescription("Save network to file");
 		if (file.getParentFile() != null && !file.getParentFile().exists() && !file.
 				getParentFile().mkdirs()) {
 			throw new IOException("Can not create directory");
@@ -87,7 +87,7 @@ public class SaveNetwork extends AbstractTask<Void, Void> {
 				}
 			}
 
-			if (this.isCancelled()) {
+			if (isCanceled()) {
 				return;
 			}
 			incrementProgress();

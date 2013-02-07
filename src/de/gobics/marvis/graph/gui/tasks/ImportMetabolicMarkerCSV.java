@@ -1,6 +1,6 @@
 package de.gobics.marvis.graph.gui.tasks;
 
-import de.gobics.marvis.utils.swing.AbstractTask;
+import de.gobics.marvis.utils.task.AbstractTask;
 import au.com.bytecode.opencsv.CSVReader;
 import de.gobics.marvis.graph.Marker;
 import de.gobics.marvis.graph.MetabolicNetwork;
@@ -95,7 +95,7 @@ public class ImportMetabolicMarkerCSV extends AbstractTask<MetabolicNetwork, Voi
 	public MetabolicNetwork importMarker(File current_file) throws IOException {
 		setProgressMax( getNumberOfLines(current_file) - start_row );
 		
-		sendDescription("Importing metabolomic data");
+		setTaskDescription("Importing metabolomic data");
 		CSVReader reader = new CSVReader(new FileReader(current_file), separator);
 
 		// <= for convenience with Matlab MarVis
@@ -149,7 +149,7 @@ public class ImportMetabolicMarkerCSV extends AbstractTask<MetabolicNetwork, Voi
 
 			incrementProgress();
 
-			if (isCancelled()) {
+			if (isCanceled()) {
 				return null;
 			}
 		}
@@ -171,7 +171,7 @@ public class ImportMetabolicMarkerCSV extends AbstractTask<MetabolicNetwork, Voi
 	}
 
 	@Override
-	public MetabolicNetwork performTask() throws Exception {
+	public MetabolicNetwork doTask() throws Exception {
 		return importMarker();
 	}
 

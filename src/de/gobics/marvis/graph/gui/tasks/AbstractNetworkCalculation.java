@@ -5,7 +5,7 @@
 package de.gobics.marvis.graph.gui.tasks;
 
 import de.gobics.marvis.graph.MetabolicNetwork;
-import de.gobics.marvis.utils.swing.AbstractTask;
+import de.gobics.marvis.utils.task.AbstractTask;
 
 /**
  *

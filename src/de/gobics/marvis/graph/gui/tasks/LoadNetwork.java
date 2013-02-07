@@ -1,7 +1,7 @@
 package de.gobics.marvis.graph.gui.tasks;
 
 import de.gobics.marvis.graph.*;
-import de.gobics.marvis.utils.swing.AbstractTask;
+import de.gobics.marvis.utils.task.AbstractTask;
 import java.io.*;
 import java.util.*;
 import java.util.logging.Level;
@@ -31,15 +31,15 @@ public class LoadNetwork extends AbstractTask<MetabolicNetwork, Void> {
 	}
 
 	@Override
-	protected MetabolicNetwork performTask() throws Exception {
+	protected MetabolicNetwork doTask() throws Exception {
 		return this.load();
 	}
 
 	public MetabolicNetwork load() throws Exception {
-		sendTitle("Load network from file: " + filename.getName());
+		setTaskTitle("Load network from file: " + filename.getName());
 		logger.log(Level.INFO, "Importing file {0}", filename);
 
-		sendDescription("Loading network");
+		setTaskDescription("Loading network");
 
 		if (filename.getAbsolutePath().toLowerCase().endsWith(".zip")) {
 			return this.loadZip(filename);
@@ -93,7 +93,7 @@ public class LoadNetwork extends AbstractTask<MetabolicNetwork, Void> {
 
 			incrementProgress();
 
-			if (this.isCancelled()) {
+			if (isCanceled()) {
 				return null;
 			}
 		}

@@ -36,13 +36,13 @@ public class CalculateNetworksReaction extends AbstractNetworkCalculation {
 	}
 
 	@Override
-	protected MetabolicNetwork[] performTask() throws Exception {
+	protected MetabolicNetwork[] doTask() throws Exception {
 		return calculateNetworks();
 	}
 
 	public MetabolicNetwork[] calculateNetworks() throws Exception {
 		logger.fine("Searching start nodes");
-		sendDescription("Searching start nodes");
+		setTaskDescription("Searching start nodes");
 		TreeSet<Reaction> possible_start_nodes = new TreeSet<Reaction>();
 		for (Reaction reaction : root_network.getReactions()) {
 			possible_start_nodes.add(reaction);
@@ -50,7 +50,7 @@ public class CalculateNetworksReaction extends AbstractNetworkCalculation {
 
 		logger.fine("Beginning calculation of subnetworks with " + possible_start_nodes.
 				size() + " possible start nodes: " + possible_start_nodes);
-		sendDescription("Calculating sub networks");
+		setTaskDescription("Calculating sub networks");
 		setProgressMax(possible_start_nodes.size());
 
 		// Store the initial number of nodes to set progress status
@@ -79,7 +79,7 @@ public class CalculateNetworksReaction extends AbstractNetworkCalculation {
 
 
 
-			if (isCancelled()) {
+			if (isCanceled()) {
 				return null;
 			}
 

@@ -4,7 +4,7 @@ import de.gobics.marvis.graph.MetabolicNetwork;
 import de.gobics.marvis.graph.sort.AbstractGraphScore;
 import de.gobics.marvis.graph.sort.NetworkSorterName;
 import de.gobics.marvis.graph.sort.NetworkSorterSEA;
-import de.gobics.marvis.utils.swing.AbstractTask;
+import de.gobics.marvis.utils.task.AbstractTask;
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
@@ -46,13 +46,13 @@ public class SortNetworksTask extends AbstractTask<MetabolicNetwork[], Void> {
 	}
 
 	@Override
-	public MetabolicNetwork[] performTask() throws Exception {
+	public MetabolicNetwork[] doTask() throws Exception {
 		return sortNetworks();
 	}
 
 	public MetabolicNetwork[] sortNetworks() throws Exception {
-		sendTitle("Sorting sub-networks");
-		sendDescription("Calculation scores");
+		setTaskTitle("Sorting sub-networks");
+		setTaskDescription("Calculation scores");
 		ExecutorService pool = Executors.newFixedThreadPool(Math.max(1, Runtime.
 				getRuntime().availableProcessors() - 1));
 		logger.fine("Starting threads to calculate the scores");
@@ -95,7 +95,7 @@ public class SortNetworksTask extends AbstractTask<MetabolicNetwork[], Void> {
 			pool.shutdownNow();
 		}
 
-		if (isCancelled()) {
+		if (isCanceled()) {
 			return null;
 		}
 
