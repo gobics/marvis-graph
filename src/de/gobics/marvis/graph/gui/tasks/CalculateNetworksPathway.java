@@ -21,11 +21,10 @@ public class CalculateNetworksPathway extends AbstractNetworkCalculation {
 
 	private static final Logger logger = Logger.getLogger(CalculateNetworksPathway.class.
 			getName());
-	private final MetabolicNetwork root_network;
 	private final LinkedList<MetabolicNetwork> found_networks = new LinkedList<MetabolicNetwork>();
 
 	public CalculateNetworksPathway(MetabolicNetwork network) {
-		this.root_network = network;
+		super(network);
 	}
 
 	@Override
@@ -41,7 +40,7 @@ public class CalculateNetworksPathway extends AbstractNetworkCalculation {
 	public MetabolicNetwork[] calculateNetworks() throws Exception {
 		logger.fine("Searching start nodes");
 		setTaskDescription("Searching start nodes");
-		TreeSet<Pathway> possible_start_nodes = new TreeSet<Pathway>(root_network.
+		TreeSet<Pathway> possible_start_nodes = new TreeSet<Pathway>(getRootNetwork().
 				getPathways());
 
 		logger.fine("Beginning calculation of subnetworks with " + possible_start_nodes.
@@ -52,13 +51,13 @@ public class CalculateNetworksPathway extends AbstractNetworkCalculation {
 
 		while (!possible_start_nodes.isEmpty()) {
 			// Extract the first element from possible nodes
-			Pathway next_vertex = possible_start_nodes.pollFirst();
+			Pathway next_pathway = possible_start_nodes.pollFirst();
 
-			logger.finer("Using possible start node " + next_vertex);
-			possible_start_nodes.remove(next_vertex);
-			MetabolicNetwork new_network = generate_network(next_vertex);
-			new_network.setName("Subnetwork: " + (next_vertex.getName() != null ? next_vertex.
-												  getName() : next_vertex.getId()));
+			logger.finer("Using possible start node " + next_pathway);
+			possible_start_nodes.remove(next_pathway);
+			MetabolicNetwork new_network = generate_network(getRootNetwork().getReactions(next_pathway));
+			new_network.setName("Subnetwork: " + (next_pathway.getName() != null ? next_pathway.
+												  getName() : next_pathway.getId()));
 			found_networks.add(new_network);
 
 			if (isCanceled()) {
@@ -71,13 +70,4 @@ public class CalculateNetworksPathway extends AbstractNetworkCalculation {
 		return found_networks.toArray(new MetabolicNetwork[found_networks.size()]);
 	}
 
-	public MetabolicNetwork generate_network(Pathway pathway) {
-		MetabolicNetwork network = new MetabolicNetwork(root_network);
-
-		for (Relation r : root_network.getAllPathwayComponents(pathway)) {
-			network.addRelation(r);
-		}
-
-		return network;
-	}
 }

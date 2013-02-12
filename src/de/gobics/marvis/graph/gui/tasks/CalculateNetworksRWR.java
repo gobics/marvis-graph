@@ -19,10 +19,7 @@ public class CalculateNetworksRWR extends AbstractNetworkCalculation {
 
 	private static final Logger logger = Logger.getLogger(CalculateNetworksRWR.class.
 			getName());
-	/**
-	 * The base network to calculate from.
-	 */
-	private final MetabolicNetwork root_network;
+	
 	/**
 	 * A reaction based view on the metabolic network. This view depends on the
 	 * co-factor setting.
@@ -35,7 +32,7 @@ public class CalculateNetworksRWR extends AbstractNetworkCalculation {
 	private boolean use_input_weights;
 
 	public CalculateNetworksRWR(MetabolicNetwork network) {
-		this.root_network = network;
+		super(network);
 		setCofactorThreshold(-1);
 	}
 
@@ -53,12 +50,12 @@ public class CalculateNetworksRWR extends AbstractNetworkCalculation {
 	}
 
 	public void setCofactorThreshold(int cofactor_threshold) {
-		reactions_view = new ReactionGraph(root_network, false, cofactor_threshold);
+		reactions_view = new ReactionGraph(getRootNetwork(), false, cofactor_threshold);
 	}
 
 	@Override
 	protected MetabolicNetwork[] doTask() throws Exception {
-		return calculateNetworks(root_network);
+		return calculateNetworks(getRootNetwork());
 	}
 
 	public MetabolicNetwork[] calculateNetworks(MetabolicNetwork root) throws Exception {
@@ -138,40 +135,18 @@ public class CalculateNetworksRWR extends AbstractNetworkCalculation {
 		return subs;
 	}
 
-	private MetabolicNetwork generate_network(Set<Reaction> neighbor_nodes) {
-		MetabolicNetwork network = new MetabolicNetwork(root_network);
-
-		// Iterate over all objects and get there environments
-		for (Reaction o : neighbor_nodes) {
-			for (Relation r : root_network.getEnvironment(o)) {
-				network.addRelation(r);
-			}
-		}
-
-		Iterator<Reaction> iter = neighbor_nodes.iterator();
-		while (network.getName() == null && iter.hasNext()) {
-			Reaction next = iter.next();
-			if (next.getName() != null) {
-				network.setName("Subnetwork: " + next.getName());
-				break;
-			}
-		}
-
-		return network;
-	}
-
 	public Map<Reaction, Double> calculateInitialScores(boolean normalize_to_1) {
 		Map<Reaction, Double> reaction_scores = new TreeMap<>();
 
-		for (Marker marker : root_network.getMarkers()) {
-			LinkedList<Compound> compounds = root_network.getAnnotations(marker);
+		for (Marker marker : getRootNetwork().getMarkers()) {
+			LinkedList<Compound> compounds = getRootNetwork().getAnnotations(marker);
 			double score_per_compound = getInitialScore(marker) / compounds.size();
 
 
 			for (Compound compound : compounds) {
 				LinkedList<Reaction> reactions = new LinkedList<>();
-				reactions.addAll(root_network.getSubstrateToReaction(compound));
-				reactions.addAll(root_network.getProductToReaction(compound));
+				reactions.addAll(getRootNetwork().getSubstrateToReaction(compound));
+				reactions.addAll(getRootNetwork().getProductToReaction(compound));
 
 				double score_per_reaction = score_per_compound / reactions.size();
 				for (Reaction r : reactions) {
@@ -186,16 +161,16 @@ public class CalculateNetworksRWR extends AbstractNetworkCalculation {
 			}
 		}
 
-		for (Transcript transcript : root_network.getTranscripts()) {
-			LinkedList<Gene> genes = root_network.getGenes(transcript);
+		for (Transcript transcript : getRootNetwork().getTranscripts()) {
+			LinkedList<Gene> genes = getRootNetwork().getGenes(transcript);
 			double score_for_gene = getInitialScore(transcript) / genes.size();
 
 			for (Gene gene : genes) {
-				LinkedList<Enzyme> enzymes = root_network.getEncodedEnzymes(gene);
+				LinkedList<Enzyme> enzymes = getRootNetwork().getEncodedEnzymes(gene);
 				double score_for_enzyme = score_for_gene / enzymes.size();
 
 				for (Enzyme enzyme : enzymes) {
-					LinkedList<Reaction> reactions = root_network.getReactions(enzyme);
+					LinkedList<Reaction> reactions = getRootNetwork().getReactions(enzyme);
 					double addscore = score_for_enzyme / reactions.size();
 					for (Reaction r : reactions) {
 

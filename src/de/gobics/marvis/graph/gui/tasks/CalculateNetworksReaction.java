@@ -18,18 +18,17 @@ public class CalculateNetworksReaction extends AbstractNetworkCalculation {
 
 	private static final Logger logger = Logger.getLogger(CalculateNetworksReaction.class.
 			getName());
-	private final MetabolicNetwork root_network;
 	private final LinkedList<MetabolicNetwork> found_networks = new LinkedList<MetabolicNetwork>();
 	private int max_gaps = 0;
 	private int cofactor_treshold = 100;
 
 	public CalculateNetworksReaction(MetabolicNetwork network) {
-		this.root_network = network;
+		super(network);
 	}
 
 	@Override
 	public AbstractNetworkCalculation like(MetabolicNetwork new_root_network) {
-		CalculateNetworksReaction clone = new CalculateNetworksReaction(root_network);
+		CalculateNetworksReaction clone = new CalculateNetworksReaction(getRootNetwork());
 		clone.setMaximumGaps(max_gaps);
 		clone.setCofactorTreshold(cofactor_treshold);
 		return clone;
@@ -44,7 +43,7 @@ public class CalculateNetworksReaction extends AbstractNetworkCalculation {
 		logger.fine("Searching start nodes");
 		setTaskDescription("Searching start nodes");
 		TreeSet<Reaction> possible_start_nodes = new TreeSet<Reaction>();
-		for (Reaction reaction : root_network.getReactions()) {
+		for (Reaction reaction : getRootNetwork().getReactions()) {
 			possible_start_nodes.add(reaction);
 		}
 
@@ -65,19 +64,6 @@ public class CalculateNetworksReaction extends AbstractNetworkCalculation {
 			possible_start_nodes.removeAll(neighbor_nodes);
 			MetabolicNetwork new_network = generate_network(neighbor_nodes);
 			found_networks.add(new_network);
-
-			Iterator<Reaction> reactions = new_network.getReactions().iterator();
-			while (reactions.hasNext() && new_network.getName() == null) {
-				Reaction r = reactions.next();
-				if (r.getName() != null) {
-					new_network.setName("Subnetwork: " + r.getName());
-				}
-			}
-			if (new_network.getName() == null) {
-				new_network.setName("Subnetwork: " + next_vertex.getId());
-			}
-
-
 
 			if (isCanceled()) {
 				return null;
@@ -101,7 +87,7 @@ public class CalculateNetworksReaction extends AbstractNetworkCalculation {
 		// Iterate until to_visit is empty
 		Reaction current;
 		while ((current = to_visit.pollFirst()) != null) {
-			if (root_network.isExplainableWithGap(current, max_gaps)) {
+			if (getRootNetwork().isExplainableWithGap(current, max_gaps)) {
 				subnetwork_nodes.add(current);
 			}
 			else {
@@ -109,13 +95,13 @@ public class CalculateNetworksReaction extends AbstractNetworkCalculation {
 				continue;
 			}
 
-			for (Compound c : root_network.getCompounds(current)) {
+			for (Compound c : getRootNetwork().getCompounds(current)) {
 				// If this compound is a cofactor or not explainable do not go further
-				if (root_network.getReactions(c).size() >= cofactor_treshold || !root_network.
+				if (getRootNetwork().getReactions(c).size() >= cofactor_treshold || !getRootNetwork().
 						isExplainable(c)) {
 					continue;
 				}
-				for (Reaction neighbor : root_network.getReactions(c)) {
+				for (Reaction neighbor : getRootNetwork().getReactions(c)) {
 					if (!subnetwork_nodes.contains(neighbor) && !not_explainable.
 							contains(neighbor)) {
 						to_visit.add(neighbor);
@@ -129,19 +115,6 @@ public class CalculateNetworksReaction extends AbstractNetworkCalculation {
 		logger.fine("Found subnetwork containing " + subnetwork_nodes.size() + " reaction nodes: " + subnetwork_nodes);
 
 		return subnetwork_nodes;
-	}
-
-	private MetabolicNetwork generate_network(Set<Reaction> neighbor_nodes) {
-		MetabolicNetwork network = new MetabolicNetwork(root_network);
-
-		// Iterate over all objects and get there environments
-		for (Reaction o : neighbor_nodes) {
-			for (Relation r : root_network.getEnvironment(o)) {
-				network.addRelation(r);
-			}
-		}
-
-		return network;
 	}
 
 	public void setMaximumGaps(int intValue) {
