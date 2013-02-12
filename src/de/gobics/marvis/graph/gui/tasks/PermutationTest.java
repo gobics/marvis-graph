@@ -64,6 +64,7 @@ public class PermutationTest extends AbstractTask<Set<PermutationTestResult>, Vo
 	 * The scoring mechanism to score the graphs.
 	 */
 	private final AbstractGraphScore scorer;
+	private long last_update;
 
 	public PermutationTest(MetabolicNetwork roo, MetabolicNetwork[] subs, AbstractNetworkCalculation calculator_process, AbstractGraphScore scorer) {
 		this.root_network = roo;
@@ -86,6 +87,10 @@ public class PermutationTest extends AbstractTask<Set<PermutationTestResult>, Vo
 	}
 
 	public Set<PermutationTestResult> calculateScores() throws InterruptedException, Exception {
+		return calculateScores(false);
+	}
+
+	public Set<PermutationTestResult> calculateScores(boolean check_for_indeterminate) throws InterruptedException, Exception {
 		setProgressMax(NUM_PERMUTES);
 		setTaskDescription("Permuting network structure and calculating sub networks");
 		ExecutorService pool = Executors.newFixedThreadPool(num_threads);
@@ -93,15 +98,24 @@ public class PermutationTest extends AbstractTask<Set<PermutationTestResult>, Vo
 			pool.execute(new PermutationThread(i));
 		}
 		pool.shutdown();
+		
+		last_update = System.currentTimeMillis();
 		while (!pool.isTerminated()) {
 			if (isCanceled()) {
 				pool.shutdownNow();
 				return null;
 			}
+
+			// Check if one one or more tasks ran into indetermination (give them 10 Minutes between the last update).
+			if (check_for_indeterminate && (System.currentTimeMillis() - last_update) > (10 * 60 * 1000)) {
+				pool.shutdownNow();
+			}
+
 			Thread.sleep(1000);
 		}
 
-		setTaskDescription("Calculating Family-Wise-Error-Rate");
+		setTaskDescription(
+				"Calculating Family-Wise-Error-Rate");
 		//	System.out.println(permutation_scores);
 
 		BufferedWriter out = new BufferedWriter(new FileWriter("fwer_scores.csv"));
@@ -113,18 +127,19 @@ public class PermutationTest extends AbstractTask<Set<PermutationTestResult>, Vo
 			}
 			out.write("\n");
 		}
+
 		out.close();
 
-
-		logger.info("Will now calculate the scores for the found subnetworks");
+		logger.info(
+				"Will now calculate the scores for the found subnetworks");
 		// Calculate overall number of detected subnetworks
 		int fdr_divisor = 0;
-		for(Collection<Comparable> cs : permutation_scores){
+		for (Collection<Comparable> cs : permutation_scores) {
 			fdr_divisor += cs.size();
 		}
-		
 		Set<PermutationTestResult> scores = new HashSet<>();
 		AbstractGraphScore current_scorer = this.scorer.like(root_network);
+
 		current_scorer.setParent(root_network);
 		for (MetabolicNetwork subnet : subnetworks) {
 			Comparable score = current_scorer.calculateScore(subnet);
@@ -141,6 +156,7 @@ public class PermutationTest extends AbstractTask<Set<PermutationTestResult>, Vo
 
 	synchronized private void addPermutationScore(Collection<Comparable> scores) {
 		permutation_scores.add(scores);
+		this.last_update = System.currentTimeMillis();
 	}
 
 	public int countFamilyWiseErrors(LinkedList<Collection<Comparable>> counts, Comparable score) {
@@ -180,6 +196,8 @@ public class PermutationTest extends AbstractTask<Set<PermutationTestResult>, Vo
 		}
 
 		return counter;
+
+
 	}
 
 	/**
