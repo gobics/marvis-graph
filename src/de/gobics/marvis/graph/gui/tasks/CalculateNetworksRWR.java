@@ -140,12 +140,20 @@ public class CalculateNetworksRWR extends AbstractNetworkCalculation {
 
 	private MetabolicNetwork generate_network(Set<Reaction> neighbor_nodes) {
 		MetabolicNetwork network = new MetabolicNetwork(root_network);
-		network.setName("Subnetwork: " + neighbor_nodes.iterator().next().getName());
 
 		// Iterate over all objects and get there environments
 		for (Reaction o : neighbor_nodes) {
 			for (Relation r : root_network.getEnvironment(o)) {
 				network.addRelation(r);
+			}
+		}
+
+		Iterator<Reaction> iter = neighbor_nodes.iterator();
+		while (network.getName() == null && iter.hasNext()) {
+			Reaction next = iter.next();
+			if (next.getName() != null) {
+				network.setName("Subnetwork: " + next.getName());
+				break;
 			}
 		}
 
@@ -185,7 +193,7 @@ public class CalculateNetworksRWR extends AbstractNetworkCalculation {
 			for (Gene gene : genes) {
 				LinkedList<Enzyme> enzymes = root_network.getEncodedEnzymes(gene);
 				double score_for_enzyme = score_for_gene / enzymes.size();
-				
+
 				for (Enzyme enzyme : enzymes) {
 					LinkedList<Reaction> reactions = root_network.getReactions(enzyme);
 					double addscore = score_for_enzyme / reactions.size();
