@@ -25,6 +25,7 @@ public class RenderGraphLayout extends AbstractTask<ISOMLayout, Void> {
 
 	public RenderGraphLayout(final ISOMLayout layout) {
 		layout_to_render = layout;
+		setTaskTitle("Calculating graph layout");
 	}
 
 	@Override

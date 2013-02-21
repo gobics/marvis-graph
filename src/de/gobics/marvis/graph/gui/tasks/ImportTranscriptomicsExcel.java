@@ -23,6 +23,7 @@ public class ImportTranscriptomicsExcel extends AbstractTask<MetabolicNetwork, V
 		this.setIdColumn(1);
 		this.setGeneIdColumn(2);
 		this.setStartRow(1);
+		setTaskTitle("Importing transcriptomic marker");
 	}
 
 	public void setStartRow(int r) {

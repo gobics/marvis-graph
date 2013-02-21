@@ -22,6 +22,7 @@ public abstract class AbstractNetworkCalculation extends AbstractTask<MetabolicN
 
 	public AbstractNetworkCalculation(MetabolicNetwork root) {
 		this.root_network = root;
+		setTaskTitle("Detecting sub-networks");
 	}
 	
 	public MetabolicNetwork getRootNetwork(){

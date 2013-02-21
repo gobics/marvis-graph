@@ -26,6 +26,7 @@ public class ImportMetabolicMarkerCef extends AbstractTask<MetabolicNetwork, Voi
 	
 	public ImportMetabolicMarkerCef(final MetabolicNetwork graph) {
 		this.network = graph.clone();
+		setTaskTitle("Importing metabolic marker candidates");
 	}
 
 	public void setInputFile(File datafile) {

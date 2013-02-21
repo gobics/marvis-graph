@@ -22,6 +22,7 @@ public class AnnotateMarker extends AbstractTask<MetabolicNetwork, Void> {
 
 	public AnnotateMarker(MetabolicNetwork graph) {
 		this.network = graph.clone();
+		setTaskTitle("Annotate compounds with marker candidates");
 	}
 
 	public void setMassRange(double new_range) {

@@ -23,6 +23,7 @@ public class SaveNetwork extends AbstractTask<Void, Void> {
 		super();
 		this.network = network;
 		this.file = filename;
+		setTaskTitle("Save network");
 	}
 
 	public SaveNetwork(MetabolicNetwork network, String filename) {

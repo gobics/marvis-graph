@@ -24,6 +24,7 @@ public class LoadNetwork extends AbstractTask<MetabolicNetwork, Void> {
 
 	public LoadNetwork(String filename) {
 		this(new File(filename));
+		setTaskTitle("Loading network");
 	}
 
 	public LoadNetwork(File input_file) {

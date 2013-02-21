@@ -25,6 +25,7 @@ public class CalculateNetworksPathway extends AbstractNetworkCalculation {
 
 	public CalculateNetworksPathway(MetabolicNetwork network) {
 		super(network);
+		setTaskTitle("Extract pathways");
 	}
 
 	@Override

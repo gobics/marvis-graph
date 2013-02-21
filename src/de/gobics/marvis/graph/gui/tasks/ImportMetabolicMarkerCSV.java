@@ -32,6 +32,7 @@ public class ImportMetabolicMarkerCSV extends AbstractTask<MetabolicNetwork, Voi
 
 	public ImportMetabolicMarkerCSV(final MetabolicNetwork graph) {
 		this.network = graph.clone();
+		setTaskTitle("Importing metabolic marker candidates");
 	}
 
 	public void setInputFiles(File[] datafiles) {

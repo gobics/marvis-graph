@@ -34,6 +34,7 @@ public class CalculateNetworksRWR extends AbstractNetworkCalculation {
 	public CalculateNetworksRWR(MetabolicNetwork network) {
 		super(network);
 		setCofactorThreshold(-1);
+		setTaskTitle("Detect subnetworks with Random-Walk");
 	}
 
 	@Override

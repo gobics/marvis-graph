@@ -71,6 +71,7 @@ public class PermutationTest extends AbstractTask<Set<PermutationTestResult>, Vo
 		this.subnetworks = subs;
 		this.calculator = calculator_process;
 		this.scorer = scorer;
+		setTaskTitle("Permutation test for network scoring");
 	}
 
 	public void setNumberOfPermutations(int NUM_PERMUTES) {

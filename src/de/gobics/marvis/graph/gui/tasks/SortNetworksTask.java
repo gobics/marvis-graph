@@ -43,6 +43,7 @@ public class SortNetworksTask extends AbstractTask<MetabolicNetwork[], Void> {
 		this.sorter = sorter;
 		this.main_network = main_network;
 		this.networks = networks.clone();
+		setTaskTitle("Sorting sub-networks");
 	}
 
 	@Override
@@ -51,7 +52,6 @@ public class SortNetworksTask extends AbstractTask<MetabolicNetwork[], Void> {
 	}
 
 	public MetabolicNetwork[] sortNetworks() throws Exception {
-		setTaskTitle("Sorting sub-networks");
 		setTaskDescription("Calculation scores");
 		ExecutorService pool = Executors.newFixedThreadPool(Math.max(1, Runtime.
 				getRuntime().availableProcessors() - 1));

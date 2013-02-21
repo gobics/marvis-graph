@@ -24,6 +24,7 @@ public class CalculateNetworksReaction extends AbstractNetworkCalculation {
 
 	public CalculateNetworksReaction(MetabolicNetwork network) {
 		super(network);
+		setTaskTitle("Detect subnetworks with reaction heuristic");
 	}
 
 	@Override
