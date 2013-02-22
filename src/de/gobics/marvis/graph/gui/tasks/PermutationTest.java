@@ -158,6 +158,7 @@ public class PermutationTest extends AbstractTask<Set<PermutationTestResult>, Vo
 	synchronized private void addPermutationScore(Collection<Comparable> scores) {
 		permutation_scores.add(scores);
 		this.last_update = System.currentTimeMillis();
+		System.gc();
 	}
 
 	public int countFamilyWiseErrors(LinkedList<Collection<Comparable>> counts, Comparable score) {
@@ -218,13 +219,13 @@ public class PermutationTest extends AbstractTask<Set<PermutationTestResult>, Vo
 			try {
 				toTask();
 			}
-			catch (Exception ex) {
+			catch (Throwable ex) {
 				logger.log(Level.SEVERE, null, ex);
 			}
 			incrementProgress();
 		}
 
-		private void toTask() throws Exception {
+		private void toTask() throws Throwable {
 			logger.log(Level.FINE, "Thread for permutation {0} started", permutation_number);
 			long curtime = System.currentTimeMillis();
 			MetabolicNetwork permuted_network = root_network.clone();

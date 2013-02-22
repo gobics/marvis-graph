@@ -8,10 +8,8 @@ import de.gobics.marvis.graph.gui.evaluation.TableModelResults;
 import de.gobics.marvis.graph.gui.tasks.*;
 import de.gobics.marvis.graph.sort.AbstractGraphScore;
 import de.gobics.marvis.utils.LoggingUtils;
-import de.gobics.marvis.utils.swing.AbstractTaskListener;
 import de.gobics.marvis.utils.swing.SpringUtilities;
 import de.gobics.marvis.utils.swing.Statusbar;
-import de.gobics.marvis.utils.swing.Statusdialog;
 import de.gobics.marvis.utils.swing.Statusdialog2;
 import de.gobics.marvis.utils.swing.TaskWrapper;
 import de.gobics.marvis.utils.swing.filechooser.ChooserAbstract;
@@ -19,6 +17,7 @@ import de.gobics.marvis.utils.swing.filechooser.ChooserExcel;
 import de.gobics.marvis.utils.swing.filechooser.FileFilterCef;
 import de.gobics.marvis.utils.task.AbstractTask;
 import de.gobics.marvis.utils.task.AbstractTask.State;
+import de.gobics.marvis.utils.task.AbstractTaskListener;
 import de.gobics.marvis.utils.task.TaskListener;
 import de.gobics.marvis.utils.task.TaskResultListener;
 import java.awt.BorderLayout;
@@ -26,8 +25,6 @@ import java.awt.Component;
 import java.awt.Desktop;
 import java.awt.Dimension;
 import java.awt.event.KeyEvent;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -142,32 +139,7 @@ public class MarvisGraphMainWindow extends JFrame {
 		}
 
 		final LoadNetwork process = new LoadNetwork(input);
-		process.addTaskListener(new TaskListener<Void>() {
-			@Override
-			public void setTaskProgress(int percentage) {
-				throw new UnsupportedOperationException("Not supported yet.");
-			}
-
-			@Override
-			public void addTaskResult(Void result) {
-				throw new UnsupportedOperationException("Not supported yet.");
-			}
-
-			@Override
-			public void setTaskDescription(String new_description) {
-				throw new UnsupportedOperationException("Not supported yet.");
-			}
-
-			@Override
-			public void setTaskTitle(String new_title) {
-				throw new UnsupportedOperationException("Not supported yet.");
-			}
-
-			@Override
-			public void log(Level level, String message) {
-				throw new UnsupportedOperationException("Not supported yet.");
-			}
-
+		process.addTaskListener(new AbstractTaskListener<Void>() {
 			@Override
 			public void setTaskState(State state) {
 				if (process.isDone()) {
@@ -766,20 +738,15 @@ public class MarvisGraphMainWindow extends JFrame {
 		StringBuilder sb = new StringBuilder("http://www.genome.jp/kegg-bin/show_pathway?").
 				append(path.getId().replace("path:", ""));
 		for (GraphObject c : network.getCompounds()) {
-			if (network.isExplainable(c)) {
-				sb.append("/").append(c.getId()).append("%09,red");
-			}
+			sb.append("/").append(c.getId()).append("%09,").append(network.isExplainable(c) ? "red" : "%23cdb06e");
 		}
 		for (GraphObject r : network.getReactions()) {
+			sb.append("/").append(r.getId()).append("%09,").append(network.isExplainable(r) ? "red" : "%23cdb06e");;
 
-			if (network.isExplainable(r)) {
-				sb.append("/").append(r.getId()).append("%09,red");
-			}
 		}
 		for (GraphObject r : network.getGenes()) {
-			if (network.isExplainable(r)) {
-				sb.append("/").append(r.getId()).append("%09,red");
-			}
+			sb.append("/").append(r.getId()).append("%09,").append(network.isExplainable(r) ? "red" : "%23cdb06e");;
+
 		}
 
 		openBrowser(sb.toString());

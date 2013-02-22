@@ -2,10 +2,9 @@ package de.gobics.marvis.graph.downloader;
 
 import de.gobics.marvis.graph.MetabolicNetwork;
 import de.gobics.marvis.graph.gui.MarvisGraphMainWindow;
-import de.gobics.marvis.utils.swing.AbstractTaskListener;
 import de.gobics.marvis.utils.swing.Statusdialog;
 import de.gobics.marvis.utils.task.AbstractTask.State;
-import de.gobics.marvis.utils.task.TaskListener;
+import de.gobics.marvis.utils.task.AbstractTaskListener;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -78,32 +77,7 @@ public class NetworkDownloaderDialog extends JDialog {
 
 	public void performDownload() {
 		final AbstractNetworkCreator process = options_panel.getProcess();
-		process.addTaskListener(new TaskListener<Void>() {
-			@Override
-			public void setTaskProgress(int percentage) {
-				//ignore
-			}
-
-			@Override
-			public void addTaskResult(Void result) {
-			//ignore
-			}
-
-			@Override
-			public void setTaskDescription(String new_description) {
-				//ignore
-			}
-
-			@Override
-			public void setTaskTitle(String new_title) {
-				//ignore
-			}
-
-			@Override
-			public void log(Level level, String message) {
-				//ignore
-			}
-
+		process.addTaskListener(new AbstractTaskListener<Void>() {
 			@Override
 			public void setTaskState(State state) {
 				if (!process.isDone()) {
@@ -116,7 +90,7 @@ public class NetworkDownloaderDialog extends JDialog {
 				}
 			}
 		});
-		
+
 
 		dispose();
 		getMainWindow().executeTask(process);

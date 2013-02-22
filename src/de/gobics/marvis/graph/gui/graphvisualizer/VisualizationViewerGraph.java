@@ -12,6 +12,7 @@ import de.gobics.marvis.graph.gui.ProcessListener;
 import de.gobics.marvis.graph.gui.tasks.RenderGraphLayout;
 import de.gobics.marvis.utils.task.AbstractTask.State;
 import de.gobics.marvis.utils.task.TaskListener;
+import de.gobics.marvis.utils.task.TaskResultListener;
 import edu.uci.ics.jung.algorithms.layout.*;
 import edu.uci.ics.jung.visualization.VisualizationViewer;
 import edu.uci.ics.jung.visualization.control.CrossoverScalingControl;
@@ -111,42 +112,14 @@ public class VisualizationViewerGraph<E> extends VisualizationViewer<GraphObject
 		}
 
 		logger.finer("Rendering takes to much time. Starting background Process");
-		
+
 		final RenderGraphLayout process = new RenderGraphLayout(layout);
-		process.addTaskListener(new TaskListener<Void>() {
-
+		process.addTaskListener(new TaskResultListener<Void>() {
 			@Override
-			public void setTaskProgress(int percentage) {
-				throw new UnsupportedOperationException("Not supported yet.");
-			}
-
-			@Override
-			public void addTaskResult(Void result) {
-				throw new UnsupportedOperationException("Not supported yet.");
-			}
-
-			@Override
-			public void setTaskDescription(String new_description) {
-				throw new UnsupportedOperationException("Not supported yet.");
-			}
-
-			@Override
-			public void setTaskTitle(String new_title) {
-				throw new UnsupportedOperationException("Not supported yet.");
-			}
-
-			@Override
-			public void log(Level level, String message) {
-				throw new UnsupportedOperationException("Not supported yet.");
-			}
-
-			@Override
-			public void setTaskState(State state) {
-				if(process.isDone()){
-					Layout rendered = process.getTaskResult();
-					if (rendered != null) {
-						drawLayout(rendered);
-					}
+			public void taskDone() {
+				Layout rendered = process.getTaskResult();
+				if (rendered != null) {
+					drawLayout(rendered);
 				}
 			}
 		});

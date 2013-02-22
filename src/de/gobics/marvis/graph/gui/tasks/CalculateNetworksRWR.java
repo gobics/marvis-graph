@@ -7,6 +7,7 @@ import de.gobics.marvis.utils.matrix.DenseDoubleMatrix1D;
 import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.jblas.DoubleMatrix;
 
 /**
  *
@@ -19,7 +20,6 @@ public class CalculateNetworksRWR extends AbstractNetworkCalculation {
 
 	private static final Logger logger = Logger.getLogger(CalculateNetworksRWR.class.
 			getName());
-	
 	/**
 	 * A reaction based view on the metabolic network. This view depends on the
 	 * co-factor setting.
@@ -70,18 +70,19 @@ public class CalculateNetworksRWR extends AbstractNetworkCalculation {
 
 		setTaskDescription("Performing random walk for reaction scoring");
 		incrementProgress();
-		logger.log(Level.FINER, "Perfoming random walk process with {0} initial nodes and {1} edges", new Object[]{initial.size(), reactions_view.getEdgeCount()});
 		RandomWalkWithRestart process = new RandomWalkWithRestart(reactions_view, restart_probability, 0.0000001);
-		DenseDoubleMatrix1D result = process.walk(initial);
-		logger.log(Level.FINER, "Random-walk finished with {0} reactions with non-zero probability", result.cardinality());
+		List<GraphObject> vertices = process.getVertices();
+		logger.log(Level.FINER, "Perfoming random walk process with {0} initial nodes of {2} and {1} edges", new Object[]{initial.size(), reactions_view.getEdgeCount(), vertices.size()});
+		DoubleMatrix result = process.walk(initial);
+		//logger.log(Level.FINER, "Random-walk finished with {0} reactions with non-zero probability", result.c;
 		System.gc();
 
 		// Build list of reactions above the threshold
 		incrementProgress();
 		LinkedList<Reaction> reactions_for_networks = new LinkedList<>();
-		for (int i = 0; i < result.size(); i++) {
-			if (result.getQuick(i) >= (1 - restart_probability)) {
-				reactions_for_networks.add((Reaction) result.getLabel(i));
+		for (int i = 0; i < result.length; i++) {
+			if (result.get(i) >= (1 - restart_probability)) {
+				reactions_for_networks.add((Reaction) vertices.get(i));
 			}
 		}
 		logger.log(Level.FINER, "Found {0} reactions for the subnetworks", reactions_for_networks.size());

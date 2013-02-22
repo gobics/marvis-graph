@@ -5,12 +5,14 @@ import de.gobics.marvis.graph.gui.tasks.LoadNetwork;
 import de.gobics.marvis.graph.gui.tasks.PermutationTest;
 import de.gobics.marvis.graph.gui.tasks.PermutationTestResult;
 import de.gobics.marvis.graph.sort.NetworkSorterSumOfWeights;
+import de.gobics.marvis.utils.HumanReadable;
 import de.gobics.marvis.utils.LoggingUtils;
 import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.jblas.DoubleMatrix;
 
 /**
  *
@@ -19,19 +21,24 @@ import java.util.logging.Logger;
 public class test {
 
 	private final static Logger logger = Logger.getLogger(test.class.getName());
-	private static double restart_probability = 0.8;
+	
 	private static final int NUM_PERMUTES = 1000;
+	private static final int NUM_THREADS = 4;
 	private static final int COFACTOR_THRESHOLD = 10;
 
 	public static void main(String[] args) throws Exception {
 		LoggingUtils.initLogger(Level.FINER);
+		
+		double from = new Double( args[0] ).doubleValue();
+		
 		// Load the network
 		logger.finer("Loading network");
-		for (String file : args) {
+		for (int idx = 1; idx < args.length ; idx++) {
+			String file = args[idx];
 			LoadNetwork loader = new LoadNetwork(file);
 			final MetabolicNetwork network = loader.load();
 
-			for (double rp = 0.9d; rp >= 0; rp -= 0.1) {
+			for (double rp = from; rp >= 0; rp -= 0.1) {
 				logger.info("Permutating for restart probability of: "+rp);
 				CalculateNetworksRWR process = new CalculateNetworksRWR(network);
 				process.setCofactorThreshold(COFACTOR_THRESHOLD);
@@ -40,6 +47,7 @@ public class test {
 
 				PermutationTest test = new PermutationTest(network, subs, process, new NetworkSorterSumOfWeights(network));
 				test.setNumberOfPermutations(NUM_PERMUTES);
+				test.setNumberOfThreads(NUM_THREADS);
 
 				Set<PermutationTestResult> networks = test.calculateScores(true);
 
@@ -54,6 +62,17 @@ public class test {
 				
 				logger.info("Calculations for restart probability "+rp+" is ready");
 			}
+		}
+	}
+	
+	
+	private static void testMatrixSize(){
+		Runtime rt = Runtime.getRuntime();
+		for(int i = 100; true; i += 100){
+			DoubleMatrix m = new DoubleMatrix(i, i);
+			System.out.println( i+" => "+ HumanReadable.bytes( rt.totalMemory() - rt.freeMemory() ) );
+			m = null;
+			System.gc();
 		}
 	}
 }
