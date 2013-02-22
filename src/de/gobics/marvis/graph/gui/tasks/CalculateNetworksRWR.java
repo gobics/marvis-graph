@@ -3,6 +3,8 @@ package de.gobics.marvis.graph.gui.tasks;
 import de.gobics.marvis.graph.*;
 import de.gobics.marvis.graph.graphview.ReactionGraph;
 import de.gobics.marvis.utils.RandomWalkWithRestart;
+import de.gobics.marvis.utils.RandomWalkWithRestartDense;
+import de.gobics.marvis.utils.RandomWalkWithRestartSparse;
 import de.gobics.marvis.utils.matrix.DenseDoubleMatrix1D;
 import java.util.*;
 import java.util.logging.Level;
@@ -30,11 +32,17 @@ public class CalculateNetworksRWR extends AbstractNetworkCalculation {
 	 */
 	private double restart_probability = 0.8;
 	private boolean use_input_weights;
+	private boolean use_sparse_algorithm = true;
 
 	public CalculateNetworksRWR(MetabolicNetwork network) {
+		this(network, true);
+	}
+
+	public CalculateNetworksRWR(MetabolicNetwork network, boolean use_sparse_algorithm) {
 		super(network);
 		setCofactorThreshold(-1);
 		setTaskTitle("Detect subnetworks with Random-Walk");
+		this.use_sparse_algorithm = use_sparse_algorithm;
 	}
 
 	@Override
@@ -70,10 +78,12 @@ public class CalculateNetworksRWR extends AbstractNetworkCalculation {
 
 		setTaskDescription("Performing random walk for reaction scoring");
 		incrementProgress();
-		RandomWalkWithRestart process = new RandomWalkWithRestart(reactions_view, restart_probability, 0.0000001);
+		RandomWalkWithRestart process = use_sparse_algorithm
+				? new RandomWalkWithRestartSparse(reactions_view, restart_probability, 0.0000001)
+				: new RandomWalkWithRestartDense(reactions_view, restart_probability, 0.0000001);
 		List<GraphObject> vertices = process.getVertices();
 		logger.log(Level.FINER, "Perfoming random walk process with {0} initial nodes of {2} and {1} edges", new Object[]{initial.size(), reactions_view.getEdgeCount(), vertices.size()});
-		DoubleMatrix result = process.walk(initial);
+		double[] result = process.walk(initial);
 		//logger.log(Level.FINER, "Random-walk finished with {0} reactions with non-zero probability", result.c;
 		System.gc();
 
@@ -81,7 +91,7 @@ public class CalculateNetworksRWR extends AbstractNetworkCalculation {
 		incrementProgress();
 		LinkedList<Reaction> reactions_for_networks = new LinkedList<>();
 		for (int i = 0; i < result.length; i++) {
-			if (result.get(i) >= (1 - restart_probability)) {
+			if (result[i] >= (1 - restart_probability)) {
 				reactions_for_networks.add((Reaction) vertices.get(i));
 			}
 		}
@@ -155,8 +165,7 @@ public class CalculateNetworksRWR extends AbstractNetworkCalculation {
 
 					if (!reaction_scores.containsKey(r)) {
 						reaction_scores.put(r, score_per_reaction);
-					}
-					else {
+					} else {
 						reaction_scores.put(r, reaction_scores.get(r) + score_per_reaction);
 					}
 				}
@@ -178,8 +187,7 @@ public class CalculateNetworksRWR extends AbstractNetworkCalculation {
 
 						if (!reaction_scores.containsKey(r)) {
 							reaction_scores.put(r, addscore);
-						}
-						else {
+						} else {
 							reaction_scores.put(r, reaction_scores.get(r) + addscore);
 						}
 					}
