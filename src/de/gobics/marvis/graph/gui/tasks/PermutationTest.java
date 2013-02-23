@@ -107,9 +107,10 @@ public class PermutationTest extends AbstractTask<Set<PermutationTestResult>, Vo
 				return null;
 			}
 
-			// Check if one one or more tasks ran into indetermination (give them 10 Minutes between the last update).
-			if (check_for_indeterminate && (System.currentTimeMillis() - last_update) > (10 * 60 * 1000)) {
+			// Check if one one or more tasks ran into indetermination (give them 2 minutes after the last update).
+			if (check_for_indeterminate && (System.currentTimeMillis() - last_update) > (60 * 2000)) {
 				pool.shutdownNow();
+				break;
 			}
 
 			Thread.sleep(1000);
