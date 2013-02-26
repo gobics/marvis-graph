@@ -293,6 +293,7 @@ public class MarvisGraphMainWindow extends JFrame {
 		// Create the process
 		final AbstractNetworkCalculation task = dialog.getTask(n);
 		calculate_network_task = task;
+
 		task.addTaskListener(new TaskResultListener<Void>() {
 			@Override
 			public void taskDone() {
@@ -304,6 +305,17 @@ public class MarvisGraphMainWindow extends JFrame {
 				}
 
 				sort_subnetworks();
+			}
+		});
+		task.addTaskListener(new AbstractTaskListener<Void>() {
+			@Override
+			public void throwsException(Throwable t) {
+				if (t instanceof java.lang.OutOfMemoryError) {
+					display_error("Not enough memory to calculate sub-networks.");
+				}
+				else {
+					display_error("Severe error while calculating networks: ", t);
+				}
 			}
 		});
 
@@ -668,6 +680,7 @@ public class MarvisGraphMainWindow extends JFrame {
 	public void executeTask(AbstractTask task) {
 		statusbar.monitorTask(task);
 		status_dialog.monitorTask(task);
+
 		new TaskWrapper<>(task).execute();
 	}
 

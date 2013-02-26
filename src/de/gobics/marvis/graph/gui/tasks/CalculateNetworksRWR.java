@@ -3,6 +3,8 @@ package de.gobics.marvis.graph.gui.tasks;
 import de.gobics.marvis.graph.*;
 import de.gobics.marvis.graph.graphview.ReactionGraph;
 import de.gobics.marvis.utils.RandomWalkWithRestart;
+import de.gobics.marvis.utils.RandomWalkWithRestartDense;
+import de.gobics.marvis.utils.RandomWalkWithRestartSparse;
 import de.gobics.marvis.utils.matrix.DenseDoubleMatrix1D;
 import java.util.*;
 import java.util.logging.Level;
@@ -70,26 +72,29 @@ public class CalculateNetworksRWR extends AbstractNetworkCalculation {
 
 		setTaskDescription("Performing random walk for reaction scoring");
 		incrementProgress();
-		RandomWalkWithRestart process = new RandomWalkWithRestart(reactions_view, restart_probability, 0.0000001);
+		RandomWalkWithRestart process = new RandomWalkWithRestartSparse(reactions_view, restart_probability, 0.0000001);
 		List<GraphObject> vertices = process.getVertices();
 		logger.log(Level.FINER, "Perfoming random walk process with {0} initial nodes of {2} and {1} edges", new Object[]{initial.size(), reactions_view.getEdgeCount(), vertices.size()});
-		DoubleMatrix result = process.walk(initial);
-		//logger.log(Level.FINER, "Random-walk finished with {0} reactions with non-zero probability", result.c;
-		System.gc();
+		double[] result = process.walk(initial);
+
+//		for (int idx = 0; idx < result.length; idx++) {
+//			System.out.println(vertices.get(idx) + ";" + result[idx]);
+//		}
 
 		// Build list of reactions above the threshold
 		incrementProgress();
-		LinkedList<Reaction> reactions_for_networks = new LinkedList<>();
+		TreeSet<Reaction> reactions_for_networks = new TreeSet<>();
 		for (int i = 0; i < result.length; i++) {
-			if (result.get(i) >= (1 - restart_probability)) {
+			if (result[i] >= (1-restart_probability)) {
 				reactions_for_networks.add((Reaction) vertices.get(i));
 			}
 		}
 		logger.log(Level.FINER, "Found {0} reactions for the subnetworks", reactions_for_networks.size());
 
+
 		setTaskDescription("Generating new metabolic sub-networks");
 		incrementProgress();
-		Collection<MetabolicNetwork> subs = getSubnetworks(reactions_for_networks);
+		Collection<MetabolicNetwork> subs = getSubnetworks(new LinkedList(reactions_for_networks));
 		logger.log(Level.FINER, "Found {0} subnetworks", subs.size());
 		incrementProgress();
 
