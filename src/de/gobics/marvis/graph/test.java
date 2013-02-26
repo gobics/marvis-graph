@@ -6,11 +6,19 @@ package de.gobics.marvis.graph;
 
 import de.gobics.marvis.graph.gui.tasks.CalculateNetworksRWR;
 import de.gobics.marvis.graph.gui.tasks.LoadNetwork;
+import de.gobics.marvis.graph.gui.tasks.PermutationTest;
+import de.gobics.marvis.graph.gui.tasks.PermutationTestResult;
 import de.gobics.marvis.graph.gui.tasks.SortNetworksTask;
 import de.gobics.marvis.graph.sort.NetworkSorterSumOfWeights;
+import de.gobics.marvis.utils.HumanReadable;
 import de.gobics.marvis.utils.LoggingUtils;
+import java.io.BufferedWriter;
+import java.io.FileWriter;
 import java.util.Arrays;
+import java.util.Set;
 import java.util.logging.Level;
+import java.util.logging.Logger;
+import org.jblas.DoubleMatrix;
 
 /**
  *
