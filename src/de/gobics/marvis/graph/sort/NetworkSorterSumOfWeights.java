@@ -41,11 +41,13 @@ public class NetworkSorterSumOfWeights extends AbstractGraphScore {
 
 				double addscore = (1d / compounds.size()) / reactions.size();
 				for (Reaction r : reactions) {
-					if (!scores.containsKey(r)) {
-						scores.put(r, addscore);
-					}
-					else {
-						scores.put(r, scores.get(r) + addscore);
+					if (r != null) {
+						if (!scores.containsKey(r)) {
+							scores.put(r, addscore);
+						}
+						else {
+							scores.put(r, scores.get(r) + addscore);
+						}
 					}
 				}
 			}
@@ -60,12 +62,13 @@ public class NetworkSorterSumOfWeights extends AbstractGraphScore {
 					LinkedList<Reaction> reactions = p.getReactions(enzyme);
 					double addscore = ((1d / genes.size()) / enzymes.size()) / reactions.size();
 					for (Reaction r : reactions) {
-
-						if (!scores.containsKey(r)) {
-							scores.put(r, addscore);
-						}
-						else {
-							scores.put(r, scores.get(r) + addscore);
+						if (r != null) {
+							if (!scores.containsKey(r)) {
+								scores.put(r, addscore);
+							}
+							else {
+								scores.put(r, scores.get(r) + addscore);
+							}
 						}
 					}
 				}
