@@ -6,6 +6,8 @@ import de.gobics.marvis.graph.gui.tasks.PermutationTest;
 import de.gobics.marvis.graph.gui.tasks.PermutationTestResult;
 import de.gobics.marvis.graph.sort.NetworkSorterSumOfWeights;
 import de.gobics.marvis.utils.LoggingUtils;
+import de.gobics.marvis.utils.task.AbstractTask.State;
+import de.gobics.marvis.utils.task.TaskListener;
 import jargs.gnu.CmdLineParser;
 import java.io.BufferedWriter;
 import java.io.File;
@@ -56,6 +58,38 @@ public class PermutationTestCLI {
 		PermutationTest test = new PermutationTest(network, subs, process, new NetworkSorterSumOfWeights(network));
 		test.setNumberOfPermutations(number_of_permutations);
 		test.setNumberOfThreads(number_of_threads);
+		test.addTaskListener(new TaskListener<Void>() {
+
+			@Override
+			public void setTaskProgress(int percentage) {
+				logger.log(Level.INFO, "Progress of permutation process: {0} %", percentage);
+			}
+
+			@Override
+			public void addTaskResult(Void result) {
+				// ignore
+			}
+
+			@Override
+			public void setTaskDescription(String new_description) {
+				// ignore
+			}
+
+			@Override
+			public void setTaskTitle(String new_title) {
+				// ignore
+			}
+
+			@Override
+			public void throwsException(Throwable t) {
+				logger.log(Level.SEVERE, "Calculation resulted in exception: ", t);
+			}
+
+			@Override
+			public void setTaskState(State state) {
+				// ignore
+			}
+		});
 
 		Set<PermutationTestResult> networks = test.calculateScores(true);
 
@@ -77,23 +111,23 @@ public class PermutationTestCLI {
 
 		System.err.println("Usage: java " + PermutationTestCLI.class.getSimpleName() + " [OPTIONS] <input_file>");
 		System.err.println("");
-		System.err.println("   Perform a permutation test on the metabolic network given by <input_file>.  "
-				+ ""
-				+ " Possible options: "
-				+ "  -h | --help"
-				+ "       display this usage information"
-				+ "  -v | --verbose"
-				+ "       print verbose information (default: false)"
-				+ "  -r | --result-file <filename>"
-				+ "       Write the result to the given file (default: result.csv)"
-				+ "  -p | --restart-probability <floating number>"
-				+ "       The restart probability for the random-walk-algorithm (default: 0.8)"
-				+ "  -c | --cofactor-threshold <number>"
-				+ "       Number of reactions before considering a metabolite to be a co-factor (default: 10)"
-				+ "  -n | --number-of-permutations <number>"
-				+ "       Number of permutations to perform (default: 1000)"
-				+ "  -t | --number-of-threads <number>"
-				+ "       Number of permutations to perform (default: " + Runtime.getRuntime().availableProcessors() + ")"
+		System.err.println("   Perform a permutation test on the metabolic network given by <input_file>.  \n"
+				+ "\n"
+				+ " Possible options: \n"
+				+ "  -h | --help\n"
+				+ "       display this usage information\n"
+				+ "  -v | --verbose\n"
+				+ "       print verbose information (default: false)\n"
+				+ "  -r | --result-file <filename>\n"
+				+ "       Write the result to the given file (default: result.csv)\n"
+				+ "  -p | --restart-probability <floating number>\n"
+				+ "       The restart probability for the random-walk-algorithm (default: 0.8)\n"
+				+ "  -c | --cofactor-threshold <number>\n"
+				+ "       Number of reactions before considering a metabolite to be a co-factor (default: 10)\n"
+				+ "  -n | --number-of-permutations <number>\n"
+				+ "       Number of permutations to perform (default: 1000)\n"
+				+ "  -t | --number-of-threads <number>\n"
+				+ "       Number of permutations to perform (default: " + Runtime.getRuntime().availableProcessors() + ")\n"
 				+ "");
 
 		System.exit(error == null ? 0 : 1);
