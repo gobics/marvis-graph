@@ -107,22 +107,6 @@ public class KeggCreateNetworkProcess extends AbstractNetworkCreator {
 		}
 
 
-
-		//sendDescription("Adding InCHI to compounds");
-		/*
-		 * // Curate the compound masses CompoundMasses masses =
-		 * marvis_client.getCompoundMassesObj("kegg/reactions"); for (int i = 0;
-		 * i < masses.compoundIdsVec.length; i++) { String kegg_id =
-		 * masses.compoundIdsVec[i];
-		 *
-		 * Compound c = graph.getCompound("cpd:" + kegg_id.substring(5)); if (c
-		 * == null) { logger.warning("Can not find compound for ID: cpd:" +
-		 * kegg_id. substring(5)); } else { c.setMass((float)
-		 * masses.compoundMassesVec[i]); }
-		 *
-		 * if (isCancelled()) { return null; } }
-		 */
-
 		logger.info("Created new metabolic network with " + graph.size() + " objects and " + graph.
 				countRelations() + " relations");
 		return graph;
