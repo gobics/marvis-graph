@@ -32,12 +32,12 @@ public class ReactionRelation extends Relation {
 
 	public ReactionRelation(Reaction r1, Reaction r2, Compound[] shares) {
 		super(RelationshipType.REACTION_SHARECOMPOUND_REACTION, r1, r2);
-		this.shares = new TreeSet<>(Arrays.asList(shares));
+		this.shares = new TreeSet<Compound>(Arrays.asList(shares));
 	}
 
 	public ReactionRelation(Reaction r1, Reaction r2, Collection<Compound> shares) {
 		super(RelationshipType.REACTION_SHARECOMPOUND_REACTION, r1, r2);
-		this.shares = new TreeSet<>(shares);
+		this.shares = new TreeSet<Compound>(shares);
 	}
 
 	@Override
@@ -79,8 +79,8 @@ public class ReactionRelation extends Relation {
 	 */
 	public Collection<Compound> getShares() {
 		if (shares == null) {
-			return new ArrayList<>(0);
+			return new ArrayList<Compound>(0);
 		}
-		return new ArrayList<>(shares);
+		return new ArrayList<Compound>(shares);
 	}
 }

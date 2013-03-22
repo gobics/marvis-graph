@@ -3,6 +3,7 @@ package de.gobics.marvis.graph.graphview;
 import de.gobics.marvis.graph.GraphObject;
 import de.gobics.marvis.graph.MetabolicNetwork;
 import edu.uci.ics.jung.graph.Graph;
+import edu.uci.ics.jung.graph.Hypergraph;
 
 /**
  * An extension of the {@link edu.uci.ics.jung.graph.Graph} as wrapper for the 
