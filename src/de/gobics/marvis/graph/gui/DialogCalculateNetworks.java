@@ -72,7 +72,8 @@ public class DialogCalculateNetworks extends DialogAbstract {
 		if (cb_algorithm.getSelectedIndex() == 0) {
 			CalculateNetworksRWR process = new CalculateNetworksRWR(n);
 			process.setRestartProbability(sm_rwr.getNumber().doubleValue());
-	    process.setCofactorThreshold(sm_cofactor.getNumber().intValue());
+			process.setThreshold(sm_rwr_threshold.getNumber().doubleValue());
+			process.setCofactorThreshold(sm_cofactor.getNumber().intValue());
 			process.useInputWeights(use_input_weights.isSelected());
 			return process;
 		}
@@ -113,10 +114,12 @@ public class DialogCalculateNetworks extends DialogAbstract {
 			super(new SpringLayout());
 			add(new JLabel("Restart probability:"));
 			add(new JSpinner(sm_rwr));
-	    add(new JLabel("Cofactor treshold:"));
-	    add(new JSpinner(sm_cofactor));
-			add(new JLabel("Use input weights for initial scoring:"));
-			add(use_input_weights);
+			add(new JLabel("Score threshold:"));
+			add(new JSpinner(sm_rwr_threshold));
+			add(new JLabel("Cofactor treshold:"));
+			add(new JSpinner(sm_cofactor));
+			//add(new JLabel("Use input weights for initial scoring:"));
+			//add(use_input_weights);
 			SpringUtilities.makeCompactGrid(this);
 		}
 	}

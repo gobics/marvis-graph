@@ -33,6 +33,7 @@ public class CalculateNetworksRWR extends AbstractNetworkCalculation {
 	private double restart_probability = 0.8;
 	private boolean use_input_weights;
 	private boolean use_sparse_algorithm = true;
+	private double threshold;
 
 	public CalculateNetworksRWR(MetabolicNetwork network) {
 		this(network, true);
@@ -50,12 +51,21 @@ public class CalculateNetworksRWR extends AbstractNetworkCalculation {
 		CalculateNetworksRWR clone = new CalculateNetworksRWR(network);
 		clone.setCofactorThreshold(reactions_view.getCofactorThreshold());
 		clone.setRestartProbability(restart_probability);
+		clone.setThreshold(threshold);
 		clone.useInputWeights(use_input_weights);
 		return clone;
 	}
 
 	public void setRestartProbability(double probability) {
 		this.restart_probability = probability;
+	}
+
+	public void setThreshold(double threshold) {
+		this.threshold = Math.abs(threshold);
+	}
+
+	public double getThreshold() {
+		return threshold;
 	}
 
 	public void setCofactorThreshold(int cofactor_threshold) {
@@ -91,7 +101,7 @@ public class CalculateNetworksRWR extends AbstractNetworkCalculation {
 		incrementProgress();
 		TreeSet<Reaction> reactions_for_networks = new TreeSet<>();
 		for (int i = 0; i < result.length; i++) {
-			if (result[i] >= (1 - restart_probability)) {
+			if (result[i] >= threshold) {
 				reactions_for_networks.add((Reaction) vertices.get(i));
 			}
 		}
@@ -166,7 +176,8 @@ public class CalculateNetworksRWR extends AbstractNetworkCalculation {
 
 					if (!reaction_scores.containsKey(r)) {
 						reaction_scores.put(r, score_per_reaction);
-					} else {
+					}
+					else {
 						reaction_scores.put(r, reaction_scores.get(r) + score_per_reaction);
 					}
 				}
@@ -188,7 +199,8 @@ public class CalculateNetworksRWR extends AbstractNetworkCalculation {
 
 						if (!reaction_scores.containsKey(r)) {
 							reaction_scores.put(r, addscore);
-						} else {
+						}
+						else {
 							reaction_scores.put(r, reaction_scores.get(r) + addscore);
 						}
 					}
