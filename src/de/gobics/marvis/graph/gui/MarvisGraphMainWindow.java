@@ -18,7 +18,6 @@ import de.gobics.marvis.utils.swing.filechooser.FileFilterCef;
 import de.gobics.marvis.utils.task.AbstractTask;
 import de.gobics.marvis.utils.task.AbstractTask.State;
 import de.gobics.marvis.utils.task.AbstractTaskListener;
-import de.gobics.marvis.utils.task.TaskListener;
 import de.gobics.marvis.utils.task.TaskResultListener;
 import java.awt.BorderLayout;
 import java.awt.Component;
@@ -137,7 +136,10 @@ public class MarvisGraphMainWindow extends JFrame {
 		if (input == null) {
 			return;
 		}
+		loadNetwork(input);
+	}
 
+	public void loadNetwork(File input) {
 		final LoadNetwork process = new LoadNetwork(input);
 		process.addTaskListener(new AbstractTaskListener<Void>() {
 			@Override
@@ -213,14 +215,17 @@ public class MarvisGraphMainWindow extends JFrame {
 	/**
 	 * @param args the command line arguments
 	 */
-	public static void main(String[] args) {
+	public static void main(final String[] args) {
 		LoggingUtils.initLogger(Level.FINER);
+		final MarvisGraphMainWindow main = new MarvisGraphMainWindow();
+		main.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 		SwingUtilities.invokeLater(new Runnable() {
 			@Override
 			public void run() {
-				MarvisGraphMainWindow main = new MarvisGraphMainWindow();
-				main.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 				main.setVisible(true);
+				if (args.length > 0) {
+					main.loadNetwork(new File(args[0]));
+				}
 			}
 		});
 	}
