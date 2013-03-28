@@ -71,6 +71,7 @@ public class MarvisGraphMainWindow extends JFrame {
 		menu.add(new JMenuItem(new ActionSaveNetwork(this, jtree_networks)));
 		menu.add(new JSeparator());
 		menu.add(new JMenuItem(new ActionCreateNetwork(this)));
+		menu.add(new JMenuItem(new ActionReduceNetwork(this, treemodel_networks)));
 		menu.add(new JSeparator());
 		menu.add(new JMenuItem(new ActionCalculateNetworks(this, treemodel_networks)));
 		menu.add(new JMenuItem(new ActionPermutationTest(this, treemodel_networks)));
@@ -265,13 +266,25 @@ public class MarvisGraphMainWindow extends JFrame {
 		jtree_networks.getSelectionModel().setSelectionPath(new TreePath(new_network));
 	}
 
-	/**
-	 * Updates the graph information. This event will be fired when a graph is
-	 * selected in the JTree
-	 */
-	private void updateGraphInformation() {
-		MetabolicNetwork n = getSelectedNetwork();
-		panel_graph_information.display(n);
+	public void reduceNetwork() {
+		// Fetch the main network 
+		MetabolicNetwork n = getMainNetwork();
+		if (n == null) {
+			display_error("Please load or create a metabolic network first.");
+			return;
+		}
+
+		final ReduceNetwork process = new ReduceNetwork(n);
+		process.addTaskListener(new TaskResultListener<Void>() {
+			@Override
+			public void taskDone() {
+				if (!process.isCanceled()) {
+					setNetwork(process.getTaskResult());
+				}
+			}
+		});
+
+		executeTask(process);
 	}
 
 	/**
@@ -285,6 +298,7 @@ public class MarvisGraphMainWindow extends JFrame {
 		// Fetch the main network 
 		MetabolicNetwork n = getMainNetwork();
 		if (n == null) {
+			display_error("Please load or create a metabolic network first.");
 			return;
 		}
 
