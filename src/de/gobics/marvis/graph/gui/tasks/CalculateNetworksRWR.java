@@ -23,11 +23,6 @@ public class CalculateNetworksRWR extends AbstractNetworkCalculation {
 	private static final Logger logger = Logger.getLogger(CalculateNetworksRWR.class.
 			getName());
 	/**
-	 * A reaction based view on the metabolic network. This view depends on the
-	 * co-factor setting.
-	 */
-	private ReactionGraph reactions_view;
-	/**
 	 * Basic restart probability.
 	 */
 	private double restart_probability = 0.8;
@@ -49,7 +44,7 @@ public class CalculateNetworksRWR extends AbstractNetworkCalculation {
 	@Override
 	public CalculateNetworksRWR like(MetabolicNetwork network) {
 		CalculateNetworksRWR clone = new CalculateNetworksRWR(network);
-		clone.setCofactorThreshold(reactions_view.getCofactorThreshold());
+		clone.setCofactorThreshold(getReactionView().getCofactorThreshold());
 		clone.setRestartProbability(restart_probability);
 		clone.setThreshold(threshold);
 		clone.useInputWeights(use_input_weights);
@@ -68,10 +63,7 @@ public class CalculateNetworksRWR extends AbstractNetworkCalculation {
 		return threshold;
 	}
 
-	public void setCofactorThreshold(int cofactor_threshold) {
-		reactions_view = new ReactionGraph(getRootNetwork(), false, cofactor_threshold);
-	}
-
+	
 	@Override
 	protected MetabolicNetwork[] doTask() throws Exception {
 		return calculateNetworks(getRootNetwork());
@@ -89,10 +81,10 @@ public class CalculateNetworksRWR extends AbstractNetworkCalculation {
 		setTaskDescription("Performing random walk for reaction scoring");
 		incrementProgress();
 		RandomWalkWithRestart process = use_sparse_algorithm
-				? new RandomWalkWithRestartSparse(reactions_view, restart_probability, 0.0000001)
-				: new RandomWalkWithRestartDense(reactions_view, restart_probability, 0.0000001);
+				? new RandomWalkWithRestartSparse(getReactionView(), restart_probability, 0.0000001)
+				: new RandomWalkWithRestartDense(getReactionView(), restart_probability, 0.0000001);
 		List<GraphObject> vertices = process.getVertices();
-		logger.log(Level.FINER, "Perfoming random walk process with {0} initial nodes of {2} and {1} edges", new Object[]{initial.size(), reactions_view.getEdgeCount(), vertices.size()});
+		logger.log(Level.FINER, "Perfoming random walk process with {0} initial nodes of {2} and {1} edges", new Object[]{initial.size(), getReactionView().getEdgeCount(), vertices.size()});
 		double[] result = process.walk(initial);
 		//logger.log(Level.FINER, "Random-walk finished with {0} reactions with non-zero probability", result.c;
 		System.gc();
@@ -117,46 +109,7 @@ public class CalculateNetworksRWR extends AbstractNetworkCalculation {
 		return subs.toArray(new MetabolicNetwork[subs.size()]);
 	}
 
-	/**
-	 * Builds networks from the reactions.
-	 *
-	 * @param reactions
-	 * @return
-	 */
-	private Collection<MetabolicNetwork> getSubnetworks(LinkedList<Reaction> reactions) {
-		LinkedList<MetabolicNetwork> subs = new LinkedList<>();
-
-		TreeSet<Reaction> visited = new TreeSet<>();
-		while (!reactions.isEmpty()) {
-			TreeSet<Reaction> reactions_for_subnet = new TreeSet<>();
-			LinkedList<Reaction> to_visit = new LinkedList<>();
-			to_visit.add(reactions.poll());
-
-			while (!to_visit.isEmpty()) {
-				Reaction cur = to_visit.poll();
-				reactions_for_subnet.add(cur);
-
-				for (GraphObject neighbor_object : reactions_view.getNeighbors(cur)) {
-					Reaction neighbor_reaction = (Reaction) neighbor_object;
-					if (reactions.contains(neighbor_reaction) && !visited.contains(neighbor_reaction)) {
-						to_visit.add(neighbor_reaction);
-					}
-					visited.add(neighbor_reaction);
-				}
-			}
-
-			if (reactions_for_subnet.size() > 1) {
-				MetabolicNetwork sub = generate_network(reactions_for_subnet);
-				subs.add(sub);
-			}
-
-			for (Reaction r : reactions_for_subnet) {
-				reactions.remove(r);
-			}
-		}
-
-		return subs;
-	}
+	
 
 	public Map<Reaction, Double> calculateInitialScores(boolean normalize_to_1) {
 		Map<Reaction, Double> reaction_scores = new TreeMap<>();
@@ -226,4 +179,5 @@ public class CalculateNetworksRWR extends AbstractNetworkCalculation {
 	private double getInitialScore(InputObject io) {
 		return use_input_weights ? io.getWeight() : 1;
 	}
+
 }
