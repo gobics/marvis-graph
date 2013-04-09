@@ -2,7 +2,7 @@ package de.gobics.marvis.graph.downloader;
 
 import de.gobics.marvis.graph.gui.MarvisGraphMainWindow;
 import de.gobics.marvis.utils.swing.FilechooserTextField;
-import de.gobics.marvis.utils.swing.filechooser.ChooserDirectory;
+import de.gobics.marvis.utils.swing.filechooser.ChooserTarGz;
 import java.io.File;
 import java.util.logging.Logger;
 
@@ -12,7 +12,7 @@ import java.util.logging.Logger;
  */
 public class BiocycOptionsPanel extends AbstractOptionsPanel{
 	private static final Logger logger = Logger.getLogger(BiocycOptionsPanel.class.getName());
-	private final FilechooserTextField chooser = new FilechooserTextField(ChooserDirectory.getInstance());
+	private final FilechooserTextField chooser = new FilechooserTextField(ChooserTarGz.getInstance());
 	
 	public BiocycOptionsPanel(MarvisGraphMainWindow w){
 		super(w);

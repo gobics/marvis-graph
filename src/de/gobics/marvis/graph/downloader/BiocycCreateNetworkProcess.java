@@ -60,10 +60,7 @@ public class BiocycCreateNetworkProcess extends AbstractNetworkCreator {
 		else if (input_file.isFile()) {
 			parse_file(input_file);
 		}
-		else {
-			throw new RuntimeException("File parsing not supported yet");
-		}
-
+		logger.finer("Created network with "+graph.size()+" entities");
 		return graph;
 	}
 
