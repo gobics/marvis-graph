@@ -39,7 +39,7 @@ public class ViewerActionDrawTypeGene extends AbstractViewerAction {
 		view.addGraphViewListener(new GraphViewListener() {
 			@Override
 			public void graphChanged(GraphView parent) {
-				putValue(SELECTED_KEY, view.drawsType(Gene.class));
+				putValue(SELECTED_KEY, view.getDisplayType(Gene.class).equals(GraphViewCustomizable.DisplayType.All));
 			}
 		});
 	}

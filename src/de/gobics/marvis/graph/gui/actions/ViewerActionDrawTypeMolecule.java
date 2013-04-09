@@ -34,7 +34,7 @@ public class ViewerActionDrawTypeMolecule extends AbstractViewerAction {
 		view.addGraphViewListener(new GraphViewListener() {
 			@Override
 			public void graphChanged(GraphView parent) {
-				putValue(SELECTED_KEY, view.drawsType(Compound.class));
+				putValue(SELECTED_KEY, view.getDisplayType(Compound.class).equals(GraphViewCustomizable.DisplayType.All));
 			}
 		});
 	}

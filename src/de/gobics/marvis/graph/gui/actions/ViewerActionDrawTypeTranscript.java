@@ -38,7 +38,7 @@ public class ViewerActionDrawTypeTranscript extends AbstractViewerAction {
 		view.addGraphViewListener(new GraphViewListener() {
 			@Override
 			public void graphChanged(GraphView parent) {
-				putValue(SELECTED_KEY, view.drawsType(Transcript.class));
+				putValue(SELECTED_KEY, view.getDisplayType(Transcript.class).equals(GraphViewCustomizable.DisplayType.All));
 			}
 		});
 	}

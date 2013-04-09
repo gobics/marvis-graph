@@ -5,7 +5,6 @@
 package de.gobics.marvis.graph.gui.actions;
 
 import de.gobics.marvis.graph.Enzyme;
-import de.gobics.marvis.graph.Transcript;
 import de.gobics.marvis.graph.graphview.GraphView;
 import de.gobics.marvis.graph.graphview.GraphViewCustomizable;
 import de.gobics.marvis.graph.graphview.GraphViewListener;
@@ -37,7 +36,7 @@ public class ViewerActionDrawTypeEnzyme extends AbstractViewerAction {
 		view.addGraphViewListener(new GraphViewListener() {
 			@Override
 			public void graphChanged(GraphView parent) {
-				putValue(SELECTED_KEY, view.drawsType(Enzyme.class));
+				putValue(SELECTED_KEY, view.getDisplayType(Enzyme.class).equals(GraphViewCustomizable.DisplayType.All));
 			}
 		});
 	}

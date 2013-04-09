@@ -36,7 +36,7 @@ public class ViewerActionDrawTypeMarker extends AbstractViewerAction {
 		view.addGraphViewListener(new GraphViewListener() {
 			@Override
 			public void graphChanged(GraphView parent) {
-				putValue(SELECTED_KEY, view.drawsType(Marker.class));
+				putValue(SELECTED_KEY, view.getDisplayType(Marker.class).equals(GraphViewCustomizable.DisplayType.All));
 			}
 		});
 	}
