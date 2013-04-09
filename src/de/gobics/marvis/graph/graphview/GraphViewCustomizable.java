@@ -20,6 +20,10 @@ import java.util.logging.Logger;
  */
 public class GraphViewCustomizable extends AbstractGraph {
 
+	public enum DisplayType {
+
+		All, Explainable, None
+	}
 	private static final Logger logger = Logger.getLogger(GraphViewCustomizable.class.
 			getName());
 	/**
@@ -27,18 +31,14 @@ public class GraphViewCustomizable extends AbstractGraph {
 	 */
 	private final Set<GraphObject> objects_to_hide = new TreeSet<>();
 	/**
-	 * Contains the classes that should be hidden in the network.
+	 * Contains the display type for classes
 	 */
-	private final TreeSet<Class<? extends GraphObject>> classes_to_hide = new TreeSet<>(new Comparator<Class<? extends GraphObject>>() {
+	private final TreeMap<Class<? extends GraphObject>, DisplayType> classdisplay = new TreeMap<>(new Comparator<Class<? extends GraphObject>>() {
 		@Override
 		public int compare(Class<? extends GraphObject> o1, Class<? extends GraphObject> o2) {
 			return o1.getName().compareTo(o2.getName());
 		}
 	});
-	/**
-	 * A boolean flag allows only to draw explainable nodes.
-	 */
-	private boolean draw_explainable_nodes_only = false;
 	/**
 	 * If set to true, this view will also display nodes without an edge
 	 * (usually useless).
@@ -60,6 +60,7 @@ public class GraphViewCustomizable extends AbstractGraph {
 	 */
 	protected final TreeMap<GraphObject, Collection<Relation>> cache_relations = new TreeMap<>();
 	protected final TreeSet<Relation> cache_all_relations = new TreeSet<>();
+	private boolean update_listener;
 
 	/**
 	 * Create a new customizable graphical view based on the given network.
@@ -92,6 +93,13 @@ public class GraphViewCustomizable extends AbstractGraph {
 		return cofactor_limit;
 	}
 
+	public void setUpdateListener(boolean b) {
+		this.update_listener = b;
+		if (b) {
+			fireGraphChangeEvent();
+		}
+	}
+
 	/**
 	 * Change the hide status of the given class.
 	 *
@@ -99,26 +107,21 @@ public class GraphViewCustomizable extends AbstractGraph {
 	 * @param hide if true this class will be hidden
 	 */
 	public void hideClass(Class<? extends GraphObject> c, boolean hide) {
-		if (hide) {
-			if (classes_to_hide.add(c)) {
-				fireGraphChangeEvent();
-			}
+		setDisplayType(c, hide ? DisplayType.None : DisplayType.All);
+	}
+
+	public void setDisplayType(Class<? extends GraphObject> c, DisplayType type) {
+		if (!classdisplay.containsKey(c)) {
+			classdisplay.put(c, DisplayType.All);
 		}
-		else {
-			if (classes_to_hide.remove(c)) {
-				fireGraphChangeEvent();
-			}
+		if (!type.equals(classdisplay.get(c))) {
+			classdisplay.put(c, type);
+			fireGraphChangeEvent();
 		}
 	}
 
-	/**
-	 * Returns true if the given class has to be hidden.
-	 *
-	 * @param c the class to check
-	 * @return true if {@code c} should be hidden
-	 */
-	public boolean drawsType(Class<? extends GraphObject> c) {
-		return !classes_to_hide.contains(c);
+	public DisplayType getDisplayType(Class<? extends GraphObject> c) {
+		return classdisplay.containsKey(c) ? classdisplay.get(c) : DisplayType.All;
 	}
 
 	/**
@@ -141,28 +144,6 @@ public class GraphViewCustomizable extends AbstractGraph {
 	public void resetHidenNodes() {
 		if (!objects_to_hide.isEmpty()) {
 			objects_to_hide.clear();
-			fireGraphChangeEvent();
-		}
-	}
-
-	/**
-	 * Returns whether explainable nodes should be drawn or not.
-	 *
-	 * @return true if only explainable nodes should be drawn.
-	 */
-	public boolean drawExplainableNodesOnly() {
-		return draw_explainable_nodes_only;
-	}
-
-	/**
-	 * Set the status of drawing explainable nodes.
-	 *
-	 * @param draw_explainable_nodes_only true if only explainable nodes should
-	 * be drawn.
-	 */
-	public void setDrawExplainableNodesOnly(boolean draw_explainable_nodes_only) {
-		if (this.draw_explainable_nodes_only != draw_explainable_nodes_only) {
-			this.draw_explainable_nodes_only = draw_explainable_nodes_only;
 			fireGraphChangeEvent();
 		}
 	}
@@ -196,14 +177,12 @@ public class GraphViewCustomizable extends AbstractGraph {
 	 */
 	protected boolean acceptVertex(GraphObject obj) {
 		// Check if the complete class is hidden
-		try {
-			if (classes_to_hide.contains(obj.getClass())) {
-				return false;
-			}
+		DisplayType type = getDisplayType(obj.getClass());
+		if (type.equals(DisplayType.None)) {
+			return false;
 		}
-		catch (Throwable e) {
-			logger.log(Level.SEVERE, "Can not check if class {0} is to hide: {1}", new Object[]{obj.getClass(), e});
-			return true;
+		if (type.equals(DisplayType.Explainable) && !getRootNetwork().isExplainable(obj)) {
+			return false;
 		}
 
 		// Check if this specific object is hidden
@@ -218,20 +197,17 @@ public class GraphViewCustomizable extends AbstractGraph {
 			}
 		}
 
-		// Check if it needs to be excluded based on the 
-		if (drawExplainableNodesOnly()) {
-			return getMetabolicNetwork().isExplainable(obj);
-		}
-
 		return true;
 	}
 
 	@Override
 	protected void fireGraphChangeEvent() {
-		cache_relations.clear();
-		cache_vertices.clear();
-		cache_all_relations.clear();
-		super.fireGraphChangeEvent();
+		if (update_listener) {
+			cache_relations.clear();
+			cache_vertices.clear();
+			cache_all_relations.clear();
+			super.fireGraphChangeEvent();
+		}
 	}
 
 	@Override
