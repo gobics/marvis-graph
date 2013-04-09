@@ -34,16 +34,24 @@ public class test {
 
 	public static void main(String[] args) throws Exception, Throwable {
 		LoggingUtils.initLogger(Level.FINER);
+		MetabolicNetwork n = testBiocycImport();
+		testCofactorThreshold(n);
+	}
+
+	private static MetabolicNetwork testBiocycImport() throws Exception {
 		File in = new File("/home/manuel/ara.tar.gz");
 		BiocycCreateNetworkProcess process = new BiocycCreateNetworkProcess(in);
 		MetabolicNetwork network = process.doTask();
 
 		MetabolicNetworkTester tester = new MetabolicNetworkTester(network);
 		System.out.println(tester.generateReport());
+		return network;
 	}
 
-	private static void testCofactorThreshold() throws Exception {
-		MetabolicNetwork network = new LoadNetwork("/home/manuel/marvis-graph-paper-data/graph.ath.e-atmx-9.cut10.xml.gz").load();
+	private static void testCofactorThreshold(MetabolicNetwork network) throws Exception {
+		if (network == null) {
+			network = new LoadNetwork("/home/manuel/marvis-graph-paper-data/graph.ath.e-atmx-9.cut10.xml.gz").load();
+		}
 
 		AbstractNetworkCalculation process = new CalculateNetworksPathway(network);
 

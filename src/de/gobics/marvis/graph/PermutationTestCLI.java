@@ -4,6 +4,8 @@ import de.gobics.marvis.graph.gui.tasks.CalculateNetworksRWR;
 import de.gobics.marvis.graph.gui.tasks.LoadNetwork;
 import de.gobics.marvis.graph.gui.tasks.PermutationTest;
 import de.gobics.marvis.graph.gui.tasks.PermutationTestResult;
+import de.gobics.marvis.graph.sort.AbstractGraphScore;
+import de.gobics.marvis.graph.sort.NetworkSorterDiameter;
 import de.gobics.marvis.graph.sort.NetworkSorterSumOfWeights;
 import de.gobics.marvis.utils.LoggingUtils;
 import de.gobics.marvis.utils.task.AbstractTask.State;
@@ -28,6 +30,7 @@ public class PermutationTestCLI {
 	private static Integer number_of_permutations;
 	private static Integer number_of_threads;
 	private static Integer cofactor_threshold;
+	private static AbstractGraphScore scorer = new NetworkSorterDiameter();
 
 	public static void main(String[] args) throws Exception {
 		LoggingUtils.initLogger(Level.FINER);
@@ -48,14 +51,17 @@ public class PermutationTestCLI {
 		// Load the network
 		LoadNetwork loader = new LoadNetwork(file);
 		final MetabolicNetwork network = loader.load();
-
+		
+		// Build scorer
+		scorer.setParent(network);
+		
 		logger.log(Level.INFO, "Permutating for restart probability of: {0}", restart_probability);
 		CalculateNetworksRWR process = new CalculateNetworksRWR(network);
 		process.setCofactorThreshold(cofactor_threshold);
 		process.setRestartProbability(restart_probability);
 		MetabolicNetwork[] subs = process.calculateNetworks(network);
 
-		PermutationTest test = new PermutationTest(network, subs, process, new NetworkSorterSumOfWeights(network));
+		PermutationTest test = new PermutationTest(network, subs, process, scorer);
 		test.setNumberOfPermutations(number_of_permutations);
 		test.setNumberOfThreads(number_of_threads);
 		test.addTaskListener(new TaskListener<Void>() {
