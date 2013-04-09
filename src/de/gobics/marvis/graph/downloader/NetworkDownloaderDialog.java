@@ -80,7 +80,7 @@ public class NetworkDownloaderDialog extends JDialog {
 		process.addTaskListener(new AbstractTaskListener<Void>() {
 			@Override
 			public void setTaskState(State state) {
-				if (!process.isDone()) {
+				if (process.isDone()) {
 					MetabolicNetwork network = process.getTaskResult();
 					if (network != null) {
 						getMainWindow().setNetwork(network);
