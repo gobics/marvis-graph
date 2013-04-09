@@ -4,18 +4,19 @@
  */
 package de.gobics.marvis.graph;
 
+import de.gobics.marvis.graph.downloader.BiocycCreateNetworkProcess;
+import de.gobics.marvis.graph.downloader.MetabolicNetworkTester;
+import de.gobics.marvis.graph.gui.tasks.AbstractNetworkCalculation;
+import de.gobics.marvis.graph.gui.tasks.CalculateNetworksPathway;
 import de.gobics.marvis.graph.gui.tasks.CalculateNetworksRWR;
 import de.gobics.marvis.graph.gui.tasks.LoadNetwork;
-import de.gobics.marvis.graph.gui.tasks.PermutationTest;
-import de.gobics.marvis.graph.gui.tasks.PermutationTestResult;
-import de.gobics.marvis.graph.gui.tasks.SortNetworksTask;
-import de.gobics.marvis.graph.sort.NetworkSorterSumOfWeights;
 import de.gobics.marvis.utils.HumanReadable;
 import de.gobics.marvis.utils.LoggingUtils;
-import java.io.BufferedWriter;
-import java.io.FileWriter;
+import java.io.File;
+import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Set;
+import java.util.Collection;
+import java.util.LinkedList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.jblas.DoubleMatrix;
@@ -25,6 +26,7 @@ import org.jblas.DoubleMatrix;
  * @author manuel
  */
 public class test {
+
 	private final static Logger logger = Logger.getLogger(test.class.getName());
 	private static final int NUM_PERMUTES = 1000;
 	private static final int NUM_THREADS = Runtime.getRuntime().availableProcessors() - 1;
@@ -32,34 +34,27 @@ public class test {
 
 	public static void main(String[] args) throws Exception, Throwable {
 		LoggingUtils.initLogger(Level.FINER);
+		File in = new File("/home/manuel/ara.tar.gz");
+		BiocycCreateNetworkProcess process = new BiocycCreateNetworkProcess(in);
+		MetabolicNetwork network = process.doTask();
 
-		double rp = new Double(args[0]).doubleValue();
-		LoadNetwork loader = new LoadNetwork(args[1]);
-		final MetabolicNetwork network = loader.load();
+		MetabolicNetworkTester tester = new MetabolicNetworkTester(network);
+		System.out.println(tester.generateReport());
+	}
 
-		logger.info("Permutating for restart probability of: " + rp);
-		CalculateNetworksRWR process = new CalculateNetworksRWR(network);
-		process.setCofactorThreshold(COFACTOR_THRESHOLD);
-		process.setRestartProbability(rp);
-		MetabolicNetwork[] subs = process.calculateNetworks(network);
+	private static void testCofactorThreshold() throws Exception {
+		MetabolicNetwork network = new LoadNetwork("/home/manuel/marvis-graph-paper-data/graph.ath.e-atmx-9.cut10.xml.gz").load();
 
-		PermutationTest test = new PermutationTest(network, subs, process, new NetworkSorterSumOfWeights(network));
-		test.setNumberOfPermutations(NUM_PERMUTES);
-		test.setNumberOfThreads(NUM_THREADS);
+		AbstractNetworkCalculation process = new CalculateNetworksPathway(network);
 
-		Set<PermutationTestResult> networks = test.calculateScores(true);
-
-		String resultfilename = args[1] + ".scores-" + rp + ".csv";
-		logger.log(Level.INFO, "Writing result to: {0}", resultfilename);
-		BufferedWriter out = new BufferedWriter(new FileWriter(resultfilename));
-		out.write("Name\tnum_reactions\tscore\tfwer\tfdr\n");
-		for (PermutationTestResult r : networks) {
-			out.write(r.network.getName() + "\t" + r.network.getReactions().size() + "\t" + r.score + "\t" + r.fwer + "\t" + r.fdr + "\n");
+		Collection<MetabolicNetwork> networks = new ArrayList<>(Arrays.asList(new MetabolicNetwork[]{null, null}));
+		int cf = 4;
+		while (networks.size() > 1) {
+			process.setCofactorThreshold(cf);
+			networks = process.getSubnetworks(new LinkedList<>(network.getReactions()));
+			System.out.println("Number of networks at cofactor " + cf + ": " + networks.size());
+			cf++;
 		}
-		out.close();
-
-		logger.info("Calculations for restart probability " + rp + " is ready");
-		System.exit(0);
 	}
 
 	private static void testMatrixSize() {

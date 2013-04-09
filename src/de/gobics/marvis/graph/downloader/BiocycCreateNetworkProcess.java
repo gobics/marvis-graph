@@ -17,6 +17,9 @@ import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.TreeSet;
 import java.util.logging.Logger;
+import java.util.zip.GZIPInputStream;
+import org.apache.commons.compress.archivers.tar.TarArchiveEntry;
+import org.apache.commons.compress.archivers.tar.TarArchiveInputStream;
 
 /**
  *
@@ -27,8 +30,6 @@ public class BiocycCreateNetworkProcess extends AbstractNetworkCreator {
 	private static final Logger logger = Logger.getLogger(BiocycCreateNetworkProcess.class.
 			getName());
 	private MetabolicNetwork graph = null;
-	private final TreeSet<GraphObject> checked = new TreeSet<GraphObject>();
-	private final TreeSet<GraphObject> to_check = new TreeSet<GraphObject>();
 	private File input_file;
 
 	public BiocycCreateNetworkProcess(File input_file) {
@@ -56,11 +57,59 @@ public class BiocycCreateNetworkProcess extends AbstractNetworkCreator {
 		if (input_file.isDirectory()) {
 			parse_directory(input_file);
 		}
+		else if (input_file.isFile()) {
+			parse_file(input_file);
+		}
 		else {
 			throw new RuntimeException("File parsing not supported yet");
 		}
 
 		return graph;
+	}
+
+	private void parse_file(File input_file) throws IOException {
+		InputStream instream;
+		String filename = input_file.getName().toLowerCase();
+		if (filename.endsWith(".tgz") || filename.endsWith(".tar.gz")) {
+			instream = new GZIPInputStream(new FileInputStream(input_file));
+		}
+		else if (filename.endsWith(".tar")) {
+			instream = new FileInputStream(input_file);
+		}
+		else {
+			throw new IOException("Can not handle file with unkown extension: " + filename);
+		}
+		TarArchiveInputStream tar = new TarArchiveInputStream(instream);
+		TarArchiveEntry entry = null;
+		while ((entry = tar.getNextTarEntry()) != null) {
+			if (entry.isDirectory()) {
+				continue;
+			}
+			String name = entry.getName();
+			BufferedReader in;
+			if (name.endsWith("data/compounds.dat")) {
+				parse_compounds(new BufferedReader(new InputStreamReader(tar)));
+			}
+			else if (name.endsWith("data/reactions.dat")) {
+				parse_reactions(new BufferedReader(new InputStreamReader(tar)));
+			}
+			else if( name.endsWith("data/proteins.dat")) {
+				parse_enzymes(new BufferedReader(new InputStreamReader(tar)));
+			}
+			else  if( name.endsWith("data/pathways.dat")){
+				parse_pathways(new BufferedReader(new InputStreamReader(tar)));
+			}
+			else if( name.endsWith("data/genes.dat")){
+				parse_genes(new BufferedReader(new InputStreamReader(tar)));
+			}
+			else if( name.endsWith("data/enzrxns.dat")){
+				parse_enzyme_reaction(new BufferedReader(new InputStreamReader(tar)));
+			}
+			else {
+				logger.info("Ignoring entry: "+name);
+			}
+		}
+		tar.close();
 	}
 
 	private void parse_directory(File directory) throws FileNotFoundException, IOException {
@@ -306,7 +355,7 @@ public class BiocycCreateNetworkProcess extends AbstractNetworkCreator {
 					ecs.add(r.getEcNumber());
 				}
 			}
-			e.setEC( StringUtils.join("; ", ecs));
+			e.setEC(StringUtils.join("; ", ecs));
 		}
 
 	}
