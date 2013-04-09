@@ -4,9 +4,11 @@ import de.gobics.marvis.graph.graphview.GraphViewCustomizable;
 import de.gobics.marvis.graph.graphview.GraphView;
 import de.gobics.marvis.graph.graphview.ReactionGraph;
 import de.gobics.marvis.graph.*;
+import de.gobics.marvis.graph.graphview.GraphViewCustomizable.DisplayType;
 import de.gobics.marvis.graph.graphview.GraphViewNeigborhood;
 import de.gobics.marvis.graph.gui.actions.*;
 import de.gobics.marvis.graph.gui.graphvisualizer.VisualizationViewerGraph;
+import de.gobics.marvis.utils.Molecule;
 import de.gobics.marvis.utils.swing.*;
 import edu.uci.ics.jung.visualization.GraphZoomScrollPane;
 import java.awt.*;
@@ -226,6 +228,59 @@ public final class InternalFrameGraph extends JInternalFrame {
 		notebook.setTabComponentAt(notebook.getTabCount() - 1, new TabComponent(notebook));
 		notebook.getModel().setSelectedIndex(notebook.getTabCount() - 1);
 	}
+
+	public void changeDisplayTypeSettings(GraphViewCustomizable view) {
+		GraphViewCustomizable.DisplayType.values();
+		JComboBox<GraphViewCustomizable.DisplayType> cb_marker = new JComboBox<>(new GraphViewCustomizable.DisplayType[]{GraphViewCustomizable.DisplayType.All, GraphViewCustomizable.DisplayType.None}),
+				cb_transcripts = new JComboBox<>(new GraphViewCustomizable.DisplayType[]{GraphViewCustomizable.DisplayType.All, GraphViewCustomizable.DisplayType.None}),
+				cb_molecules = new JComboBox<>(GraphViewCustomizable.DisplayType.values()),
+				cb_reactions = new JComboBox<>(GraphViewCustomizable.DisplayType.values()),
+				cb_enzymes = new JComboBox<>(GraphViewCustomizable.DisplayType.values()),
+				cb_genes = new JComboBox<>(GraphViewCustomizable.DisplayType.values()),
+				cb_pathways = new JComboBox<>(GraphViewCustomizable.DisplayType.values());
+		cb_marker.setSelectedItem(view.getDisplayType(Marker.class));
+		cb_marker.setSelectedItem(view.getDisplayType(Compound.class));
+		cb_marker.setSelectedItem(view.getDisplayType(Reaction.class));
+		cb_marker.setSelectedItem(view.getDisplayType(Enzyme.class));
+		cb_marker.setSelectedItem(view.getDisplayType(Gene.class));
+		cb_marker.setSelectedItem(view.getDisplayType(Pathway.class));
+		cb_marker.setSelectedItem(view.getDisplayType(Transcript.class));
+
+		JPanel panel = new JPanel(new SpringLayout());
+		panel.add(new JLabel("Metabolic marker:"));
+		panel.add(cb_marker);
+		panel.add(new JLabel("Transcripts: "));
+		panel.add(cb_transcripts);
+		panel.add(new JLabel("Molecules:"));
+		panel.add(cb_molecules);
+		panel.add(new JLabel("Reactions:"));
+		panel.add(cb_reactions);
+		panel.add(new JLabel("Enzymes:"));
+		panel.add(cb_enzymes);
+		panel.add(new JLabel("Genes:"));
+		panel.add(cb_genes);
+		panel.add(new JLabel("Pathways:"));
+		panel.add(cb_pathways);
+
+		SpringUtilities.makeCompactGrid(panel);
+
+		int r = JOptionPane.showConfirmDialog(main_window, panel, "Select view types", JOptionPane.OK_CANCEL_OPTION);
+		if (r != JOptionPane.OK_OPTION) {
+			return;
+		}
+
+		view.setUpdateListener(false);
+
+		view.setDisplayType(Marker.class, (DisplayType) cb_marker.getSelectedItem());
+		view.setDisplayType(Transcript.class, (DisplayType) cb_transcripts.getSelectedItem());
+		view.setDisplayType(Compound.class, (DisplayType) cb_molecules.getSelectedItem());
+		view.setDisplayType(Reaction.class, (DisplayType) cb_reactions.getSelectedItem());
+		view.setDisplayType(Enzyme.class, (DisplayType) cb_enzymes.getSelectedItem());
+		view.setDisplayType(Gene.class, (DisplayType) cb_genes.getSelectedItem());
+		view.setDisplayType(Pathway.class, (DisplayType) cb_pathways.getSelectedItem());
+
+		view.setUpdateListener(true);
+	}
 }
 
 class ToolbarView extends JToolBar {
@@ -243,14 +298,15 @@ class ToolbarViewDefault extends ToolbarView {
 	public ToolbarViewDefault(final InternalFrameGraph parent, final VisualizationViewerGraph viewer, final GraphViewCustomizable view) {
 		super(parent, viewer);
 
+		JButton button2 = new JButton(new ViewerActionChangeDisplaySettings(parent, view));
+		button2.setHideActionText(true);
+		add(button2);
+
+		add(new JSeparator());
+
 		JToggleButton button = new JToggleButton(new ViewerActionDrawSingleNodes(viewer, view));
 		button.setHideActionText(true);
 		add(button);
-
-		button = new JToggleButton(new ViewerActionDrawExplainableNodesOnly(viewer, view));
-		button.setHideActionText(true);
-		add(button);
-
 
 		button = new JToggleButton(new ViewerActionDrawTypeMarker(viewer, view));
 		button.setHideActionText(true);
@@ -292,7 +348,7 @@ class ToolbarViewDefault extends ToolbarView {
 
 		add(new JSeparator());
 
-		JButton button2 = new JButton(new ViewerActionDrawDefineCofactor(viewer, view));
+		button2 = new JButton(new ViewerActionDrawDefineCofactor(viewer, view));
 		add(button2);
 	}
 }
@@ -312,7 +368,7 @@ class ToolbarViewNeighborhood extends ToolbarViewDefault {
 		distance_model.addChangeListener(new ChangeListener() {
 			@Override
 			public void stateChanged(ChangeEvent ce) {
-				System.out.println("Setting distance to: "+distance_model.getNumber().intValue());
+				System.out.println("Setting distance to: " + distance_model.getNumber().intValue());
 				view.setMaximumDistance(distance_model.getNumber().intValue());
 			}
 		});
