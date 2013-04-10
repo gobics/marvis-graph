@@ -384,7 +384,7 @@ public class MarvisGraphMainWindow extends JFrame {
 			return;
 		}
 
-		final AbstractGraphScore sorter = combobox_graph_sort.getSorterFor(main);
+		final AbstractGraphScore sorter = combobox_graph_sort.getSorterFor(main, calculate_network_task);
 		final SortNetworksTask task = new SortNetworksTask(sorter, getMainNetwork(), subnetworks);
 		task.addTaskListener(new TaskResultListener<Void>() {
 			@Override
@@ -834,11 +834,6 @@ public class MarvisGraphMainWindow extends JFrame {
 			return;
 		}
 
-		if (calculate_network_task == null) {
-			display_error("Have no calculator stored. ");
-			return;
-		}
-
 		JPanel options_panel = new JPanel(new SpringLayout());
 		SpinnerNumberModel sm_permutations = new SpinnerNumberModel(1000, 1, Integer.MAX_VALUE, 1000);
 		SpinnerNumberModel sm_threads = new SpinnerNumberModel(Runtime.getRuntime().availableProcessors(), 1, Integer.MAX_VALUE, 1);
@@ -865,7 +860,12 @@ public class MarvisGraphMainWindow extends JFrame {
 	 * @param permutations
 	 */
 	private void performPermutationTest(MetabolicNetwork main, MetabolicNetwork[] subs, int number_of_permutations, int num_threads) {
-		final PermutationTest process = new PermutationTest(main, subs, calculate_network_task, combobox_graph_sort.getSorterFor(main));
+		if (calculate_network_task == null) {
+			display_error("Have no calculator stored. ");
+			return;
+		}
+
+		final PermutationTest process = new PermutationTest(main, subs, calculate_network_task, combobox_graph_sort.getSorterFor(main, calculate_network_task));
 		process.setNumberOfPermutations(number_of_permutations);
 		process.setNumberOfThreads(num_threads);
 		process.addTaskListener(new TaskResultListener<Void>() {

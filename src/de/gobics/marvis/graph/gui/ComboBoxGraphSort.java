@@ -5,6 +5,7 @@
 package de.gobics.marvis.graph.gui;
 
 import de.gobics.marvis.graph.MetabolicNetwork;
+import de.gobics.marvis.graph.gui.tasks.AbstractNetworkCalculation;
 import de.gobics.marvis.graph.sort.*;
 import java.awt.Component;
 import javax.swing.*;
@@ -35,8 +36,11 @@ public class ComboBoxGraphSort extends JComboBox {
 
 	}
 
-	public AbstractGraphScore getSorterFor(MetabolicNetwork parent) {
+	public AbstractGraphScore getSorterFor(MetabolicNetwork parent, AbstractNetworkCalculation subnet_process) {
 		AbstractGraphScore sorter = (AbstractGraphScore) getSelectedItem();
+		if( sorter instanceof NetworkSorterDiameter && subnet_process != null ){
+			((NetworkSorterDiameter)sorter).setCofactorThreshold( subnet_process.getCofactorThreshold());
+		}
 		sorter.setParent(parent);
 		return sorter;
 	}

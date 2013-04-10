@@ -39,6 +39,10 @@ public abstract class AbstractNetworkCalculation extends AbstractTask<MetabolicN
 	public void setCofactorThreshold(int cofactor_threshold) {
 		reactions_view = new ReactionGraph(getRootNetwork(), false, cofactor_threshold);
 	}
+	
+	public int getCofactorThreshold(){
+		return reactions_view.getCofactorThreshold();
+	}
 
 	public ReactionGraph getReactionView() {
 		return reactions_view;

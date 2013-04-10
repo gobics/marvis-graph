@@ -36,4 +36,5 @@ public abstract class AbstractGraphScore {
 	public abstract String getDescription();
 	
 	public abstract AbstractGraphScore like(MetabolicNetwork new_parent);
+
 }

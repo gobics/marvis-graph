@@ -10,9 +10,13 @@ import de.gobics.marvis.graph.gui.tasks.AbstractNetworkCalculation;
 import de.gobics.marvis.graph.gui.tasks.CalculateNetworksPathway;
 import de.gobics.marvis.graph.gui.tasks.CalculateNetworksRWR;
 import de.gobics.marvis.graph.gui.tasks.LoadNetwork;
+import de.gobics.marvis.graph.gui.tasks.ReduceNetwork;
+import de.gobics.marvis.graph.sort.NetworkSorterDiameter;
 import de.gobics.marvis.utils.HumanReadable;
 import de.gobics.marvis.utils.LoggingUtils;
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileReader;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -34,8 +38,40 @@ public class test {
 
 	public static void main(String[] args) throws Exception, Throwable {
 		LoggingUtils.initLogger(Level.FINER);
-		MetabolicNetwork n = testBiocycImport();
-		testCofactorThreshold(n);
+
+		MetabolicNetwork n_ara = new LoadNetwork("/home/manuel/marvis-graph-paper-data/graph.aracyc.combined.cut10.xml.gz").load();
+		n_ara = new ReduceNetwork(n_ara).perform();
+		MetabolicNetwork n_ath = new LoadNetwork("/home/manuel/marvis-graph-paper-data/graph.ath.combined.cut10.xml.gz").load();
+		n_ath = new ReduceNetwork(n_ath).perform();
+		
+		
+		BufferedReader in = new BufferedReader(new FileReader("heilmann_ids.lst"));
+		String line;
+		int count_ara = 0, count_ath = 0;
+
+		while ((line = in.readLine()) != null) {
+
+			boolean in_ara = n_ara.getGene(line) != null;
+			if (in_ara) {
+				count_ara++;
+			}
+			boolean in_ath = n_ath.getGene("ath:" + line) != null;
+			if (in_ath) {
+				count_ath++;
+			}
+			if (in_ara || in_ath) {
+				System.out.println(line + "\t" + in_ara + "\t" + in_ath);
+			}
+
+		}
+		System.out.println("In AraCyc:  "+count_ara);
+		System.out.println("In AthKEGG: "+count_ath);
+		
+		MetabolicNetworkTester t_ara = new MetabolicNetworkTester(n_ara);
+		MetabolicNetworkTester t_ath = new MetabolicNetworkTester(n_ath);
+		
+		System.out.println("Compounds : "+n_ara.getCompounds().size() +" with "+t_ara.countCompoundsWithMarker()+" annotated");
+		System.out.println("Compounds : "+n_ath.getCompounds().size() +" with "+t_ath.countCompoundsWithMarker()+" annotated");
 	}
 
 	private static MetabolicNetwork testBiocycImport() throws Exception {

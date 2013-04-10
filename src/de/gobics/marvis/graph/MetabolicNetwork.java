@@ -661,7 +661,7 @@ public class MetabolicNetwork {
 		for (Relation r : getRelations(o)) {
 			removeRelation(r);
 		}
-		logger.finer("Removing vertex " + o);
+		//logger.finer("Removing vertex " + o);
 		vertices.get(o.getClass()).remove(o.getId());
 	}
 

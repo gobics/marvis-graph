@@ -75,6 +75,7 @@ public class SortNetworksTask extends AbstractTask<MetabolicNetwork[], Void> {
 				public Cache call() throws Exception {
 					Cache result = new Cache(networks[idx], sorter.
 							calculateScore(networks[idx]), reverse_sorting);
+	//				logger.finer(result.network.getName() +" => "+result.score);
 					incrementProgress();
 					return result;
 				}
