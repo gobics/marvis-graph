@@ -5,15 +5,13 @@ import de.gobics.marvis.graph.Relation;
 import de.gobics.marvis.graph.graphview.GraphView;
 import de.gobics.marvis.graph.graphview.GraphViewCustomizable;
 import de.gobics.marvis.graph.graphview.GraphViewListener;
-import de.gobics.marvis.graph.gui.ErrorDialog;
 import de.gobics.marvis.graph.gui.GraphMouseListener;
 import de.gobics.marvis.graph.gui.MarvisGraphMainWindow;
-import de.gobics.marvis.graph.gui.ProcessListener;
 import de.gobics.marvis.graph.gui.tasks.RenderGraphLayout;
-import de.gobics.marvis.utils.task.AbstractTask.State;
-import de.gobics.marvis.utils.task.TaskListener;
 import de.gobics.marvis.utils.task.TaskResultListener;
 import edu.uci.ics.jung.algorithms.layout.*;
+import edu.uci.ics.jung.algorithms.layout.util.RandomLocationTransformer;
+import edu.uci.ics.jung.visualization.Layer;
 import edu.uci.ics.jung.visualization.VisualizationViewer;
 import edu.uci.ics.jung.visualization.control.CrossoverScalingControl;
 import edu.uci.ics.jung.visualization.control.PickingGraphMousePlugin;
@@ -22,6 +20,7 @@ import edu.uci.ics.jung.visualization.control.ScalingGraphMousePlugin;
 import edu.uci.ics.jung.visualization.control.TranslatingGraphMousePlugin;
 import edu.uci.ics.jung.visualization.decorators.EdgeShape;
 import java.awt.Color;
+import java.awt.Dimension;
 import java.awt.Point;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
@@ -44,7 +43,7 @@ public class VisualizationViewerGraph<E> extends VisualizationViewer<GraphObject
 
 	public VisualizationViewerGraph(MarvisGraphMainWindow main_window, GraphView<? extends GraphObject, E> graph) {
 		super(new StaticLayout(graph));
-		setDoubleBuffered(true);
+		setDoubleBuffered(false);
 		this.main_window = main_window;
 		logger.log(Level.FINER, "Initializing graph viewer for graph: {0}", graph);
 		setBackground(Color.WHITE);
@@ -98,9 +97,9 @@ public class VisualizationViewerGraph<E> extends VisualizationViewer<GraphObject
 		ISOMLayout layout = new ISOMLayout(getGraphLayout().getGraph());
 		layout.setSize(getSize());
 		layout.initialize();
-		layout.setInitializer(getGraphLayout());
+		layout.setInitializer(new RandomLocationTransformer(layout.getSize()));
+		//layout.setInitializer(getGraphLayout());
 		layout.reset();
-
 		long time_start = System.currentTimeMillis();
 		while (System.currentTimeMillis() - time_start < 1000 && !layout.done()) {
 			layout.step();

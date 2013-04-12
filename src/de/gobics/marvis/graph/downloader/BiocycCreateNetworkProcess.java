@@ -15,6 +15,9 @@ import java.io.*;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.LinkedList;
+import java.util.List;
+import java.util.Set;
+import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.logging.Logger;
 import java.util.zip.GZIPInputStream;
@@ -60,7 +63,7 @@ public class BiocycCreateNetworkProcess extends AbstractNetworkCreator {
 		else if (input_file.isFile()) {
 			parse_file(input_file);
 		}
-		logger.finer("Created network with "+graph.size()+" entities");
+		logger.finer("Created network with " + graph.size() + " entities");
 		return graph;
 	}
 
@@ -76,6 +79,12 @@ public class BiocycCreateNetworkProcess extends AbstractNetworkCreator {
 		else {
 			throw new IOException("Can not handle file with unkown extension: " + filename);
 		}
+		
+		Fixme: Ensure to first parse the classes.dat, then compound.dat and finally reaction.dat
+				this is needed to get all the required class assoziations and to build distinct reaction for each molecule!
+		
+		
+		
 		TarArchiveInputStream tar = new TarArchiveInputStream(instream);
 		TarArchiveEntry entry = null;
 		while ((entry = tar.getNextTarEntry()) != null) {
@@ -90,20 +99,20 @@ public class BiocycCreateNetworkProcess extends AbstractNetworkCreator {
 			else if (name.endsWith("data/reactions.dat")) {
 				parse_reactions(new BufferedReader(new InputStreamReader(tar)));
 			}
-			else if( name.endsWith("data/proteins.dat")) {
+			else if (name.endsWith("data/proteins.dat")) {
 				parse_enzymes(new BufferedReader(new InputStreamReader(tar)));
 			}
-			else  if( name.endsWith("data/pathways.dat")){
+			else if (name.endsWith("data/pathways.dat")) {
 				parse_pathways(new BufferedReader(new InputStreamReader(tar)));
 			}
-			else if( name.endsWith("data/genes.dat")){
+			else if (name.endsWith("data/genes.dat")) {
 				parse_genes(new BufferedReader(new InputStreamReader(tar)));
 			}
-			else if( name.endsWith("data/enzrxns.dat")){
+			else if (name.endsWith("data/enzrxns.dat")) {
 				parse_enzyme_reaction(new BufferedReader(new InputStreamReader(tar)));
 			}
 			else {
-				logger.info("Ignoring entry: "+name);
+				logger.info("Ignoring entry: " + name);
 			}
 		}
 		tar.close();
@@ -407,5 +416,43 @@ public class BiocycCreateNetworkProcess extends AbstractNetworkCreator {
 			}
 
 		}
+	}
+
+	private TreeMap<String, Set<String>> parseClasses(BufferedReader in) throws IOException {
+		Pwtools database = new Pwtools(in);
+		PwtoolsEntry entry;
+
+		TreeMap<String, Set<String>> children = new TreeMap<>();
+
+		while ((entry = database.nextEntry()) != null) {
+			String id = entry.getFirst("UNIQUE-ID");
+			String parent = entry.getFirst("TYPES");
+
+			if (parent != null && !parent.isEmpty()) {
+				if (!children.containsKey(parent)) {
+					children.put(parent, new TreeSet<String>());
+				}
+				children.get(parent).add(id);
+			}
+		}
+		return children;
+	}
+
+	private Set<String> getAllChildren(TreeMap<String, Set<String>> children, String class_id) {
+		TreeSet<String> result = new TreeSet<>();
+		LinkedList<String> to_visit = new LinkedList<>();
+		to_visit.add(class_id);
+
+		while (!to_visit.isEmpty()) {
+			String current = to_visit.poll();
+			if (children.containsKey(current)) {
+				to_visit.addAll(children.get(current));				
+			}
+			else {
+				result.add(current);
+			}
+		}
+		
+		return result;
 	}
 }

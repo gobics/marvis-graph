@@ -193,7 +193,7 @@ public final class InternalFrameGraph extends JInternalFrame {
 		VisualizationViewerGraph viewer = new VisualizationViewerGraph(main_window, graph_view);
 		GraphZoomScrollPane graphZoom = new GraphZoomScrollPane(viewer);
 		graphZoom.setPreferredSize(new Dimension(400, 400));
-
+		
 		viewer.addGraphActionListener(new GraphMouseListener() {
 			@Override
 			public void doubleClick(GraphObject o) {
