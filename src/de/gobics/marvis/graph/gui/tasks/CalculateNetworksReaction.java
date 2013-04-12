@@ -33,10 +33,6 @@ public class CalculateNetworksReaction extends AbstractNetworkCalculation {
 	}
 
 	@Override
-	protected MetabolicNetwork[] doTask() throws Exception {
-		return calculateNetworks();
-	}
-
 	public MetabolicNetwork[] calculateNetworks() throws Exception {
 		logger.fine("Searching start nodes");
 		setTaskDescription("Searching start nodes");

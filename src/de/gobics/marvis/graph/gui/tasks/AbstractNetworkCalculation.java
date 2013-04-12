@@ -125,4 +125,12 @@ public abstract class AbstractNetworkCalculation extends AbstractTask<MetabolicN
 
 		return network;
 	}
+	
+	
+	@Override
+	protected MetabolicNetwork[] doTask() throws Exception {
+		return calculateNetworks();
+	}
+	
+	abstract public MetabolicNetwork[] calculateNetworks() throws Exception;
 }
