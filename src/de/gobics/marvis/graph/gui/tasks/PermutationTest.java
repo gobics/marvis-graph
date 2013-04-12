@@ -11,11 +11,13 @@ import de.gobics.marvis.graph.sort.AbstractGraphScore;
 import de.gobics.marvis.utils.task.AbstractTask;
 import java.io.BufferedWriter;
 import java.io.FileWriter;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.Random;
 import java.util.Set;
 import java.util.TreeSet;
@@ -32,10 +34,7 @@ import java.util.logging.Logger;
 public class PermutationTest extends AbstractTask<Set<PermutationTestResult>, Void> {
 
 	private static final Logger logger = Logger.getLogger(PermutationTest.class.getName());
-	/**
-	 * Random number generator for permutation selection.
-	 */
-	private static final Random rand = new Random(System.currentTimeMillis());
+	public static final Random rand = new Random(System.currentTimeMillis());
 	/**
 	 * The basic root network to use.
 	 */
@@ -99,7 +98,7 @@ public class PermutationTest extends AbstractTask<Set<PermutationTestResult>, Vo
 			pool.execute(new PermutationThread(i));
 		}
 		pool.shutdown();
-		
+
 		last_update = System.currentTimeMillis();
 		while (!pool.isTerminated()) {
 			if (isCanceled()) {
@@ -107,8 +106,8 @@ public class PermutationTest extends AbstractTask<Set<PermutationTestResult>, Vo
 				return null;
 			}
 
-			// Check if one one or more tasks ran into indetermination (give them 2 minutes after the last update).
-			if (check_for_indeterminate && (System.currentTimeMillis() - last_update) > (60 * 2000)) {
+			// Check if one one or more tasks ran into indetermination (give them 5 minutes after the last update).
+			if (check_for_indeterminate && (System.currentTimeMillis() - last_update) > (60 * 5000)) {
 				pool.shutdownNow();
 				break;
 			}
@@ -132,8 +131,8 @@ public class PermutationTest extends AbstractTask<Set<PermutationTestResult>, Vo
 
 		out.close();
 
-		logger.info(
-				"Will now calculate the scores for the found subnetworks");
+		logger.info("Will now calculate the scores for the found subnetworks with permutation scores:");
+		
 		// Calculate overall number of detected subnetworks
 		int fdr_divisor = 0;
 		for (Collection<Comparable> cs : permutation_scores) {
@@ -229,25 +228,27 @@ public class PermutationTest extends AbstractTask<Set<PermutationTestResult>, Vo
 		private void toTask() throws Throwable {
 			logger.log(Level.FINE, "Thread for permutation {0} started", permutation_number);
 			long curtime = System.currentTimeMillis();
-			MetabolicNetwork permuted_network = root_network.clone();
-			permuteNetwork(permuted_network);
+			MetabolicNetwork permuted_network = permuteNetwork();
 			MetabolicNetwork[] networks = calculator.like(permuted_network).perform();
-			Set<Comparable> score_dist = calculateScores(root_network, networks);
+			Collection<Comparable> score_dist = calculateScores(permuted_network, networks);
 			addPermutationScore(score_dist);
 			logger.log(Level.FINER, "Calculation for permutation " + permutation_number + " took {0} seconds", (System.currentTimeMillis() - curtime) / 1000);
 		}
 
 		/**
-		 * Permutes the network in-place
+		 * Creates a permutation of the network.
 		 *
 		 * @param network
 		 */
-		private void permuteNetwork(MetabolicNetwork network) {
-			Collection<Marker> markers = network.getMarkers();
+		private MetabolicNetwork permuteNetwork() {
+			MetabolicNetwork network = root_network.clone();
+			network.setName("Permutation of " + root_network.getName() + " " + rand.nextInt());
+			List<Marker> markers = new ArrayList<>(network.getMarkers());
 			Collection<Transcript> transcripts = network.getTranscripts();
-			Collection<Compound> compounds = network.getCompounds();
-			Collection<Gene> genes = network.getGenes();
+			List<Compound> compounds = new ArrayList<>(network.getCompounds());
+			List<Gene> genes = new ArrayList<>(network.getGenes());
 			int num_annotations;
+
 
 			// Permute marker annotations
 			num_annotations = 0;
@@ -255,6 +256,7 @@ public class PermutationTest extends AbstractTask<Set<PermutationTestResult>, Vo
 				network.removeRelation(r);
 				num_annotations++;
 			}
+			//logger.log(Level.FINER, "Will now add {0} from marker to compound", num_annotations);
 			for (int idx = 0; idx < num_annotations; idx++) {
 				network.addRelation(new Relation(RelationshipType.MARKER_ANNOTATION_COMPOUND, random(markers), random(compounds)));
 			}
@@ -264,20 +266,25 @@ public class PermutationTest extends AbstractTask<Set<PermutationTestResult>, Vo
 				network.removeRelation(r);
 				num_annotations++;
 			}
+			//logger.log(Level.FINER, "Will now add {0} from transcript to gene", num_annotations);
 			Iterator<Transcript> titer = transcripts.iterator();
 			for (int idx = 0; idx < num_annotations; idx++) {
 				Transcript t = titer.next(); // Transcript is always only connected to one gene, therefore we just use the next one.
 				network.addRelation(new Relation(RelationshipType.TRANSCRIPT_ISFROM_GENE, t, random(genes)));
 			}
+
+			return network;
 		}
 
-		private Set<Comparable> calculateScores(MetabolicNetwork root, MetabolicNetwork[] networks) {
+		private Collection<Comparable> calculateScores(MetabolicNetwork root, MetabolicNetwork[] networks) {
 			logger.fine("Calculating scores");
 			AbstractGraphScore curscorer = scorer.like(root);
 			scorer.setParent(root);
-			Set<Comparable> dist = new TreeSet<>();
+			Collection<Comparable> dist = new ArrayList<>(networks.length);
 			for (MetabolicNetwork n : networks) {
+				
 				Comparable score = curscorer.calculateScore(n);
+				//logger.finer("Score for "+n.getName()+": "+score);
 				dist.add(score);
 			}
 			return dist;
@@ -290,13 +297,10 @@ public class PermutationTest extends AbstractTask<Set<PermutationTestResult>, Vo
 		 * @param selection
 		 * @return one object out of {@code selection}
 		 */
-		private <T> T random(Collection<T> selection) {
-			int idx = rand.nextInt(selection.size() - 1);
-			Iterator<T> iterator = selection.iterator();
-			while (idx-- >= 0) {
-				iterator.next();
-			}
-			return iterator.next();
+		private <T> T random(List<T> selection) {
+			int idx = rand.nextInt(selection.size());
+			//System.err.println("Next int is: "+idx);
+			return selection.get(idx);
 		}
 	}
 }
