@@ -26,9 +26,9 @@ public class CalculateNetworksRWR extends AbstractNetworkCalculation {
 	 * Basic restart probability.
 	 */
 	private double restart_probability = 0.8;
+	private double weight_threshold = 1 - restart_probability;
 	private boolean use_input_weights;
 	private boolean use_sparse_algorithm = true;
-	private double threshold;
 
 	public CalculateNetworksRWR(MetabolicNetwork network) {
 		this(network, true);
@@ -44,9 +44,9 @@ public class CalculateNetworksRWR extends AbstractNetworkCalculation {
 	@Override
 	public CalculateNetworksRWR like(MetabolicNetwork network) {
 		CalculateNetworksRWR clone = new CalculateNetworksRWR(network);
-		clone.setCofactorThreshold(getReactionView().getCofactorThreshold());
+		clone.setCofactorThreshold(getCofactorThreshold());
 		clone.setRestartProbability(restart_probability);
-		clone.setThreshold(threshold);
+		clone.setThreshold(weight_threshold);
 		clone.useInputWeights(use_input_weights);
 		return clone;
 	}
@@ -56,20 +56,15 @@ public class CalculateNetworksRWR extends AbstractNetworkCalculation {
 	}
 
 	public void setThreshold(double threshold) {
-		this.threshold = Math.abs(threshold);
+		this.weight_threshold = Math.abs(threshold);
 	}
 
 	public double getThreshold() {
-		return threshold;
+		return weight_threshold;
 	}
 
-	
 	@Override
-	protected MetabolicNetwork[] doTask() throws Exception {
-		return calculateNetworks(getRootNetwork());
-	}
-
-	public MetabolicNetwork[] calculateNetworks(MetabolicNetwork root) throws Exception {
+	public MetabolicNetwork[] calculateNetworks() throws Exception {
 		// Find explainable nodes
 		setTaskTitle("Calculate sub-networks with Random Walk");
 		setTaskDescription("Search start nodes");
@@ -84,18 +79,17 @@ public class CalculateNetworksRWR extends AbstractNetworkCalculation {
 				? new RandomWalkWithRestartSparse(getReactionView(), restart_probability, 0.0000001)
 				: new RandomWalkWithRestartDense(getReactionView(), restart_probability, 0.0000001);
 		List<GraphObject> vertices = process.getVertices();
-		logger.log(Level.FINER, "Perfoming random walk process with {0} initial nodes of {2} and {1} edges", new Object[]{initial.size(), getReactionView().getEdgeCount(), vertices.size()});
+		logger.log(Level.FINER, "Perfoming random walk process with {0} initial nodes of {2} and {1} edges on network: {3}", new Object[]{initial.size(), getReactionView().getEdgeCount(), vertices.size(), getRootNetwork().getName()});
 		double[] result = process.walk(initial);
-		//logger.log(Level.FINER, "Random-walk finished with {0} reactions with non-zero probability", result.c;
-		System.gc();
-
 		// Build list of reactions above the threshold
 		incrementProgress();
+		//logger.finer("Filtering for threshold "+weight_threshold+": " + Arrays.toString(result));
 		TreeSet<Reaction> reactions_for_networks = new TreeSet<>();
 		for (int i = 0; i < result.length; i++) {
-			if (result[i] >= threshold) {
+			if (result[i] >= weight_threshold) {
 				reactions_for_networks.add((Reaction) vertices.get(i));
 			}
+			
 		}
 		logger.log(Level.FINER, "Found {0} reactions for the subnetworks", reactions_for_networks.size());
 
@@ -108,8 +102,6 @@ public class CalculateNetworksRWR extends AbstractNetworkCalculation {
 
 		return subs.toArray(new MetabolicNetwork[subs.size()]);
 	}
-
-	
 
 	public Map<Reaction, Double> calculateInitialScores(boolean normalize_to_1) {
 		Map<Reaction, Double> reaction_scores = new TreeMap<>();
@@ -179,5 +171,4 @@ public class CalculateNetworksRWR extends AbstractNetworkCalculation {
 	private double getInitialScore(InputObject io) {
 		return use_input_weights ? io.getWeight() : 1;
 	}
-
 }
