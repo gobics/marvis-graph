@@ -30,7 +30,7 @@ public class PermutationTestCLI {
 	private static Integer number_of_permutations;
 	private static Integer number_of_threads;
 	private static Integer cofactor_threshold;
-	private static AbstractGraphScore scorer = new NetworkSorterDiameter();
+	private static AbstractGraphScore scorer;
 
 	public static void main(String[] args) throws Exception {
 		LoggingUtils.initLogger(Level.FINER);
@@ -51,21 +51,22 @@ public class PermutationTestCLI {
 		// Load the network
 		LoadNetwork loader = new LoadNetwork(file);
 		final MetabolicNetwork network = loader.load();
-		
+
 		// Build scorer
 		scorer.setParent(network);
-		
-		logger.log(Level.INFO, "Permutating for restart probability of: {0}", restart_probability);
-		CalculateNetworksRWR process = new CalculateNetworksRWR(network);
-		process.setCofactorThreshold(cofactor_threshold);
-		process.setRestartProbability(restart_probability);
-		MetabolicNetwork[] subs = process.calculateNetworks(network);
 
+		logger.log(Level.INFO, "Calculating sub-networks for restart probability of: {0}", restart_probability);
+
+		CalculateNetworksRWR process = new CalculateNetworksRWR(network);
+		process.setRestartProbability(restart_probability);
+		process.setCofactorThreshold(cofactor_threshold);
+		MetabolicNetwork[] subs = process.calculateNetworks();
+
+		logger.log(Level.INFO, "Doing {1} permutations with {0} threads", new Object[]{number_of_threads, number_of_permutations});
 		PermutationTest test = new PermutationTest(network, subs, process, scorer);
 		test.setNumberOfPermutations(number_of_permutations);
 		test.setNumberOfThreads(number_of_threads);
 		test.addTaskListener(new TaskListener<Void>() {
-
 			@Override
 			public void setTaskProgress(int percentage) {
 				logger.log(Level.INFO, "Progress of permutation process: {0} %", percentage);
@@ -130,6 +131,8 @@ public class PermutationTestCLI {
 				+ "       The restart probability for the random-walk-algorithm (default: 0.8)\n"
 				+ "  -c | --cofactor-threshold <number>\n"
 				+ "       Number of reactions before considering a metabolite to be a co-factor (default: 10)\n"
+				+ "  -d | --diameter\n"
+				+ "       Use diameter as score instead of sum-of-weights\n"
 				+ "  -n | --number-of-permutations <number>\n"
 				+ "       Number of permutations to perform (default: 1000)\n"
 				+ "  -t | --number-of-threads <number>\n"
@@ -146,6 +149,7 @@ public class PermutationTestCLI {
 		CmdLineParser.Option result_file_option = parser.addStringOption('r', "result-file");
 		CmdLineParser.Option restart_probability_option = parser.addDoubleOption('p', "restart-probability");
 		CmdLineParser.Option cofactor_threshold_option = parser.addIntegerOption('c', "cofactor-threshold");
+		CmdLineParser.Option diameter_option = parser.addBooleanOption('d', "diameter");
 		CmdLineParser.Option num_permutations_option = parser.addIntegerOption('n', "number-of-permutations");
 		CmdLineParser.Option num_threads_option = parser.addIntegerOption('t', "number-of-threads");
 
@@ -175,6 +179,7 @@ public class PermutationTestCLI {
 		cofactor_threshold = (Integer) parser.getOptionValue(cofactor_threshold_option, (Integer) 10);
 		number_of_permutations = (Integer) parser.getOptionValue(num_permutations_option, (Integer) 1000);
 		number_of_threads = (Integer) parser.getOptionValue(num_threads_option, (Integer) Runtime.getRuntime().availableProcessors());
+		scorer = ((Boolean) parser.getOptionValue(diameter_option, false)).booleanValue() ? new NetworkSorterDiameter() : new NetworkSorterSumOfWeights();
 
 		return parser.getRemainingArgs();
 	}
