@@ -79,7 +79,9 @@ public class NetworkSorterDiameter extends AbstractGraphScore {
 
 	@Override
 	public AbstractGraphScore like(MetabolicNetwork new_parent) {
-		return new NetworkSorterDiameter(new_parent);
+		NetworkSorterDiameter clone = new NetworkSorterDiameter(new_parent);
+		clone.setCofactorThreshold(cofactor_threshold);
+		return clone;
 	}
 
 	public void setCofactorThreshold(int cofactorThreshold) {
