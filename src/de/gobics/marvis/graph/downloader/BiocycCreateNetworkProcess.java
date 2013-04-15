@@ -1,8 +1,3 @@
-
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
 package de.gobics.marvis.graph.downloader;
 
 import de.gobics.marvis.graph.*;
@@ -14,8 +9,8 @@ import de.gobics.marvis.utils.reader.PwtoolsEntry;
 import java.io.*;
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.LinkedList;
-import java.util.List;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
@@ -34,6 +29,8 @@ public class BiocycCreateNetworkProcess extends AbstractNetworkCreator {
 			getName());
 	private MetabolicNetwork graph = null;
 	private File input_file;
+	private ClassNode classes_tree = new ClassNode();
+	private boolean create_reaction_for_each_class_instance = false;
 
 	public BiocycCreateNetworkProcess(File input_file) {
 		setInputFile(input_file);
@@ -59,8 +56,7 @@ public class BiocycCreateNetworkProcess extends AbstractNetworkCreator {
 
 		if (input_file.isDirectory()) {
 			parse_directory(input_file);
-		}
-		else if (input_file.isFile()) {
+		} else if (input_file.isFile()) {
 			parse_file(input_file);
 		}
 		logger.finer("Created network with " + graph.size() + " entities");
@@ -68,23 +64,36 @@ public class BiocycCreateNetworkProcess extends AbstractNetworkCreator {
 	}
 
 	private void parse_file(File input_file) throws IOException {
+		setProgressMax(7);
+		setProgress(0);
+		parse_classes(parse_file(input_file, "data/classes.dat"));
+		incrementProgress();
+		parse_compounds(parse_file(input_file, "data/compounds.dat"));
+		incrementProgress();
+		parse_reactions(parse_file(input_file, "data/reactions.dat"));
+		incrementProgress();
+		parse_enzymes(parse_file(input_file, "data/proteins.dat"));
+		incrementProgress();
+		parse_pathways(parse_file(input_file, "data/pathways.dat"));
+		incrementProgress();
+		parse_genes(parse_file(input_file, "data/genes.dat"));
+		incrementProgress();
+		parse_enzyme_reaction(parse_file(input_file, "data/enzrxns.dat"));
+		incrementProgress();
+
+	}
+
+	private BufferedReader parse_file(File input_file, String entry_name) throws IOException {
 		InputStream instream;
 		String filename = input_file.getName().toLowerCase();
 		if (filename.endsWith(".tgz") || filename.endsWith(".tar.gz")) {
 			instream = new GZIPInputStream(new FileInputStream(input_file));
-		}
-		else if (filename.endsWith(".tar")) {
+		} else if (filename.endsWith(".tar")) {
 			instream = new FileInputStream(input_file);
-		}
-		else {
+		} else {
 			throw new IOException("Can not handle file with unkown extension: " + filename);
 		}
-		
-		Fixme: Ensure to first parse the classes.dat, then compound.dat and finally reaction.dat
-				this is needed to get all the required class assoziations and to build distinct reaction for each molecule!
-		
-		
-		
+
 		TarArchiveInputStream tar = new TarArchiveInputStream(instream);
 		TarArchiveEntry entry = null;
 		while ((entry = tar.getNextTarEntry()) != null) {
@@ -93,36 +102,18 @@ public class BiocycCreateNetworkProcess extends AbstractNetworkCreator {
 			}
 			String name = entry.getName();
 			BufferedReader in;
-			if (name.endsWith("data/compounds.dat")) {
-				parse_compounds(new BufferedReader(new InputStreamReader(tar)));
-			}
-			else if (name.endsWith("data/reactions.dat")) {
-				parse_reactions(new BufferedReader(new InputStreamReader(tar)));
-			}
-			else if (name.endsWith("data/proteins.dat")) {
-				parse_enzymes(new BufferedReader(new InputStreamReader(tar)));
-			}
-			else if (name.endsWith("data/pathways.dat")) {
-				parse_pathways(new BufferedReader(new InputStreamReader(tar)));
-			}
-			else if (name.endsWith("data/genes.dat")) {
-				parse_genes(new BufferedReader(new InputStreamReader(tar)));
-			}
-			else if (name.endsWith("data/enzrxns.dat")) {
-				parse_enzyme_reaction(new BufferedReader(new InputStreamReader(tar)));
-			}
-			else {
-				logger.info("Ignoring entry: " + name);
+			if (name.endsWith(entry_name)) {
+				return new BufferedReader(new InputStreamReader(tar));
 			}
 		}
-		tar.close();
+
+		throw new IOException("Can not find: " + entry_name);
 	}
 
 	private void parse_directory(File directory) throws FileNotFoundException, IOException {
 		File data_directory = new File(directory.getAbsolutePath() + File.separator + "data");
 		File data_file;
-		BufferedReader in;
-
+		
 		if (!data_directory.exists()) {
 			throw new RuntimeException("Data directory does not exist: " + directory.
 					getAbsolutePath() + File.separator + "data");
@@ -134,39 +125,31 @@ public class BiocycCreateNetworkProcess extends AbstractNetworkCreator {
 			throw new RuntimeException("Can not find compound file: " + data_file.
 					getAbsolutePath());
 		}
-		in = new BufferedReader(new FileReader(data_file));
-		parse_compounds(in);
-		in.close();
-
+		parse_compounds(new BufferedReader(new FileReader(data_file)));
+		
 		// Parse reactions
 		data_file = new File(data_directory + File.separator + "reactions.dat");
 		if (!data_file.exists()) {
 			throw new RuntimeException("Can not find reaction file: " + data_file.
 					getAbsolutePath());
 		}
-		in = new BufferedReader(new FileReader(data_file));
-		parse_reactions(in);
-		in.close();
-
+		parse_reactions(new BufferedReader(new FileReader(data_file)));
+		
 		// Parse enzymes/proteins
 		data_file = new File(data_directory + File.separator + "proteins.dat");
 		if (!data_file.exists()) {
 			throw new RuntimeException("Can not find enzyme file: " + data_file.
 					getAbsolutePath());
 		}
-		in = new BufferedReader(new FileReader(data_file));
-		parse_enzymes(in);
-		in.close();
-
+		parse_enzymes(new BufferedReader(new FileReader(data_file)));
+		
 		// Parse pathways
 		data_file = new File(data_directory + File.separator + "pathways.dat");
 		if (!data_file.exists()) {
 			throw new RuntimeException("Can not find pathway file: " + data_file.
 					getAbsolutePath());
 		}
-		in = new BufferedReader(new FileReader(data_file));
-		parse_pathways(in);
-		in.close();
+		parse_pathways(new BufferedReader(new FileReader(data_file)));
 
 		// Parse reactions
 		data_file = new File(data_directory + File.separator + "genes.dat");
@@ -174,19 +157,15 @@ public class BiocycCreateNetworkProcess extends AbstractNetworkCreator {
 			throw new RuntimeException("Can not find gene file: " + data_file.
 					getAbsolutePath());
 		}
-		in = new BufferedReader(new FileReader(data_file));
-		parse_genes(in);
-		in.close();
-
+		parse_genes(new BufferedReader(new FileReader(data_file)));
+		
 		// Parse links between enzymes and reactions
 		data_file = new File(data_directory + File.separator + "enzrxns.dat");
 		if (!data_file.exists()) {
 			throw new RuntimeException("Can not find enzyme-reaction file: " + data_file.
 					getAbsolutePath());
 		}
-		in = new BufferedReader(new FileReader(data_file));
-		parse_enzyme_reaction(in);
-		in.close();
+		parse_enzyme_reaction(new BufferedReader(new FileReader(data_file)));
 	}
 
 	private void parse_compounds(BufferedReader in) throws IOException {
@@ -199,6 +178,13 @@ public class BiocycCreateNetworkProcess extends AbstractNetworkCreator {
 			c.setName(name);
 			if (entry.hasTag("comment")) {
 				c.setDescription(entry.getAsString("comment"));
+			}
+
+			if (entry.hasTag("TYPES")) {
+				String class_id = entry.getFirst("TYPES");
+				if (!classes_tree.findAndAddInstance(class_id, c.getId())) {
+					logger.warning("Can not find class: " + class_id);
+				}
 			}
 
 			// Search for mass
@@ -219,12 +205,10 @@ public class BiocycCreateNetworkProcess extends AbstractNetworkCreator {
 						replaceAll("\\s", "").replace(".", "");
 				try {
 					formula = Formula.createFormulaFromInChIString(formula_string);
-				}
-				catch (ChemicalElementUnkownException ex) {
+				} catch (ChemicalElementUnkownException ex) {
 					logger.warning("Can not calculate formula/mass: " + ex.
 							getMessage());
-				}
-				catch (NumberFormatException ex) {
+				} catch (NumberFormatException ex) {
 					logger.warning("Can not calculate formula/mass: " + ex.
 							getMessage());
 				}
@@ -234,12 +218,10 @@ public class BiocycCreateNetworkProcess extends AbstractNetworkCreator {
 				try {
 					formula = Formula.createFormulaFromInChIString(entry.
 							getFirst("inchi"));
-				}
-				catch (ChemicalElementUnkownException ex) {
+				} catch (ChemicalElementUnkownException ex) {
 					logger.warning("Can not calculate formula/mass from InChI '" + entry.
 							getFirst("inchi") + "': " + ex.getMessage());
-				}
-				catch (NumberFormatException ex) {
+				} catch (NumberFormatException ex) {
 					logger.warning("Can not calculate formula/mass from InChI '" + entry.
 							getFirst("inchi") + "': " + ex.getMessage());
 				}
@@ -251,6 +233,7 @@ public class BiocycCreateNetworkProcess extends AbstractNetworkCreator {
 			}
 
 		}
+		in.close();
 	}
 
 	private void parse_reactions(BufferedReader in) throws IOException {
@@ -271,14 +254,14 @@ public class BiocycCreateNetworkProcess extends AbstractNetworkCreator {
 			LinkedList<String> rights = new LinkedList<String>();
 
 			if (entry.hasTag("left")) {
-				for (String compound : entry.get("left")) {
+				for (String compound : get_instances(entry.get("left"))) {
 					Compound c = graph.createCompound(compound);
 					lefts.add(compound);
 					graph.hasSubstrate(r, c);
 				}
 			}
 			if (entry.hasTag("right")) {
-				for (String compound : entry.get("right")) {
+				for (String compound : get_instances(entry.get("right"))) {
 					Compound c = graph.createCompound(compound);
 					rights.add(compound);
 					graph.hasProduct(r, c);
@@ -308,7 +291,26 @@ public class BiocycCreateNetworkProcess extends AbstractNetworkCreator {
 
 			r.setEquation(sb.toString());
 		}
+		in.close();
 
+	}
+
+	private Set<String> get_instances(String id) {
+		ClassNode c = classes_tree.findClass(id.replaceAll("\\|", ""));
+		if (c != null) {
+			return c.getAllInstances();
+		}
+		Set<String> instance = new TreeSet<>();
+		instance.add(id);
+		return instance;
+	}
+
+	private Set<String> get_instances(String[] strings) {
+		Set<String> instances = new TreeSet<>();
+		for (String id : strings) {
+			instances.addAll(get_instances(id));
+		}
+		return instances;
 	}
 
 	private void parse_enzyme_reaction(BufferedReader in) throws IOException {
@@ -334,13 +336,11 @@ public class BiocycCreateNetworkProcess extends AbstractNetworkCreator {
 						logger.warning("No such enzyme in graph: " + eid);
 						counter_fail_enzymes++;
 					}
-				}
-				else {
+				} else {
 					if (entry.hasTag("COMMON-NAME") || entry.hasTag("SYNONYMS")) {
 						if (r.getName() != null) {
 							r.setName(r.getName() + "; " + entry.getAsLine(new String[]{"common-name", "synonyms"}));
-						}
-						else {
+						} else {
 							r.setName(entry.getAsLine(new String[]{"common-name", "synonyms"}));
 						}
 					}
@@ -363,6 +363,7 @@ public class BiocycCreateNetworkProcess extends AbstractNetworkCreator {
 			}
 			e.setEC(StringUtils.join("; ", ecs));
 		}
+		in.close();
 
 	}
 
@@ -380,6 +381,7 @@ public class BiocycCreateNetworkProcess extends AbstractNetworkCreator {
 			}
 
 		}
+		in.close();
 	}
 
 	private void parse_genes(BufferedReader in) throws IOException {
@@ -398,6 +400,7 @@ public class BiocycCreateNetworkProcess extends AbstractNetworkCreator {
 			}
 
 		}
+		in.close();
 	}
 
 	private void parse_enzymes(BufferedReader in) throws IOException {
@@ -416,43 +419,118 @@ public class BiocycCreateNetworkProcess extends AbstractNetworkCreator {
 			}
 
 		}
+		in.close();
 	}
 
-	private TreeMap<String, Set<String>> parseClasses(BufferedReader in) throws IOException {
+	private void parse_classes(BufferedReader in) throws IOException {
 		Pwtools database = new Pwtools(in);
 		PwtoolsEntry entry;
-
-		TreeMap<String, Set<String>> children = new TreeMap<>();
 
 		while ((entry = database.nextEntry()) != null) {
 			String id = entry.getFirst("UNIQUE-ID");
 			String parent = entry.getFirst("TYPES");
+			ClassNode newclass = new ClassNode(id);
 
-			if (parent != null && !parent.isEmpty()) {
-				if (!children.containsKey(parent)) {
-					children.put(parent, new TreeSet<String>());
-				}
-				children.get(parent).add(id);
+			if (!classes_tree.findAndAddClass(parent, newclass)) {
+				classes_tree.addClass(newclass);
 			}
 		}
-		return children;
+	
+		in.close();
 	}
 
-	private Set<String> getAllChildren(TreeMap<String, Set<String>> children, String class_id) {
-		TreeSet<String> result = new TreeSet<>();
-		LinkedList<String> to_visit = new LinkedList<>();
-		to_visit.add(class_id);
+	private static class ClassNode implements Comparable<ClassNode> {
 
-		while (!to_visit.isEmpty()) {
-			String current = to_visit.poll();
-			if (children.containsKey(current)) {
-				to_visit.addAll(children.get(current));				
-			}
-			else {
-				result.add(current);
-			}
+		public final String id;
+		private final Set<ClassNode> childnodes = new TreeSet<>();
+		private final Set<String> instances = new TreeSet<>();
+
+		public ClassNode() {
+			this(null);
 		}
-		
-		return result;
+
+		public ClassNode(String id) {
+			this.id = id;
+		}
+
+		public void addClass(ClassNode node) {
+			childnodes.add(node);
+		}
+
+		public Set<String> getAllInstances() {
+			Set<String> all_instances = new TreeSet<>();
+			Iterator<ClassNode> iter = iterAllClasses();
+			while (iter.hasNext()) {
+				all_instances.addAll(iter.next().instances);
+			}
+			return all_instances;
+		}
+
+		public boolean findAndAddClass(String id, ClassNode node) {
+			ClassNode n = findClass(id);
+			if (n != null) {
+				n.addClass(node);
+				return true;
+			}
+			return false;
+		}
+
+		public ClassNode findClass(String id) {
+			if (this.id != null && this.id.equals(id)) {
+				return this;
+			}
+			for (ClassNode c : childnodes) {
+				ClassNode found = c.findClass(id);
+				if (found != null) {
+					return found;
+				}
+			}
+			return null;
+		}
+
+		public boolean findAndAddInstance(String class_id, String instance_id) {
+			ClassNode n = findClass(id);
+			if (n != null) {
+				n.addInstance(instance_id);
+				return true;
+			}
+			return false;
+		}
+
+		@Override
+		public int compareTo(ClassNode other) {
+			return id.compareTo(other.id);
+		}
+
+		private void addInstance(String instance_id) {
+			instances.add(instance_id);
+		}
+
+		private Iterator<ClassNode> iterAllClasses() {
+			final TreeSet<ClassNode> current = new TreeSet<>();
+			current.add(this);
+
+			return new Iterator<ClassNode>() {
+				private Set<ClassNode> found = current;
+
+				@Override
+				public boolean hasNext() {
+					return !found.isEmpty();
+				}
+
+				@Override
+				public ClassNode next() {
+					ClassNode next = found.iterator().next();
+					found.remove(next);
+					found.addAll(next.childnodes);
+					return next;
+				}
+
+				@Override
+				public void remove() {
+					throw new UnsupportedOperationException("Not supported yet.");
+				}
+			};
+		}
 	}
 }
