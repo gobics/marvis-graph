@@ -38,13 +38,19 @@ public class test {
 
 	public static void main(String[] args) throws Exception, Throwable {
 		LoggingUtils.initLogger(Level.FINER);
+		
+		new BiocycCreateNetworkProcess(new File("/home/manuel/ara.tar.gz")).doTask();
+
+	}
+
+	private static void matchGenes() throws Exception {
 
 		MetabolicNetwork n_ara = new LoadNetwork("/home/manuel/marvis-graph-paper-data/graph.aracyc.combined.cut10.xml.gz").load();
 		n_ara = new ReduceNetwork(n_ara).perform();
 		MetabolicNetwork n_ath = new LoadNetwork("/home/manuel/marvis-graph-paper-data/graph.ath.combined.cut10.xml.gz").load();
 		n_ath = new ReduceNetwork(n_ath).perform();
-		
-		
+
+
 		BufferedReader in = new BufferedReader(new FileReader("heilmann_ids.lst"));
 		String line;
 		int count_ara = 0, count_ath = 0;
@@ -64,14 +70,14 @@ public class test {
 			}
 
 		}
-		System.out.println("In AraCyc:  "+count_ara);
-		System.out.println("In AthKEGG: "+count_ath);
-		
+		System.out.println("In AraCyc:  " + count_ara);
+		System.out.println("In AthKEGG: " + count_ath);
+
 		MetabolicNetworkTester t_ara = new MetabolicNetworkTester(n_ara);
 		MetabolicNetworkTester t_ath = new MetabolicNetworkTester(n_ath);
-		
-		System.out.println("Compounds : "+n_ara.getCompounds().size() +" with "+t_ara.countCompoundsWithMarker()+" annotated");
-		System.out.println("Compounds : "+n_ath.getCompounds().size() +" with "+t_ath.countCompoundsWithMarker()+" annotated");
+
+		System.out.println("Compounds : " + n_ara.getCompounds().size() + " with " + t_ara.countCompoundsWithMarker() + " annotated");
+		System.out.println("Compounds : " + n_ath.getCompounds().size() + " with " + t_ath.countCompoundsWithMarker() + " annotated");
 	}
 
 	private static MetabolicNetwork testBiocycImport() throws Exception {

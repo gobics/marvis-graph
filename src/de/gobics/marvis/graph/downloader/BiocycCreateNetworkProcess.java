@@ -56,7 +56,8 @@ public class BiocycCreateNetworkProcess extends AbstractNetworkCreator {
 
 		if (input_file.isDirectory()) {
 			parse_directory(input_file);
-		} else if (input_file.isFile()) {
+		}
+		else if (input_file.isFile()) {
 			parse_file(input_file);
 		}
 		logger.finer("Created network with " + graph.size() + " entities");
@@ -66,31 +67,36 @@ public class BiocycCreateNetworkProcess extends AbstractNetworkCreator {
 	private void parse_file(File input_file) throws IOException {
 		setProgressMax(7);
 		setProgress(0);
-		parse_classes(parse_file(input_file, "data/classes.dat"));
+		parse_classes(get_reader_for_tgz(input_file, "data/classes.dat"));
 		incrementProgress();
-		parse_compounds(parse_file(input_file, "data/compounds.dat"));
+		parse_compounds(get_reader_for_tgz(input_file, "data/compounds.dat"));
+		
+		//System.out.println(classes_tree.toString());
+		
 		incrementProgress();
-		parse_reactions(parse_file(input_file, "data/reactions.dat"));
+		parse_reactions(get_reader_for_tgz(input_file, "data/reactions.dat"));
 		incrementProgress();
-		parse_enzymes(parse_file(input_file, "data/proteins.dat"));
+		parse_enzymes(get_reader_for_tgz(input_file, "data/proteins.dat"));
 		incrementProgress();
-		parse_pathways(parse_file(input_file, "data/pathways.dat"));
+		parse_pathways(get_reader_for_tgz(input_file, "data/pathways.dat"));
 		incrementProgress();
-		parse_genes(parse_file(input_file, "data/genes.dat"));
+		parse_genes(get_reader_for_tgz(input_file, "data/genes.dat"));
 		incrementProgress();
-		parse_enzyme_reaction(parse_file(input_file, "data/enzrxns.dat"));
+		parse_enzyme_reaction(get_reader_for_tgz(input_file, "data/enzrxns.dat"));
 		incrementProgress();
 
 	}
 
-	private BufferedReader parse_file(File input_file, String entry_name) throws IOException {
+	private BufferedReader get_reader_for_tgz(File input_file, String entry_name) throws IOException {
 		InputStream instream;
 		String filename = input_file.getName().toLowerCase();
 		if (filename.endsWith(".tgz") || filename.endsWith(".tar.gz")) {
 			instream = new GZIPInputStream(new FileInputStream(input_file));
-		} else if (filename.endsWith(".tar")) {
+		}
+		else if (filename.endsWith(".tar")) {
 			instream = new FileInputStream(input_file);
-		} else {
+		}
+		else {
 			throw new IOException("Can not handle file with unkown extension: " + filename);
 		}
 
@@ -113,7 +119,7 @@ public class BiocycCreateNetworkProcess extends AbstractNetworkCreator {
 	private void parse_directory(File directory) throws FileNotFoundException, IOException {
 		File data_directory = new File(directory.getAbsolutePath() + File.separator + "data");
 		File data_file;
-		
+
 		if (!data_directory.exists()) {
 			throw new RuntimeException("Data directory does not exist: " + directory.
 					getAbsolutePath() + File.separator + "data");
@@ -126,7 +132,7 @@ public class BiocycCreateNetworkProcess extends AbstractNetworkCreator {
 					getAbsolutePath());
 		}
 		parse_compounds(new BufferedReader(new FileReader(data_file)));
-		
+
 		// Parse reactions
 		data_file = new File(data_directory + File.separator + "reactions.dat");
 		if (!data_file.exists()) {
@@ -134,7 +140,7 @@ public class BiocycCreateNetworkProcess extends AbstractNetworkCreator {
 					getAbsolutePath());
 		}
 		parse_reactions(new BufferedReader(new FileReader(data_file)));
-		
+
 		// Parse enzymes/proteins
 		data_file = new File(data_directory + File.separator + "proteins.dat");
 		if (!data_file.exists()) {
@@ -142,7 +148,7 @@ public class BiocycCreateNetworkProcess extends AbstractNetworkCreator {
 					getAbsolutePath());
 		}
 		parse_enzymes(new BufferedReader(new FileReader(data_file)));
-		
+
 		// Parse pathways
 		data_file = new File(data_directory + File.separator + "pathways.dat");
 		if (!data_file.exists()) {
@@ -158,7 +164,7 @@ public class BiocycCreateNetworkProcess extends AbstractNetworkCreator {
 					getAbsolutePath());
 		}
 		parse_genes(new BufferedReader(new FileReader(data_file)));
-		
+
 		// Parse links between enzymes and reactions
 		data_file = new File(data_directory + File.separator + "enzrxns.dat");
 		if (!data_file.exists()) {
@@ -181,9 +187,11 @@ public class BiocycCreateNetworkProcess extends AbstractNetworkCreator {
 			}
 
 			if (entry.hasTag("TYPES")) {
-				String class_id = entry.getFirst("TYPES");
-				if (!classes_tree.findAndAddInstance(class_id, c.getId())) {
-					logger.warning("Can not find class: " + class_id);
+				for (String class_id : entry.get("TYPES")) {
+					class_id = class_id.replaceAll("\\|", "");
+					if (!classes_tree.findAndAddInstance(class_id, c.getId())) {
+						logger.warning("Can not find class: " + class_id);
+					}
 				}
 			}
 
@@ -205,10 +213,12 @@ public class BiocycCreateNetworkProcess extends AbstractNetworkCreator {
 						replaceAll("\\s", "").replace(".", "");
 				try {
 					formula = Formula.createFormulaFromInChIString(formula_string);
-				} catch (ChemicalElementUnkownException ex) {
+				}
+				catch (ChemicalElementUnkownException ex) {
 					logger.warning("Can not calculate formula/mass: " + ex.
 							getMessage());
-				} catch (NumberFormatException ex) {
+				}
+				catch (NumberFormatException ex) {
 					logger.warning("Can not calculate formula/mass: " + ex.
 							getMessage());
 				}
@@ -218,10 +228,12 @@ public class BiocycCreateNetworkProcess extends AbstractNetworkCreator {
 				try {
 					formula = Formula.createFormulaFromInChIString(entry.
 							getFirst("inchi"));
-				} catch (ChemicalElementUnkownException ex) {
+				}
+				catch (ChemicalElementUnkownException ex) {
 					logger.warning("Can not calculate formula/mass from InChI '" + entry.
 							getFirst("inchi") + "': " + ex.getMessage());
-				} catch (NumberFormatException ex) {
+				}
+				catch (NumberFormatException ex) {
 					logger.warning("Can not calculate formula/mass from InChI '" + entry.
 							getFirst("inchi") + "': " + ex.getMessage());
 				}
@@ -336,11 +348,13 @@ public class BiocycCreateNetworkProcess extends AbstractNetworkCreator {
 						logger.warning("No such enzyme in graph: " + eid);
 						counter_fail_enzymes++;
 					}
-				} else {
+				}
+				else {
 					if (entry.hasTag("COMMON-NAME") || entry.hasTag("SYNONYMS")) {
 						if (r.getName() != null) {
 							r.setName(r.getName() + "; " + entry.getAsLine(new String[]{"common-name", "synonyms"}));
-						} else {
+						}
+						else {
 							r.setName(entry.getAsLine(new String[]{"common-name", "synonyms"}));
 						}
 					}
@@ -435,7 +449,7 @@ public class BiocycCreateNetworkProcess extends AbstractNetworkCreator {
 				classes_tree.addClass(newclass);
 			}
 		}
-	
+
 		in.close();
 	}
 
@@ -475,12 +489,12 @@ public class BiocycCreateNetworkProcess extends AbstractNetworkCreator {
 			return false;
 		}
 
-		public ClassNode findClass(String id) {
-			if (this.id != null && this.id.equals(id)) {
+		public ClassNode findClass(String class_id) {
+			if (this.id != null && this.id.equals(class_id)) {
 				return this;
 			}
 			for (ClassNode c : childnodes) {
-				ClassNode found = c.findClass(id);
+				ClassNode found = c.findClass(class_id);
 				if (found != null) {
 					return found;
 				}
@@ -489,7 +503,7 @@ public class BiocycCreateNetworkProcess extends AbstractNetworkCreator {
 		}
 
 		public boolean findAndAddInstance(String class_id, String instance_id) {
-			ClassNode n = findClass(id);
+			ClassNode n = findClass(class_id);
 			if (n != null) {
 				n.addInstance(instance_id);
 				return true;
@@ -531,6 +545,23 @@ public class BiocycCreateNetworkProcess extends AbstractNetworkCreator {
 					throw new UnsupportedOperationException("Not supported yet.");
 				}
 			};
+		}
+
+		@Override
+		public String toString() {
+			return toString("");
+		}
+
+		public String toString(String indent) {
+			StringBuilder sb = new StringBuilder(indent).append(id != null ? id : "NULL").append(":");
+			for (String inst : instances) {
+				sb.append(" ").append(inst);
+			}
+			sb.append("\n");
+			for (ClassNode child_node : childnodes) {
+				sb.append(indent).append(child_node.toString(indent + " "));
+			}
+			return sb.toString();
 		}
 	}
 }
