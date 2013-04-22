@@ -17,6 +17,7 @@ public class ReactionGraph extends AbstractGraph {
 
 	private final int cofactor_threshold;
 	private final boolean conntect_via_explainable_compounds_only;
+	private final TreeSet<GraphObject> vertex_cache = new TreeSet<>();
 	private final TreeMap<Reaction, TreeSet<Relation>> relation_cache = new TreeMap<>();
 
 	/**
@@ -51,14 +52,6 @@ public class ReactionGraph extends AbstractGraph {
 		this(parent, false, cofactor_threshold);
 	}
 
-	public int getCofactorThreshold() {
-		return cofactor_threshold;
-	}
-
-	public boolean isConntectViaExplainableCompoundsOnly() {
-		return conntect_via_explainable_compounds_only;
-	}
-
 	/**
 	 * Creates a new view of the parental network with specific options. A
 	 * boolean flag specifies, whether reactions should only be connected via
@@ -75,6 +68,15 @@ public class ReactionGraph extends AbstractGraph {
 		super(parent);
 		this.conntect_via_explainable_compounds_only = conntect_via_explainable_compounds_only;
 		this.cofactor_threshold = cofactor_threshold;
+		vertex_cache.addAll(parent.getReactions());
+	}
+
+	public int getCofactorThreshold() {
+		return cofactor_threshold;
+	}
+
+	public boolean isConntectViaExplainableCompoundsOnly() {
+		return conntect_via_explainable_compounds_only;
 	}
 
 	/**
@@ -106,7 +108,7 @@ public class ReactionGraph extends AbstractGraph {
 
 	@Override
 	public Collection<GraphObject> getVertices() {
-		return new TreeSet<GraphObject>(getMetabolicNetwork().getReactions());
+		return vertex_cache;
 	}
 
 	@Override

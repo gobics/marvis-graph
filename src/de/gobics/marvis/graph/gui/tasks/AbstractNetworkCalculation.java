@@ -1,7 +1,3 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
 package de.gobics.marvis.graph.gui.tasks;
 
 import de.gobics.marvis.graph.GraphObject;
@@ -100,6 +96,11 @@ public abstract class AbstractNetworkCalculation extends AbstractTask<MetabolicN
 		return subs;
 	}
 
+	/**
+	 * Generates a metabolic network based on the given reactions. T
+	 * @param neighbor_nodes
+	 * @return 
+	 */
 	final protected MetabolicNetwork generate_network(Collection<Reaction> neighbor_nodes) {
 		MetabolicNetwork network = new MetabolicNetwork(root_network);
 

@@ -1,16 +1,19 @@
 package de.gobics.marvis.graph.downloader;
 
 import de.gobics.marvis.graph.*;
+import de.gobics.marvis.utils.ArrayUtils;
 import de.gobics.marvis.utils.Formula;
 import de.gobics.marvis.utils.StringUtils;
 import de.gobics.marvis.utils.exception.ChemicalElementUnkownException;
 import de.gobics.marvis.utils.reader.Pwtools;
 import de.gobics.marvis.utils.reader.PwtoolsEntry;
 import java.io.*;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
@@ -30,7 +33,15 @@ public class BiocycCreateNetworkProcess extends AbstractNetworkCreator {
 	private MetabolicNetwork graph = null;
 	private File input_file;
 	private ClassNode classes_tree = new ClassNode();
-	private boolean create_reaction_for_each_class_instance = false;
+	private TreeMap<String, Collection<Reaction>> reactions = new TreeMap<>();
+	private boolean create_reaction_variants = false;
+	private static final String base_url = "http://metacyc.org/META/NEW-IMAGE?object=";
+	private static final ArrayUtils.MapPredicate go_to_id = new ArrayUtils.MapPredicate() {
+		@Override
+		public Object map(int index, Object obj) {
+			return ((GraphObject) obj).getId();
+		}
+	};
 
 	public BiocycCreateNetworkProcess(File input_file) {
 		setInputFile(input_file);
@@ -46,6 +57,16 @@ public class BiocycCreateNetworkProcess extends AbstractNetworkCreator {
 	public File getInputFile() {
 		return input_file;
 	}
+
+	public boolean createReactionVariants() {
+		return create_reaction_variants;
+	}
+
+	public void setCreateReactionVariants(boolean create_reaction_variants) {
+		this.create_reaction_variants = create_reaction_variants;
+	}
+	
+	
 
 	@Override
 	public MetabolicNetwork doTask() throws Exception {
@@ -65,14 +86,14 @@ public class BiocycCreateNetworkProcess extends AbstractNetworkCreator {
 	}
 
 	private void parse_file(File input_file) throws IOException {
-		setProgressMax(7);
+		setProgressMax(8);
 		setProgress(0);
 		parse_classes(get_reader_for_tgz(input_file, "data/classes.dat"));
 		incrementProgress();
 		parse_compounds(get_reader_for_tgz(input_file, "data/compounds.dat"));
-		
+
 		//System.out.println(classes_tree.toString());
-		
+
 		incrementProgress();
 		parse_reactions(get_reader_for_tgz(input_file, "data/reactions.dat"));
 		incrementProgress();
@@ -83,6 +104,9 @@ public class BiocycCreateNetworkProcess extends AbstractNetworkCreator {
 		parse_genes(get_reader_for_tgz(input_file, "data/genes.dat"));
 		incrementProgress();
 		parse_enzyme_reaction(get_reader_for_tgz(input_file, "data/enzrxns.dat"));
+		incrementProgress();
+
+		set_urls();
 		incrementProgress();
 
 	}
@@ -120,10 +144,21 @@ public class BiocycCreateNetworkProcess extends AbstractNetworkCreator {
 		File data_directory = new File(directory.getAbsolutePath() + File.separator + "data");
 		File data_file;
 
+		setProgressMax(8);
+
 		if (!data_directory.exists()) {
 			throw new RuntimeException("Data directory does not exist: " + directory.
 					getAbsolutePath() + File.separator + "data");
 		}
+
+		// Parse classes
+		data_file = new File(data_directory + File.separator + "classes.dat");
+		if (!data_file.exists()) {
+			throw new RuntimeException("Can not find classes file: " + data_file.
+					getAbsolutePath());
+		}
+		parse_classes(new BufferedReader(new FileReader(data_file)));
+		incrementProgress();
 
 		// Parse compounds
 		data_file = new File(data_directory + File.separator + "compounds.dat");
@@ -132,6 +167,7 @@ public class BiocycCreateNetworkProcess extends AbstractNetworkCreator {
 					getAbsolutePath());
 		}
 		parse_compounds(new BufferedReader(new FileReader(data_file)));
+		incrementProgress();
 
 		// Parse reactions
 		data_file = new File(data_directory + File.separator + "reactions.dat");
@@ -140,6 +176,7 @@ public class BiocycCreateNetworkProcess extends AbstractNetworkCreator {
 					getAbsolutePath());
 		}
 		parse_reactions(new BufferedReader(new FileReader(data_file)));
+		incrementProgress();
 
 		// Parse enzymes/proteins
 		data_file = new File(data_directory + File.separator + "proteins.dat");
@@ -148,6 +185,7 @@ public class BiocycCreateNetworkProcess extends AbstractNetworkCreator {
 					getAbsolutePath());
 		}
 		parse_enzymes(new BufferedReader(new FileReader(data_file)));
+		incrementProgress();
 
 		// Parse pathways
 		data_file = new File(data_directory + File.separator + "pathways.dat");
@@ -156,6 +194,7 @@ public class BiocycCreateNetworkProcess extends AbstractNetworkCreator {
 					getAbsolutePath());
 		}
 		parse_pathways(new BufferedReader(new FileReader(data_file)));
+		incrementProgress();
 
 		// Parse reactions
 		data_file = new File(data_directory + File.separator + "genes.dat");
@@ -164,6 +203,7 @@ public class BiocycCreateNetworkProcess extends AbstractNetworkCreator {
 					getAbsolutePath());
 		}
 		parse_genes(new BufferedReader(new FileReader(data_file)));
+		incrementProgress();
 
 		// Parse links between enzymes and reactions
 		data_file = new File(data_directory + File.separator + "enzrxns.dat");
@@ -172,6 +212,10 @@ public class BiocycCreateNetworkProcess extends AbstractNetworkCreator {
 					getAbsolutePath());
 		}
 		parse_enzyme_reaction(new BufferedReader(new FileReader(data_file)));
+		incrementProgress();
+
+		set_urls();
+		incrementProgress();
 	}
 
 	private void parse_compounds(BufferedReader in) throws IOException {
@@ -253,58 +297,132 @@ public class BiocycCreateNetworkProcess extends AbstractNetworkCreator {
 		PwtoolsEntry entry;
 
 		while ((entry = database.nextEntry()) != null) {
-			Reaction r = graph.createReaction(entry.getId());
+			String id = entry.getFirst("unique-id");
+			String description = entry.hasTag("comment") ? entry.getAsString("comment") : null;
+			String ec = entry.hasTag("ec-number") ? entry.getAsString("ec-number") : null;
 
-			if (entry.hasTag("comment")) {
-				r.setDescription(entry.getAsString("comment"));
+
+			List<Collection<String>> left_all = get_instances(entry.get("left"));
+			List<Collection<String>> right_all = get_instances(entry.get("right"));
+
+			List<List<String>> left_variants = parse_reactions_multiplex(left_all);
+			List<List<String>> right_variants = parse_reactions_multiplex(right_all);
+
+			List<Reaction> reactions = new LinkedList<>();
+
+			if (left_variants.isEmpty()) {
+				logger.warning("Missing substrates lead to skipping of: " + id);
 			}
-			if (entry.hasTag("ec-number")) {
-				r.setEcNumber(entry.getAsLine("ec-number"));
+			else if (right_variants.isEmpty()) {
+				logger.warning("Missing products lead to skipping of: " + id);
 			}
+			else if (left_variants.size() < 2 && right_variants.size() < 2) {
+				Reaction r = graph.createReaction(id);
+				reactions.add(r);
 
-			LinkedList<String> lefts = new LinkedList<String>();
-			LinkedList<String> rights = new LinkedList<String>();
 
-			if (entry.hasTag("left")) {
-				for (String compound : get_instances(entry.get("left"))) {
-					Compound c = graph.createCompound(compound);
-					lefts.add(compound);
-					graph.hasSubstrate(r, c);
+				for (String cid : left_variants.get(0)) {
+					graph.hasSubstrate(r, graph.createCompound(cid));
+				}
+				for (String cid : right_variants.get(0)) {
+					graph.hasSubstrate(r, graph.createCompound(cid));
 				}
 			}
-			if (entry.hasTag("right")) {
-				for (String compound : get_instances(entry.get("right"))) {
-					Compound c = graph.createCompound(compound);
-					rights.add(compound);
-					graph.hasProduct(r, c);
+			else {
+				int reaction_variants = left_variants.size() * right_variants.size();
+				int reaction_counter = 1;
+
+				if (reaction_variants > 250) {
+					continue;
 				}
-			}
-			if (entry.hasTag("in-pathway")) {
-				for (String pathway : entry.get("in-pathway")) {
-					Pathway p = graph.createPathway(pathway);
-					graph.happensIn(r, p);
+
+
+				logger.finer("Building " + (reaction_variants) + " reaction variant for: " + id);
+
+				for (List<String> left_reactants : left_variants) {
+					for (List<String> right_reactants : right_variants) {
+
+						Reaction r = graph.createReaction(id + "-variant-" + reaction_counter);
+						reaction_counter++;
+						reactions.add(r);
+
+						r.setUrl(base_url + id);
+
+						for (String cid : left_reactants) {
+							graph.hasSubstrate(r, graph.createCompound(cid));
+						}
+						for (String cid : right_reactants) {
+							graph.hasSubstrate(r, graph.createCompound(cid));
+						}
+
+					}
 				}
 			}
 
-			StringBuilder sb = new StringBuilder(250);
-			if (!lefts.isEmpty()) {
-				sb.append(lefts.getFirst());
-				for (int idx = 1; idx < lefts.size(); idx++) {
-					sb.append(" + ").append(lefts.get(idx));
-				}
-			}
-			sb.append(" <=> ");
-			if (!rights.isEmpty()) {
-				sb.append(rights.getFirst());
-				for (int idx = 1; idx < rights.size(); idx++) {
-					sb.append(" + ").append(rights.get(idx));
-				}
-			}
+			this.reactions.put(id, reactions);
 
-			r.setEquation(sb.toString());
+
+			for (Reaction r : reactions) {
+				r.setDescription(description);
+				r.setEcNumber(ec);
+
+				if (entry.hasTag("in-pathway")) {
+					for (String pathway : entry.get("in-pathway")) {
+						Pathway p = graph.createPathway(pathway);
+						graph.happensIn(r, p);
+					}
+				}
+
+				String eq_left = StringUtils.join(" + ", ArrayUtils.map(go_to_id, graph.getSubstrates(r)));
+				String eq_right = StringUtils.join(" + ", ArrayUtils.map(go_to_id, graph.getProducts(r)));
+
+				r.setEquation(eq_left + " <=> " + eq_right);
+			}
 		}
-		in.close();
 
+		in.close();
+	}
+
+	/**
+	 * Calculates the possible reaction variants
+	 *
+	 * @param reactants
+	 * @return
+	 */
+	public List<List<String>> parse_reactions_multiplex(List<Collection<String>> reactants) {
+		// If only one reactions shall be created for 
+		if (!create_reaction_variants) {
+			LinkedList<String> result = new LinkedList<>();
+			for (Collection<String> variants : reactants) {
+				result.addAll(variants);
+			}
+			List<List<String>> full_result = new LinkedList<>();
+			full_result.add(result);
+			return full_result;
+		}
+
+
+		// Result list
+		// list in this collection will be appended with another reactant
+		List<List<String>> result = new LinkedList<>();
+		// Add empty list as initial "reactants"
+		result.add(new ArrayList<String>(0));
+
+		for (Collection<String> next_reactants : reactants) {
+			List<List<String>> next_result = new LinkedList<>();
+
+			for (String reactant : next_reactants) {
+				for (List<String> former_reactants : result) {
+					List<String> new_result = new ArrayList<>(former_reactants.size() + 1);
+					new_result.addAll(former_reactants);
+					new_result.add(reactant);
+					next_result.add(new_result);
+				}
+			}
+
+			result = next_result;
+		}
+		return result;
 	}
 
 	private Set<String> get_instances(String id) {
@@ -317,10 +435,13 @@ public class BiocycCreateNetworkProcess extends AbstractNetworkCreator {
 		return instance;
 	}
 
-	private Set<String> get_instances(String[] strings) {
-		Set<String> instances = new TreeSet<>();
+	private List<Collection<String>> get_instances(String[] strings) {
+		if (strings == null || strings.length == 0) {
+			return new ArrayList<>(0);
+		}
+		List<Collection<String>> instances = new ArrayList<>(strings.length);
 		for (String id : strings) {
-			instances.addAll(get_instances(id));
+			instances.add(get_instances(id));
 		}
 		return instances;
 	}
@@ -337,28 +458,29 @@ public class BiocycCreateNetworkProcess extends AbstractNetworkCreator {
 			String rid = entry.getFirst("reaction");
 			if (rid != null && eid != null) {
 
-				Reaction r = graph.getReaction(rid);
+
 				Enzyme e = graph.getEnzyme(eid);
-				if (r == null || e == null) {
-					if (r == null) {
-						logger.warning("No such reaction in graph: " + rid);
-						counter_fail_reactions++;
-					}
-					if (e == null) {
-						logger.warning("No such enzyme in graph: " + eid);
-						counter_fail_enzymes++;
-					}
+
+				if (e == null) {
+					logger.warning("No such enzyme in graph: " + eid);
+					counter_fail_enzymes++;
+				}
+				else if (!reactions.containsKey(rid)) {
+					logger.warning("No such reaction in graph: " + rid);
+					counter_fail_reactions++;
 				}
 				else {
-					if (entry.hasTag("COMMON-NAME") || entry.hasTag("SYNONYMS")) {
-						if (r.getName() != null) {
-							r.setName(r.getName() + "; " + entry.getAsLine(new String[]{"common-name", "synonyms"}));
+					for (Reaction r : reactions.get(rid)) {
+						if (entry.hasTag("COMMON-NAME") || entry.hasTag("SYNONYMS")) {
+							if (r.getName() != null) {
+								r.setName(r.getName() + "; " + entry.getAsLine(new String[]{"common-name", "synonyms"}));
+							}
+							else {
+								r.setName(entry.getAsLine(new String[]{"common-name", "synonyms"}));
+							}
 						}
-						else {
-							r.setName(entry.getAsLine(new String[]{"common-name", "synonyms"}));
-						}
+						graph.needsEnzyme(r, graph.getEnzyme(eid));
 					}
-					graph.needsEnzyme(r, graph.getEnzyme(eid));
 				}
 			}
 		}
@@ -415,6 +537,14 @@ public class BiocycCreateNetworkProcess extends AbstractNetworkCreator {
 
 		}
 		in.close();
+	}
+
+	private void set_urls() {
+		for (GraphObject obj : graph.getAllObjects()) {
+			if (!obj.hasUrl()) {
+				obj.setUrl(base_url + obj.getId());
+			}
+		}
 	}
 
 	private void parse_enzymes(BufferedReader in) throws IOException {

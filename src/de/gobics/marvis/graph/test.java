@@ -21,6 +21,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.jblas.DoubleMatrix;
@@ -38,8 +39,10 @@ public class test {
 
 	public static void main(String[] args) throws Exception, Throwable {
 		LoggingUtils.initLogger(Level.FINER);
-		
-		new BiocycCreateNetworkProcess(new File("/home/manuel/ara.tar.gz")).doTask();
+
+		BiocycCreateNetworkProcess process = new BiocycCreateNetworkProcess(new File("/home/manuel/ara.tar.gz"));
+		process.doTask();
+
 
 	}
 
