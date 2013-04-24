@@ -28,13 +28,19 @@ import org.apache.commons.compress.archivers.tar.TarArchiveInputStream;
  */
 public class BiocycCreateNetworkProcess extends AbstractNetworkCreator {
 
+	/**
+	 * Specifies the way metabolite-classes should be handled.
+	 */
+	public enum ClassesStategy {
+
+		Ignore, SingleReaction, ReactionVariants
+	}
 	private static final Logger logger = Logger.getLogger(BiocycCreateNetworkProcess.class.
 			getName());
 	private MetabolicNetwork graph = null;
 	private File input_file;
 	private ClassNode classes_tree = new ClassNode();
 	private TreeMap<String, Collection<Reaction>> reactions = new TreeMap<>();
-	private boolean create_reaction_variants = false;
 	private static final String base_url = "http://metacyc.org/META/NEW-IMAGE?object=";
 	private static final ArrayUtils.MapPredicate go_to_id = new ArrayUtils.MapPredicate() {
 		@Override
@@ -42,6 +48,7 @@ public class BiocycCreateNetworkProcess extends AbstractNetworkCreator {
 			return ((GraphObject) obj).getId();
 		}
 	};
+	private ClassesStategy strategy = ClassesStategy.SingleReaction;
 
 	public BiocycCreateNetworkProcess(File input_file) {
 		setInputFile(input_file);
@@ -58,15 +65,9 @@ public class BiocycCreateNetworkProcess extends AbstractNetworkCreator {
 		return input_file;
 	}
 
-	public boolean createReactionVariants() {
-		return create_reaction_variants;
+	public void setClassesStrategy(ClassesStategy s) {
+		strategy = s;
 	}
-
-	public void setCreateReactionVariants(boolean create_reaction_variants) {
-		this.create_reaction_variants = create_reaction_variants;
-	}
-	
-	
 
 	@Override
 	public MetabolicNetwork doTask() throws Exception {
@@ -305,31 +306,33 @@ public class BiocycCreateNetworkProcess extends AbstractNetworkCreator {
 			List<Collection<String>> left_all = get_instances(entry.get("left"));
 			List<Collection<String>> right_all = get_instances(entry.get("right"));
 
-			List<List<String>> left_variants = parse_reactions_multiplex(left_all);
-			List<List<String>> right_variants = parse_reactions_multiplex(right_all);
+			if (!strategy.equals(ClassesStategy.Ignore)) {
+				left_all = parse_reactions_multiplex(left_all);
+				right_all = parse_reactions_multiplex(right_all);
+			}
 
 			List<Reaction> reactions = new LinkedList<>();
 
-			if (left_variants.isEmpty()) {
+			if (left_all.isEmpty()) {
 				logger.warning("Missing substrates lead to skipping of: " + id);
 			}
-			else if (right_variants.isEmpty()) {
+			else if (right_all.isEmpty()) {
 				logger.warning("Missing products lead to skipping of: " + id);
 			}
-			else if (left_variants.size() < 2 && right_variants.size() < 2) {
+			else if (left_all.size() < 2 && right_all.size() < 2) {
 				Reaction r = graph.createReaction(id);
 				reactions.add(r);
 
 
-				for (String cid : left_variants.get(0)) {
+				for (String cid : left_all.get(0)) {
 					graph.hasSubstrate(r, graph.createCompound(cid));
 				}
-				for (String cid : right_variants.get(0)) {
+				for (String cid : right_all.get(0)) {
 					graph.hasSubstrate(r, graph.createCompound(cid));
 				}
 			}
 			else {
-				int reaction_variants = left_variants.size() * right_variants.size();
+				int reaction_variants = left_all.size() * right_all.size();
 				int reaction_counter = 1;
 
 				if (reaction_variants > 250) {
@@ -339,8 +342,8 @@ public class BiocycCreateNetworkProcess extends AbstractNetworkCreator {
 
 				logger.finer("Building " + (reaction_variants) + " reaction variant for: " + id);
 
-				for (List<String> left_reactants : left_variants) {
-					for (List<String> right_reactants : right_variants) {
+				for (Collection<String> left_reactants : left_all) {
+					for (Collection<String> right_reactants : right_all) {
 
 						Reaction r = graph.createReaction(id + "-variant-" + reaction_counter);
 						reaction_counter++;
@@ -389,14 +392,16 @@ public class BiocycCreateNetworkProcess extends AbstractNetworkCreator {
 	 * @param reactants
 	 * @return
 	 */
-	public List<List<String>> parse_reactions_multiplex(List<Collection<String>> reactants) {
+	public List<Collection<String>> parse_reactions_multiplex(List<Collection<String>> reactants) {
 		// If only one reactions shall be created for 
-		if (!create_reaction_variants) {
+		if (strategy.equals(ClassesStategy.Ignore)) {
+		}
+		if (strategy.equals(ClassesStategy.SingleReaction)) {
 			LinkedList<String> result = new LinkedList<>();
 			for (Collection<String> variants : reactants) {
 				result.addAll(variants);
 			}
-			List<List<String>> full_result = new LinkedList<>();
+			List<Collection<String>> full_result = new LinkedList<>();
 			full_result.add(result);
 			return full_result;
 		}
@@ -404,15 +409,15 @@ public class BiocycCreateNetworkProcess extends AbstractNetworkCreator {
 
 		// Result list
 		// list in this collection will be appended with another reactant
-		List<List<String>> result = new LinkedList<>();
+		List<Collection<String>> result = new LinkedList<>();
 		// Add empty list as initial "reactants"
 		result.add(new ArrayList<String>(0));
 
 		for (Collection<String> next_reactants : reactants) {
-			List<List<String>> next_result = new LinkedList<>();
+			List<Collection<String>> next_result = new LinkedList<>();
 
 			for (String reactant : next_reactants) {
-				for (List<String> former_reactants : result) {
+				for (Collection<String> former_reactants : result) {
 					List<String> new_result = new ArrayList<>(former_reactants.size() + 1);
 					new_result.addAll(former_reactants);
 					new_result.add(reactant);

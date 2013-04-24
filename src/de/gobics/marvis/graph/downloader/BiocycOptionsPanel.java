@@ -7,6 +7,7 @@ import de.gobics.marvis.utils.swing.filechooser.ChooserTarGz;
 import java.io.File;
 import java.util.logging.Logger;
 import javax.swing.JCheckBox;
+import javax.swing.JComboBox;
 import javax.swing.SpringLayout;
 
 /**
@@ -16,14 +17,10 @@ import javax.swing.SpringLayout;
 public class BiocycOptionsPanel extends AbstractOptionsPanel{
 	private static final Logger logger = Logger.getLogger(BiocycOptionsPanel.class.getName());
 	private final FilechooserTextField chooser = new FilechooserTextField(ChooserTarGz.getInstance());
-	private final JCheckBox cb_variants = new JCheckBox("Create reactions variants", true);
 	
 	public BiocycOptionsPanel(MarvisGraphMainWindow w){
 		super(w);
-		setLayout(new SpringLayout());
 		add(chooser);
-		add(cb_variants);
-		SpringUtilities.makeCompactGrid(this, 2, 1);
 		chooser.setSelectedFile(new File("/home/manuel/ara.tar.gz"));
 	}
 
@@ -39,7 +36,7 @@ public class BiocycOptionsPanel extends AbstractOptionsPanel{
 			return null;
 		}
 		BiocycCreateNetworkProcess process = new BiocycCreateNetworkProcess( selected );
-		process.setCreateReactionVariants(cb_variants.isSelected());
+
 		return process;
 	}
 	
