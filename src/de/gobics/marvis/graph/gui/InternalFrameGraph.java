@@ -1,15 +1,17 @@
 package de.gobics.marvis.graph.gui;
 
-import de.gobics.marvis.graph.graphview.GraphViewCustomizable;
-import de.gobics.marvis.graph.graphview.GraphView;
-import de.gobics.marvis.graph.graphview.ReactionGraph;
 import de.gobics.marvis.graph.*;
+import de.gobics.marvis.graph.graphview.GraphView;
+import de.gobics.marvis.graph.graphview.GraphViewCustomizable;
 import de.gobics.marvis.graph.graphview.GraphViewCustomizable.DisplayType;
 import de.gobics.marvis.graph.graphview.GraphViewNeigborhood;
+import de.gobics.marvis.graph.graphview.ReactionGraph;
 import de.gobics.marvis.graph.gui.actions.*;
 import de.gobics.marvis.graph.gui.graphvisualizer.VisualizationViewerGraph;
-import de.gobics.marvis.utils.Molecule;
 import de.gobics.marvis.utils.swing.*;
+import edu.uci.ics.jung.graph.Graph;
+import edu.uci.ics.jung.graph.SparseGraph;
+import edu.uci.ics.jung.graph.util.EdgeType;
 import edu.uci.ics.jung.visualization.GraphZoomScrollPane;
 import java.awt.*;
 import java.util.Collection;
@@ -189,7 +191,7 @@ public final class InternalFrameGraph extends JInternalFrame {
 	public void drawNetwork(GraphView graph_view) {
 		logger.log(Level.FINER, "Creating graph viewer for view: {0}", graph_view);
 		JPanel panel = new JPanel(new BorderLayout());
-
+		
 		VisualizationViewerGraph viewer = new VisualizationViewerGraph(main_window, graph_view);
 		GraphZoomScrollPane graphZoom = new GraphZoomScrollPane(viewer);
 		graphZoom.setPreferredSize(new Dimension(400, 400));

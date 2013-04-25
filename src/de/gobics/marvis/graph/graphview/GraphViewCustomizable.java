@@ -9,7 +9,6 @@ import java.util.Comparator;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
@@ -22,7 +21,7 @@ public class GraphViewCustomizable extends AbstractGraph {
 
 	public enum DisplayType {
 
-		All, Explainable, None
+		All, WithMarker, None
 	}
 	private static final Logger logger = Logger.getLogger(GraphViewCustomizable.class.
 			getName());
@@ -60,7 +59,7 @@ public class GraphViewCustomizable extends AbstractGraph {
 	 */
 	protected final TreeMap<GraphObject, Collection<Relation>> cache_relations = new TreeMap<>();
 	protected final TreeSet<Relation> cache_all_relations = new TreeSet<>();
-	private boolean update_listener;
+	private boolean update_listener = true;
 
 	/**
 	 * Create a new customizable graphical view based on the given network.
@@ -93,6 +92,11 @@ public class GraphViewCustomizable extends AbstractGraph {
 		return cofactor_limit;
 	}
 
+	/**
+	 * Sets whether update listener should be notified or not.
+	 *
+	 * @param b true to notify listener on changes
+	 */
 	public void setUpdateListener(boolean b) {
 		this.update_listener = b;
 		if (b) {
@@ -111,12 +115,17 @@ public class GraphViewCustomizable extends AbstractGraph {
 	}
 
 	public void setDisplayType(Class<? extends GraphObject> c, DisplayType type) {
+		logger.finer("Change display type for class " + c + " from " + classdisplay.get(c) + " to: " + type);
 		if (!classdisplay.containsKey(c)) {
-			classdisplay.put(c, DisplayType.All);
-		}
-		if (!type.equals(classdisplay.get(c))) {
 			classdisplay.put(c, type);
 			fireGraphChangeEvent();
+		}
+		else if (!type.equals(classdisplay.get(c))) {
+			classdisplay.put(c, type);
+			fireGraphChangeEvent();
+		}
+		else {
+			logger.warning("Ignore change of display for class " + c + " from " + classdisplay.get(c) + " to: " + type);
 		}
 	}
 
@@ -181,7 +190,7 @@ public class GraphViewCustomizable extends AbstractGraph {
 		if (type.equals(DisplayType.None)) {
 			return false;
 		}
-		if (type.equals(DisplayType.Explainable) && !getRootNetwork().isExplainable(obj)) {
+		if (type.equals(DisplayType.WithMarker) && !getRootNetwork().isExplainable(obj)) {
 			return false;
 		}
 
@@ -206,6 +215,7 @@ public class GraphViewCustomizable extends AbstractGraph {
 			cache_relations.clear();
 			cache_vertices.clear();
 			cache_all_relations.clear();
+			logger.finer("Fire graph change event");
 			super.fireGraphChangeEvent();
 		}
 	}

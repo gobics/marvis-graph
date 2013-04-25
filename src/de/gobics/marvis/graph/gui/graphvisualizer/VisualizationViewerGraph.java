@@ -11,6 +11,9 @@ import de.gobics.marvis.graph.gui.tasks.RenderGraphLayout;
 import de.gobics.marvis.utils.task.TaskResultListener;
 import edu.uci.ics.jung.algorithms.layout.*;
 import edu.uci.ics.jung.algorithms.layout.util.RandomLocationTransformer;
+import edu.uci.ics.jung.graph.Graph;
+import edu.uci.ics.jung.graph.SparseGraph;
+import edu.uci.ics.jung.graph.util.EdgeType;
 import edu.uci.ics.jung.visualization.Layer;
 import edu.uci.ics.jung.visualization.VisualizationViewer;
 import edu.uci.ics.jung.visualization.control.CrossoverScalingControl;
@@ -28,6 +31,7 @@ import java.awt.geom.Point2D;
 import java.util.LinkedList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.SwingUtilities;
 
 /**
  * A panel that displays the graph and its layout
@@ -40,9 +44,12 @@ public class VisualizationViewerGraph<E> extends VisualizationViewer<GraphObject
 			getName());
 	private final LinkedList<GraphMouseListener> graph_mouse_listener = new LinkedList<>();
 	private final MarvisGraphMainWindow main_window;
+	private final GraphView graphview;
 
 	public VisualizationViewerGraph(MarvisGraphMainWindow main_window, GraphView<? extends GraphObject, E> graph) {
-		super(new StaticLayout(graph));
+		super(new StaticLayout(new SparseGraph<>()));
+		this.graphview = graph;
+
 		setDoubleBuffered(false);
 		this.main_window = main_window;
 		logger.log(Level.FINER, "Initializing graph viewer for graph: {0}", graph);
@@ -85,6 +92,13 @@ public class VisualizationViewerGraph<E> extends VisualizationViewer<GraphObject
 		});
 
 		logger.log(Level.FINER, "Viewer ready for: {0}", graph);
+
+		/*SwingUtilities.invokeLater(new Runnable() {
+			@Override
+			public void run() {
+				updateGraphLayout();
+			}
+		});*/
 	}
 
 	/**
@@ -94,50 +108,19 @@ public class VisualizationViewerGraph<E> extends VisualizationViewer<GraphObject
 	 */
 	public void updateGraphLayout() {
 		logger.finer("Updating graph layout");
-		ISOMLayout layout = new ISOMLayout(getGraphLayout().getGraph());
-		layout.setSize(getSize());
-		layout.initialize();
-		layout.setInitializer(new RandomLocationTransformer(layout.getSize()));
-		//layout.setInitializer(getGraphLayout());
-		layout.reset();
-		long time_start = System.currentTimeMillis();
-		while (System.currentTimeMillis() - time_start < 1000 && !layout.done()) {
-			layout.step();
-		}
 
-		if (layout.done()) {
-			drawLayout(layout);
-			return;
-		}
-
-		logger.finer("Rendering takes to much time. Starting background Process");
-
-		final RenderGraphLayout process = new RenderGraphLayout(layout);
+		final RenderGraphLayout process = new RenderGraphLayout(graphview);
+		process.setSize(getSize());
 		process.addTaskListener(new TaskResultListener<Void>() {
 			@Override
 			public void taskDone() {
 				Layout rendered = process.getTaskResult();
 				if (rendered != null) {
-					drawLayout(rendered);
+					VisualizationViewerGraph.this.setGraphLayout(rendered);
 				}
 			}
 		});
 		main_window.executeTask(process);
-	}
-
-	/**
-	 * Method to simply create a new {@link StaticLayout} that will contain the
-	 * data of the given layout and
-	 *
-	 * @param layout the layout containing all vertex-positions.
-	 */
-	private void drawLayout(Layout layout) {
-		// Copy the information to the new layout
-		StaticLayout rendered = new StaticLayout(layout.getGraph(), layout.getSize());
-		for (Object o : layout.getGraph().getVertices()) {
-			rendered.setLocation(o, (Point2D) layout.transform(o));
-		}
-		VisualizationViewerGraph.this.setGraphLayout(rendered);
 	}
 
 	@Override
