@@ -58,7 +58,7 @@ public class KeggOptionsPanel extends AbstractOptionsPanel {
 
 				@Override
 				public int compare(OrganismDescription t, OrganismDescription t1) {
-					return t.id.compareTo(t1.id);
+					return t.name.compareTo(t1.name);
 				}
 			});
 			organisms.setOrganisms(orgs);
