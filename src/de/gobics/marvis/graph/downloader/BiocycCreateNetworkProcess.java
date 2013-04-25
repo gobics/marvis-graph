@@ -33,7 +33,7 @@ public class BiocycCreateNetworkProcess extends AbstractNetworkCreator {
 	 */
 	public enum ClassesStategy {
 
-		Ignore, SingleReaction, ReactionVariants
+		RemoveClasses, AsMetabolite, SingleReaction, ReactionVariants
 	}
 	private static final Logger logger = Logger.getLogger(BiocycCreateNetworkProcess.class.
 			getName());
@@ -302,72 +302,80 @@ public class BiocycCreateNetworkProcess extends AbstractNetworkCreator {
 			String description = entry.hasTag("comment") ? entry.getAsString("comment") : null;
 			String ec = entry.hasTag("ec-number") ? entry.getAsString("ec-number") : null;
 
-
-			List<Collection<String>> left_all = get_instances(entry.get("left"));
-			List<Collection<String>> right_all = get_instances(entry.get("right"));
-
-			if (!strategy.equals(ClassesStategy.Ignore)) {
-				left_all = parse_reactions_multiplex(left_all);
-				right_all = parse_reactions_multiplex(right_all);
+			Collection<Reaction> reactions = new LinkedList<>();
+			String[] left_reactants = entry.get("left");
+			String[] right_reactants = entry.get("right");
+			if (left_reactants == null) {
+				left_reactants = new String[0];
+			}
+			if (right_reactants == null) {
+				right_reactants = new String[0];
 			}
 
-			List<Reaction> reactions = new LinkedList<>();
-
-			if (left_all.isEmpty()) {
-				logger.warning("Missing substrates lead to skipping of: " + id);
-			}
-			else if (right_all.isEmpty()) {
-				logger.warning("Missing products lead to skipping of: " + id);
-			}
-			else if (left_all.size() < 2 && right_all.size() < 2) {
+			if (strategy.equals(ClassesStategy.AsMetabolite)) {
 				Reaction r = graph.createReaction(id);
+				for (String left : left_reactants) {
+					graph.hasSubstrate(r, graph.createCompound(left));
+				}
+				for (String right : right_reactants) {
+					graph.hasSubstrate(r, graph.createCompound(right));
+				}
 				reactions.add(r);
-
-
-				for (String cid : left_all.get(0)) {
-					graph.hasSubstrate(r, graph.createCompound(cid));
-				}
-				for (String cid : right_all.get(0)) {
-					graph.hasSubstrate(r, graph.createCompound(cid));
-				}
 			}
-			else {
-				int reaction_variants = left_all.size() * right_all.size();
-				int reaction_counter = 1;
+			else if (strategy.equals(ClassesStategy.RemoveClasses)) {
+				Reaction r = graph.createReaction(id);
+				for (String left : left_reactants) {
+					if (classes_tree.findClass(left) == null) { // is not a class
+						graph.hasSubstrate(r, graph.createCompound(left));
+					}
+				}
+				for (String right : right_reactants) {
+					if (classes_tree.findClass(right) == null) { // is not a class
+						graph.hasSubstrate(r, graph.createCompound(right));
+					}
+				}
+				reactions.add(r);
+			}
+			else if (strategy.equals(ClassesStategy.SingleReaction)) {
+				Reaction r = graph.createReaction(id);
 
-				if (reaction_variants > 250) {
-					continue;
+				for (String left : left_reactants) {
+					for (String left_instance : get_instances(left)) {
+						graph.hasSubstrate(r, graph.createCompound(left_instance));
+					}
+				}
+				for (String right : right_reactants) {
+					for (String right_instance : get_instances(right)) {
+						graph.hasProduct(r, graph.createCompound(right_instance));
+					}
 				}
 
-
-				logger.finer("Building " + (reaction_variants) + " reaction variant for: " + id);
-
-				for (Collection<String> left_reactants : left_all) {
-					for (Collection<String> right_reactants : right_all) {
-
+				reactions.add(r);
+			}
+			else if (strategy.equals(ClassesStategy.ReactionVariants)) {
+				int reaction_counter = 1;
+				for (Collection<String> left_variants : parse_reactions_multiplex(get_instances(left_reactants))) {
+					for (Collection<String> right_variants : parse_reactions_multiplex(get_instances(right_reactants))) {
 						Reaction r = graph.createReaction(id + "-variant-" + reaction_counter);
 						reaction_counter++;
+
+						for (String cid : left_variants) {
+							graph.hasSubstrate(r, graph.createCompound(cid));
+						}
+						for (String cid : right_variants) {
+							graph.hasSubstrate(r, graph.createCompound(cid));
+						}
 						reactions.add(r);
-
-						r.setUrl(base_url + id);
-
-						for (String cid : left_reactants) {
-							graph.hasSubstrate(r, graph.createCompound(cid));
-						}
-						for (String cid : right_reactants) {
-							graph.hasSubstrate(r, graph.createCompound(cid));
-						}
-
 					}
 				}
 			}
 
 			this.reactions.put(id, reactions);
 
-
 			for (Reaction r : reactions) {
 				r.setDescription(description);
 				r.setEcNumber(ec);
+				r.setUrl(base_url + id);
 
 				if (entry.hasTag("in-pathway")) {
 					for (String pathway : entry.get("in-pathway")) {
@@ -394,8 +402,6 @@ public class BiocycCreateNetworkProcess extends AbstractNetworkCreator {
 	 */
 	public List<Collection<String>> parse_reactions_multiplex(List<Collection<String>> reactants) {
 		// If only one reactions shall be created for 
-		if (strategy.equals(ClassesStategy.Ignore)) {
-		}
 		if (strategy.equals(ClassesStategy.SingleReaction)) {
 			LinkedList<String> result = new LinkedList<>();
 			for (Collection<String> variants : reactants) {
@@ -446,7 +452,9 @@ public class BiocycCreateNetworkProcess extends AbstractNetworkCreator {
 		}
 		List<Collection<String>> instances = new ArrayList<>(strings.length);
 		for (String id : strings) {
-			instances.add(get_instances(id));
+			if (!strategy.equals(ClassesStategy.RemoveClasses)) {
+				instances.add(get_instances(id));
+			}
 		}
 		return instances;
 	}
@@ -599,6 +607,14 @@ public class BiocycCreateNetworkProcess extends AbstractNetworkCreator {
 		}
 
 		public ClassNode(String id) {
+			if (id != null) {
+				if (id.startsWith("|")) {
+					id = id.substring(1);
+				}
+				if (id.endsWith("|")) {
+					id = id.substring(0, id.length() - 1);
+				}
+			}
 			this.id = id;
 		}
 
@@ -625,6 +641,12 @@ public class BiocycCreateNetworkProcess extends AbstractNetworkCreator {
 		}
 
 		public ClassNode findClass(String class_id) {
+			if (class_id.startsWith("|")) {
+				class_id = class_id.substring(1);
+			}
+			if (class_id.endsWith("|")) {
+				class_id = class_id.substring(0, class_id.length() - 1);
+			}
 			if (this.id != null && this.id.equals(class_id)) {
 				return this;
 			}
