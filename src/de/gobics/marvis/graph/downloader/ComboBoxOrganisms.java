@@ -26,6 +26,15 @@ public class ComboBoxOrganisms extends JComboBox {
 	 */
 	public void setOrganisms(OrganismDescription[] organisms) {
 		removeAllItems();
+		
+		Arrays.sort(organisms, new Comparator<OrganismDescription>() {
+
+			@Override
+			public int compare(OrganismDescription t, OrganismDescription t1) {
+				return t.name.compareTo(t1.name);
+			}
+		});
+		
 		if (organisms != null) {
 			for (OrganismDescription od : organisms) {
 				addItem(new OrganismItem(od));
