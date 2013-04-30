@@ -33,7 +33,7 @@ public class ViewerActionDrawTypeReaction extends AbstractViewerAction {
 		
 		view.addGraphViewListener(new GraphViewListener() {
 			@Override
-			public void graphChanged(GraphView parent) {
+			public void graphChanged(GraphView parent, GraphChangeType type) {
 				putValue(SELECTED_KEY, view.getDisplayType(Reaction.class).equals(GraphViewCustomizable.DisplayType.All));
 			}
 		});

@@ -1,7 +1,3 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
 package de.gobics.marvis.graph.gui.tasks;
 
 import de.gobics.marvis.graph.GraphObject;
@@ -12,14 +8,11 @@ import edu.uci.ics.jung.algorithms.layout.ISOMLayout;
 import edu.uci.ics.jung.algorithms.layout.Layout;
 import edu.uci.ics.jung.algorithms.layout.StaticLayout;
 import edu.uci.ics.jung.algorithms.layout.util.RandomLocationTransformer;
-import edu.uci.ics.jung.algorithms.util.IterativeContext;
 import edu.uci.ics.jung.graph.Graph;
 import edu.uci.ics.jung.graph.SparseGraph;
 import edu.uci.ics.jung.graph.util.EdgeType;
 import java.awt.Dimension;
-import java.awt.geom.Point2D;
 import java.util.logging.Logger;
-import javax.swing.SwingWorker;
 
 /**
  *
@@ -29,12 +22,18 @@ public class RenderGraphLayout extends AbstractTask<Layout, Void> {
 
 	private final static Logger logger = Logger.getLogger(RenderGraphLayout.class.
 			getName());
-	private final GraphView graphview;
+	private final GraphView<GraphObject, Relation> graphview;
 	private Dimension size = new Dimension(400, 400);
-	private Layout template = null;
+	private Layout<GraphObject, Relation> template = null;
+	private final boolean recalculate;
 
-	public RenderGraphLayout(GraphView graphview) {
+	public RenderGraphLayout(GraphView<GraphObject, Relation> graphview) {
+		this(graphview, true);
+	}
+
+	public RenderGraphLayout(GraphView<GraphObject, Relation> graphview, boolean randomize_positions) {
 		this.graphview = graphview;
+		this.recalculate = randomize_positions;
 		setTaskTitle("Calculating graph layout");
 		setTaskDescription("Rendering graph layout");
 	}
@@ -43,7 +42,7 @@ public class RenderGraphLayout extends AbstractTask<Layout, Void> {
 		this.size = size;
 	}
 
-	public void setTemplate(Layout template) {
+	public void setTemplate(Layout<GraphObject, Relation> template) {
 		this.template = template;
 	}
 
@@ -53,31 +52,58 @@ public class RenderGraphLayout extends AbstractTask<Layout, Void> {
 
 		// Build graph
 		Graph<GraphObject, Relation> graph = new SparseGraph<>();
-		for (Object o : graphview.getVertices()) {
-			graph.addVertex((GraphObject) o);
+		for (GraphObject o : graphview.getVertices()) {
+			graph.addVertex(o);
 		}
-		for (Object ro : graphview.getEdges()) {
-			Relation r = (Relation) ro;
+		if (isCanceled()) {
+			return null;
+		}
+		for (Relation r : graphview.getEdges()) {
 			graph.addEdge(r, r.getStart(), r.getEnd(), EdgeType.UNDIRECTED);
+		}
+		if (isCanceled()) {
+			return null;
 		}
 
 		// Calculate the layout
-		ISOMLayout layout = new ISOMLayout(graph);
-		layout.setSize(size);
-		layout.setInitializer(template != null ? template : new RandomLocationTransformer(layout.getSize()));
-		layout.initialize();
-		layout.reset();
-		int counter = 0;
-		while (!layout.done()) {
-			counter++;
-			layout.step();
-		}
-		logger.finer("Layout calculation took "+counter+" steps");
+		Layout<GraphObject, Relation> final_layout;
+		if (template == null || recalculate) {
+			ISOMLayout layout = new ISOMLayout(graph);
+			layout.setSize(size);
+			layout.setInitializer(template != null ? template : new RandomLocationTransformer(layout.getSize()));
+			layout.initialize();
+			layout.reset();
+			int counter = 0;
+			while (!layout.done()) {
+				counter++;
+				layout.step();
+				if (isCanceled()) {
+					return null;
+				}
+			}
+			logger.finer("Layout calculation took " + counter + " steps");
 
-		// Copy Layout to static layout
-		Layout final_layout = new StaticLayout(graph);
-		for (Object o : graph.getVertices()) {
-			final_layout.setLocation(o, layout.transform(o));
+			// Copy Layout to static layout
+			final_layout = new StaticLayout(graph);
+			for (GraphObject o : graph.getVertices()) {
+				final_layout.setLocation(o, layout.transform(o));
+			}
+		}
+		else {
+			final_layout = new StaticLayout(graph);
+			RandomLocationTransformer rand = new RandomLocationTransformer(size);
+			for (GraphObject vertex : graphview.getVertices()) {
+				if (template != null) {
+					final_layout.setLocation(vertex, template.transform(vertex));
+				}
+				else {
+					final_layout.setLocation(vertex, rand.transform(vertex));
+				}
+			}
+		}
+
+		if (isCanceled()) {
+			return null;
 		}
 
 		logger.finer("Returning new layout");

@@ -25,6 +25,6 @@ public class ViewerActionRedraw extends AbstractViewerAction {
 
 	@Override
 	public void actionPerformed(ActionEvent e) {
-		viewer.updateGraphLayout();
+		viewer.updateGraphLayout(true);
 	}
 }

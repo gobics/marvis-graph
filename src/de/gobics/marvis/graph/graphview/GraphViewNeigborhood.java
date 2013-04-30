@@ -57,13 +57,15 @@ public class GraphViewNeigborhood extends GraphViewCustomizable {
 	 */
 	public void setMaximumDistance(int maximal_distance) {
 		FullGraph graph = new FullGraph(getMetabolicNetwork());
+
+		int size = reachable_vertices.size();
 		reachable_vertices.clear();
 
 		for (GraphObject base : base_objects) {
 			breathSearch(graph, base, maximal_distance);
 		}
 
-		fireGraphChangeEvent();
+		fireGraphChangeEvent(size < reachable_vertices.size() ? GraphViewListener.GraphChangeType.Inserted : GraphViewListener.GraphChangeType.Removed);
 	}
 
 	@Override

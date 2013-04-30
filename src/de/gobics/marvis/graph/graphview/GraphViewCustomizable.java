@@ -9,6 +9,7 @@ import java.util.Comparator;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
@@ -78,8 +79,9 @@ public class GraphViewCustomizable extends AbstractGraph {
 	 */
 	public void setCofactorLimit(int new_limit) {
 		if (cofactor_limit != new_limit) {
+			int old_limit = cofactor_limit;
 			cofactor_limit = new_limit;
-			fireGraphChangeEvent();
+			fireGraphChangeEvent(old_limit < new_limit ? GraphViewListener.GraphChangeType.Inserted : GraphViewListener.GraphChangeType.Removed);
 		}
 	}
 
@@ -100,7 +102,7 @@ public class GraphViewCustomizable extends AbstractGraph {
 	public void setUpdateListener(boolean b) {
 		this.update_listener = b;
 		if (b) {
-			fireGraphChangeEvent();
+			fireGraphChangeEvent(GraphViewListener.GraphChangeType.Unkown);
 		}
 	}
 
@@ -114,18 +116,24 @@ public class GraphViewCustomizable extends AbstractGraph {
 		setDisplayType(c, hide ? DisplayType.None : DisplayType.All);
 	}
 
-	public void setDisplayType(Class<? extends GraphObject> c, DisplayType type) {
-		logger.finer("Change display type for class " + c + " from " + classdisplay.get(c) + " to: " + type);
-		if (!classdisplay.containsKey(c)) {
-			classdisplay.put(c, type);
-			fireGraphChangeEvent();
-		}
-		else if (!type.equals(classdisplay.get(c))) {
-			classdisplay.put(c, type);
-			fireGraphChangeEvent();
+	public void setDisplayType(Class<? extends GraphObject> c, DisplayType new_type) {
+		DisplayType old_type = getDisplayType(c);
+		logger.log(Level.FINER, "Change display type for class {0} from {1} to: {2}", new Object[]{c, old_type, new_type});
+
+		if (!new_type.equals(old_type)) {
+			classdisplay.put(c, new_type);
+			if (old_type.equals(DisplayType.None)) {
+				fireGraphChangeEvent(GraphViewListener.GraphChangeType.Inserted);
+			}
+			else if (old_type.equals(DisplayType.WithMarker) && new_type.equals(DisplayType.All)) {
+				fireGraphChangeEvent(GraphViewListener.GraphChangeType.Inserted);
+			}
+			else {
+				fireGraphChangeEvent(GraphViewListener.GraphChangeType.Removed);
+			}
 		}
 		else {
-			logger.warning("Ignore change of display for class " + c + " from " + classdisplay.get(c) + " to: " + type);
+			logger.log(Level.WARNING, "Ignore change of display for class {0} from {1} to: {2}", new Object[]{c, classdisplay.get(c), new_type});
 		}
 	}
 
@@ -143,7 +151,7 @@ public class GraphViewCustomizable extends AbstractGraph {
 			return;
 		}
 		if (objects_to_hide.add(o)) {
-			fireGraphChangeEvent();
+			fireGraphChangeEvent(GraphViewListener.GraphChangeType.Removed);
 		}
 	}
 
@@ -153,7 +161,7 @@ public class GraphViewCustomizable extends AbstractGraph {
 	public void resetHidenNodes() {
 		if (!objects_to_hide.isEmpty()) {
 			objects_to_hide.clear();
-			fireGraphChangeEvent();
+			fireGraphChangeEvent(GraphViewListener.GraphChangeType.Inserted);
 		}
 	}
 
@@ -174,7 +182,7 @@ public class GraphViewCustomizable extends AbstractGraph {
 	public void setDrawSingleNodes(boolean draw_single_nodes) {
 		if (this.draw_single_nodes != draw_single_nodes) {
 			this.draw_single_nodes = draw_single_nodes;
-			fireGraphChangeEvent();
+			fireGraphChangeEvent(GraphViewListener.GraphChangeType.Unkown);
 		}
 	}
 
@@ -210,13 +218,13 @@ public class GraphViewCustomizable extends AbstractGraph {
 	}
 
 	@Override
-	protected void fireGraphChangeEvent() {
+	protected void fireGraphChangeEvent(GraphViewListener.GraphChangeType type) {
 		if (update_listener) {
 			cache_relations.clear();
 			cache_vertices.clear();
 			cache_all_relations.clear();
 			logger.finer("Fire graph change event");
-			super.fireGraphChangeEvent();
+			super.fireGraphChangeEvent(type);
 		}
 	}
 

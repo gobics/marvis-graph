@@ -5,7 +5,7 @@
 package de.gobics.marvis.graph;
 
 import de.gobics.marvis.graph.downloader.BiocycCreateNetworkProcess;
-import de.gobics.marvis.graph.downloader.MetabolicNetworkTester;
+import de.gobics.marvis.graph.gui.tasks.MetabolicNetworkReport;
 import de.gobics.marvis.graph.gui.tasks.AbstractNetworkCalculation;
 import de.gobics.marvis.graph.gui.tasks.CalculateNetworksPathway;
 import de.gobics.marvis.graph.gui.tasks.CalculateNetworksRWR;
@@ -76,11 +76,11 @@ public class test {
 		System.out.println("In AraCyc:  " + count_ara);
 		System.out.println("In AthKEGG: " + count_ath);
 
-		MetabolicNetworkTester t_ara = new MetabolicNetworkTester(n_ara);
-		MetabolicNetworkTester t_ath = new MetabolicNetworkTester(n_ath);
+		MetabolicNetworkReport t_ara = new MetabolicNetworkReport(n_ara);
+		MetabolicNetworkReport t_ath = new MetabolicNetworkReport(n_ath);
 
-		System.out.println("Compounds : " + n_ara.getCompounds().size() + " with " + t_ara.countCompoundsWithMarker() + " annotated");
-		System.out.println("Compounds : " + n_ath.getCompounds().size() + " with " + t_ath.countCompoundsWithMarker() + " annotated");
+	//	System.out.println("Compounds : " + n_ara.getCompounds().size() + " with " + t_ara.countCompoundsWithMarker() + " annotated");
+	//	System.out.println("Compounds : " + n_ath.getCompounds().size() + " with " + t_ath.countCompoundsWithMarker() + " annotated");
 	}
 
 	private static MetabolicNetwork testBiocycImport() throws Exception {
@@ -88,7 +88,7 @@ public class test {
 		BiocycCreateNetworkProcess process = new BiocycCreateNetworkProcess(in);
 		MetabolicNetwork network = process.doTask();
 
-		MetabolicNetworkTester tester = new MetabolicNetworkTester(network);
+		MetabolicNetworkReport tester = new MetabolicNetworkReport(network);
 		System.out.println(tester.generateReport());
 		return network;
 	}

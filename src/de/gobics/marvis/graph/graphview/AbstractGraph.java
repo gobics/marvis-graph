@@ -83,9 +83,9 @@ public abstract class AbstractGraph implements GraphView<GraphObject, Relation> 
 	 * Helper method that notifies all the listeners about a structural change in 
 	 * the graph.
 	 */
-	protected void fireGraphChangeEvent() {
+	protected void fireGraphChangeEvent(GraphViewListener.GraphChangeType type) {
 		for (GraphViewListener l : listener) {
-			l.graphChanged(this);
+			l.graphChanged(this, type);
 		}
 	}
 

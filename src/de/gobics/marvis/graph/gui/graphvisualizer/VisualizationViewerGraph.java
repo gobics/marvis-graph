@@ -10,11 +10,7 @@ import de.gobics.marvis.graph.gui.MarvisGraphMainWindow;
 import de.gobics.marvis.graph.gui.tasks.RenderGraphLayout;
 import de.gobics.marvis.utils.task.TaskResultListener;
 import edu.uci.ics.jung.algorithms.layout.*;
-import edu.uci.ics.jung.algorithms.layout.util.RandomLocationTransformer;
-import edu.uci.ics.jung.graph.Graph;
 import edu.uci.ics.jung.graph.SparseGraph;
-import edu.uci.ics.jung.graph.util.EdgeType;
-import edu.uci.ics.jung.visualization.Layer;
 import edu.uci.ics.jung.visualization.VisualizationViewer;
 import edu.uci.ics.jung.visualization.control.CrossoverScalingControl;
 import edu.uci.ics.jung.visualization.control.PickingGraphMousePlugin;
@@ -23,22 +19,19 @@ import edu.uci.ics.jung.visualization.control.ScalingGraphMousePlugin;
 import edu.uci.ics.jung.visualization.control.TranslatingGraphMousePlugin;
 import edu.uci.ics.jung.visualization.decorators.EdgeShape;
 import java.awt.Color;
-import java.awt.Dimension;
 import java.awt.Point;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
-import java.awt.geom.Point2D;
 import java.util.LinkedList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.swing.SwingUtilities;
 
 /**
  * A panel that displays the graph and its layout
  *
  * @author manuel
  */
-public class VisualizationViewerGraph<E> extends VisualizationViewer<GraphObject, E> implements MouseListener {
+public class VisualizationViewerGraph extends VisualizationViewer<GraphObject, Relation> implements MouseListener {
 
 	private static final Logger logger = Logger.getLogger(VisualizationViewerGraph.class.
 			getName());
@@ -46,7 +39,7 @@ public class VisualizationViewerGraph<E> extends VisualizationViewer<GraphObject
 	private final MarvisGraphMainWindow main_window;
 	private final GraphView graphview;
 
-	public VisualizationViewerGraph(MarvisGraphMainWindow main_window, GraphView<? extends GraphObject, E> graph) {
+	public VisualizationViewerGraph(MarvisGraphMainWindow main_window, GraphView<? extends GraphObject, Relation> graph) {
 		super(new StaticLayout(new SparseGraph<>()));
 		this.graphview = graph;
 
@@ -69,7 +62,7 @@ public class VisualizationViewerGraph<E> extends VisualizationViewer<GraphObject
 		getRenderContext().setEdgeLabelTransformer(
 				new EdgeTransformerLabel(false));
 		getRenderContext().setEdgeShapeTransformer(
-				new EdgeShape.Line<GraphObject, E>());
+				new EdgeShape.Line<GraphObject, Relation>());
 		getRenderContext().setEdgeStrokeTransformer(
 				new EdgeTransformerStroke(graph));
 
@@ -86,19 +79,19 @@ public class VisualizationViewerGraph<E> extends VisualizationViewer<GraphObject
 
 		graph.addGraphViewListener(new GraphViewListener() {
 			@Override
-			public void graphChanged(GraphView parent) {
-				updateGraphLayout();
+			public void graphChanged(GraphView parent, GraphChangeType type) {
+				updateGraphLayout(type.equals(GraphChangeType.Removed) ? false : true);
 			}
 		});
 
 		logger.log(Level.FINER, "Viewer ready for: {0}", graph);
 
 		/*SwingUtilities.invokeLater(new Runnable() {
-			@Override
-			public void run() {
-				updateGraphLayout();
-			}
-		});*/
+		 @Override
+		 public void run() {
+		 updateGraphLayout();
+		 }
+		 });*/
 	}
 
 	/**
@@ -106,10 +99,11 @@ public class VisualizationViewerGraph<E> extends VisualizationViewer<GraphObject
 	 * reinitialized and recalculated. This is useful when the structure has
 	 * been changed e.g. in the {@link GraphViewCustomizable}.
 	 */
-	public void updateGraphLayout() {
+	public void updateGraphLayout(boolean full_redraw) {
 		logger.finer("Updating graph layout");
 
-		final RenderGraphLayout process = new RenderGraphLayout(graphview);
+		final RenderGraphLayout process = new RenderGraphLayout(graphview, full_redraw);
+		process.setTemplate(this.getGraphLayout());
 		process.setSize(getSize());
 		process.addTaskListener(new TaskResultListener<Void>() {
 			@Override
