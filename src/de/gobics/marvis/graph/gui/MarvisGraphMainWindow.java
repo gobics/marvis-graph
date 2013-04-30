@@ -1,7 +1,7 @@
 package de.gobics.marvis.graph.gui;
 
 import de.gobics.marvis.graph.*;
-import de.gobics.marvis.graph.downloader.MetabolicNetworkTester;
+import de.gobics.marvis.graph.gui.tasks.MetabolicNetworkReport;
 import de.gobics.marvis.graph.downloader.NetworkDownloaderDialog;
 import de.gobics.marvis.graph.gui.actions.*;
 import de.gobics.marvis.graph.gui.evaluation.TableModelResults;
@@ -732,9 +732,18 @@ public class MarvisGraphMainWindow extends JFrame {
 	}
 
 	public void displayNetworkReport(MetabolicNetwork network) {
-		MetabolicNetworkTester tester = new MetabolicNetworkTester(network);
-		String report = tester.generateReport();
-		display_information(report);
+		final MetabolicNetworkReport tester = new MetabolicNetworkReport(network);
+		tester.addTaskListener(new TaskResultListener<Void>() {
+
+			@Override
+			public void taskDone() {
+				if( tester.isDone()){
+					display_information( tester.getTaskResult());
+				}
+			}
+		});
+		
+		executeTask(tester);
 	}
 
 	public void displayPathwayAtKegg() {
@@ -751,7 +760,7 @@ public class MarvisGraphMainWindow extends JFrame {
 
 		Pathway pathway = pathways.iterator().next();
 		if (pathways.size() > 1) {
-			ComboBoxGraphobject<Pathway> cb = new ComboBoxGraphobject<Pathway>(pathways);
+			ComboBoxGraphobject<Pathway> cb = new ComboBoxGraphobject<>(pathways);
 			if (JOptionPane.showConfirmDialog(this, cb, "Select pathway", JOptionPane.OK_CANCEL_OPTION) != JOptionPane.OK_OPTION) {
 				return;
 			}
@@ -767,8 +776,7 @@ public class MarvisGraphMainWindow extends JFrame {
 
 	public void displayPathwayAtKegg(MetabolicNetwork network, Pathway path) {
 
-		StringBuilder sb = new StringBuilder("http://www.genome.jp/kegg-bin/show_pathway?").
-				append(path.getId().replace("path:", ""));
+		StringBuilder sb = new StringBuilder("http://www.genome.jp/kegg-bin/show_pathway?").append(path.getId().replace("path:", ""));
 		for (GraphObject c : network.getCompounds()) {
 			sb.append("/").append(c.getId()).append("%09,").append(network.isExplainable(c) ? "red" : "%23cdb06e");
 		}
