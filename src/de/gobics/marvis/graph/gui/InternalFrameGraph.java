@@ -9,9 +9,6 @@ import de.gobics.marvis.graph.graphview.ReactionGraph;
 import de.gobics.marvis.graph.gui.actions.*;
 import de.gobics.marvis.graph.gui.graphvisualizer.VisualizationViewerGraph;
 import de.gobics.marvis.utils.swing.*;
-import edu.uci.ics.jung.graph.Graph;
-import edu.uci.ics.jung.graph.SparseGraph;
-import edu.uci.ics.jung.graph.util.EdgeType;
 import edu.uci.ics.jung.visualization.GraphZoomScrollPane;
 import java.awt.*;
 import java.util.Collection;
@@ -107,15 +104,6 @@ public final class InternalFrameGraph extends JInternalFrame {
 		return this.network;
 	}
 
-	/**
-	 * Select a specified vertex within the view.
-	 *
-	 * @param obj
-	 */
-//	public void selectVertex(GraphObject obj) {
-//		graphViewer.getPickedVertexState().pick(obj, true);
-//		graphViewer.repaint();
-//	}
 	public void drawHeatmapMarker() {
 		logger.finer("Creating marker heatmap");
 		if (!network.hasMarkers()) {
@@ -128,29 +116,7 @@ public final class InternalFrameGraph extends JInternalFrame {
 
 		Marker[] markers = marker_collection.toArray(new Marker[marker_collection.
 				size()]);
-
 		ChartPanel heatmap_marker = IntensityProfileHistogram.createHeatmap(markers);
-
-//		heatmap_marker.addHeatmapListener(new HeatmapListener() {
-//
-//			@Override
-//			public void heatmapClicked(HeatmapEvent event) {
-//			}
-//
-//			@Override
-//			public void heatmapSelectionChanged(HeatmapEvent event) {
-//			}
-//
-//			@Override
-//			public void heatmapDoubleClicked(HeatmapEvent event) {
-//				Object o = event.getLabelX();
-//				if (o instanceof GraphObject) {
-//					main_window.createGraphobjectVisualization((GraphObject) o);
-//				}
-//			}
-//		});
-
-
 		addTab("Marker heatmap", heatmap_marker);
 	}
 
@@ -165,21 +131,7 @@ public final class InternalFrameGraph extends JInternalFrame {
 		}
 		Transcript[] markers = transcript_collection.toArray(new Transcript[transcript_collection.
 				size()]);
-
 		ChartPanel heatmap_transcripts = IntensityProfileHistogram.createHeatmap(markers);
-
-		/*
-		 * heatmap_transcripts.addHeatmapListener(new HeatmapListener() {
-		 *
-		 * @Override public void heatmapClicked(HeatmapEvent event) { }
-		 *
-		 * @Override public void heatmapSelectionChanged(HeatmapEvent event) { }
-		 *
-		 * @Override public void heatmapDoubleClicked(HeatmapEvent event) {
-		 * Object o = event.getLabelX(); if (o instanceof GraphObject) {
-		 * main_window.createGraphobjectVisualization((GraphObject) o); } }
-		 });
-		 */
 		addTab("Transcript heatmap", heatmap_transcripts);
 	}
 
@@ -222,7 +174,7 @@ public final class InternalFrameGraph extends JInternalFrame {
 		}
 
 		new PopupMenuNetworkViewer(main_window, this, viewer, graph_view);
-		viewer.updateGraphLayout();
+		viewer.updateGraphLayout(true);
 	}
 
 	private void addTab(final String title, final Component content) {
@@ -241,12 +193,15 @@ public final class InternalFrameGraph extends JInternalFrame {
 				cb_genes = new JComboBox<>(GraphViewCustomizable.DisplayType.values()),
 				cb_pathways = new JComboBox<>(GraphViewCustomizable.DisplayType.values());
 		cb_marker.setSelectedItem(view.getDisplayType(Marker.class));
-		cb_marker.setSelectedItem(view.getDisplayType(Compound.class));
-		cb_marker.setSelectedItem(view.getDisplayType(Reaction.class));
-		cb_marker.setSelectedItem(view.getDisplayType(Enzyme.class));
-		cb_marker.setSelectedItem(view.getDisplayType(Gene.class));
-		cb_marker.setSelectedItem(view.getDisplayType(Pathway.class));
-		cb_marker.setSelectedItem(view.getDisplayType(Transcript.class));
+		cb_molecules.setSelectedItem(view.getDisplayType(Compound.class));
+		cb_reactions.setSelectedItem(view.getDisplayType(Reaction.class));
+		cb_enzymes.setSelectedItem(view.getDisplayType(Enzyme.class));
+		cb_genes.setSelectedItem(view.getDisplayType(Gene.class));
+		cb_pathways.setSelectedItem(view.getDisplayType(Pathway.class));
+		cb_transcripts.setSelectedItem(view.getDisplayType(Transcript.class));
+		
+		SpinnerNumberModel sm_cofactor = new SpinnerNumberModel(10, 1, Integer.MAX_VALUE, 5);
+		JSpinner s_cofactor = new JSpinner(sm_cofactor);
 
 		JPanel panel = new JPanel(new SpringLayout());
 		panel.add(new JLabel("Metabolic marker:"));
@@ -263,6 +218,8 @@ public final class InternalFrameGraph extends JInternalFrame {
 		panel.add(cb_genes);
 		panel.add(new JLabel("Pathways:"));
 		panel.add(cb_pathways);
+		panel.add(new JLabel("Hub metabolite limit:"));
+		panel.add(s_cofactor);
 
 		SpringUtilities.makeCompactGrid(panel);
 
@@ -280,6 +237,7 @@ public final class InternalFrameGraph extends JInternalFrame {
 		view.setDisplayType(Enzyme.class, (DisplayType) cb_enzymes.getSelectedItem());
 		view.setDisplayType(Gene.class, (DisplayType) cb_genes.getSelectedItem());
 		view.setDisplayType(Pathway.class, (DisplayType) cb_pathways.getSelectedItem());
+		view.setCofactorLimit(sm_cofactor.getNumber().intValue());
 
 		view.setUpdateListener(true);
 	}
