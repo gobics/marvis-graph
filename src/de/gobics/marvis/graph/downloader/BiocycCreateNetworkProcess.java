@@ -318,7 +318,7 @@ public class BiocycCreateNetworkProcess extends AbstractNetworkCreator {
 					graph.hasSubstrate(r, graph.createCompound(left));
 				}
 				for (String right : right_reactants) {
-					graph.hasSubstrate(r, graph.createCompound(right));
+					graph.hasProduct(r, graph.createCompound(right));
 				}
 				reactions.add(r);
 			}
@@ -331,7 +331,7 @@ public class BiocycCreateNetworkProcess extends AbstractNetworkCreator {
 				}
 				for (String right : right_reactants) {
 					if (classes_tree.findClass(right) == null) { // is not a class
-						graph.hasSubstrate(r, graph.createCompound(right));
+						graph.hasProduct(r, graph.createCompound(right));
 					}
 				}
 				reactions.add(r);
@@ -363,7 +363,7 @@ public class BiocycCreateNetworkProcess extends AbstractNetworkCreator {
 							graph.hasSubstrate(r, graph.createCompound(cid));
 						}
 						for (String cid : right_variants) {
-							graph.hasSubstrate(r, graph.createCompound(cid));
+							graph.hasProduct(r, graph.createCompound(cid));
 						}
 						reactions.add(r);
 					}
