@@ -10,12 +10,16 @@ import de.gobics.marvis.graph.graphview.GraphView;
 import de.gobics.marvis.graph.graphview.GraphViewCustomizable;
 import de.gobics.marvis.graph.graphview.GraphViewNeigborhood;
 import de.gobics.marvis.graph.gui.graphvisualizer.VisualizationViewerGraph;
+import de.gobics.marvis.graph.gui.tasks.GraphicExportSVG;
+import de.gobics.marvis.graph.gui.tasks.NetworkExportSVG;
 import de.gobics.marvis.utils.swing.DialogSaveGraphic;
+import de.gobics.marvis.utils.swing.filechooser.ChooserSvg;
 import java.awt.Point;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
+import javax.swing.JFileChooser;
 import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
 import javax.swing.JSeparator;
@@ -67,7 +71,7 @@ public class PopupMenuNetworkViewer extends JPopupMenu {
 				showNodeNeighborhood();
 			}
 		});
-		
+
 		add(new JSeparator());
 
 		JMenuItem item = new JMenuItem("Export graphics...");
@@ -137,15 +141,18 @@ public class PopupMenuNetworkViewer extends JPopupMenu {
 		if (current_object != null && graph instanceof AbstractGraph) {
 			graph_window.drawNetwork(new GraphViewNeigborhood(((AbstractGraph) graph).getMetabolicNetwork(), current_object));
 		}
-		
+
 	}
 
 	private void exportGraphics() {
-		DialogSaveGraphic d = new DialogSaveGraphic(main_window, graphview);
-		if (d.showDialog()) {
-			d.writeToFileTried();
+		int res = ChooserSvg.getInstance().showSaveDialog(main_window);
+		if (res != JFileChooser.APPROVE_OPTION) {
+			return;
 		}
 
+		//GraphicExportSVG process = new GraphicExportSVG(graphview, ChooserSvg.getInstance().getSelectedFileChecked());
+		NetworkExportSVG process = new NetworkExportSVG(graphview, ChooserSvg.getInstance().getSelectedFileChecked());
+		main_window.executeTask(process);
 	}
 
 	private void hideNode() {
