@@ -8,7 +8,10 @@ import de.gobics.marvis.graph.*;
 import de.gobics.marvis.utils.StringUtils;
 import de.gobics.marvis.utils.swing.ButtonBrowseUri;
 import de.gobics.marvis.utils.swing.Histogram;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.net.URISyntaxException;
+import java.util.Collection;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.jfree.chart.ChartPanel;
@@ -24,8 +27,9 @@ public class InternalFrameNodeInformation extends JInternalFrame {
 	private final GraphObject displayObject;
 	JPanel info_panel = new JPanel();
 	private JPanel button_panel = new JPanel();
+	private final MarvisGraphMainWindow main_window;
 
-	public InternalFrameNodeInformation(MetabolicNetwork graph, GraphObject obj) {
+	public InternalFrameNodeInformation(MarvisGraphMainWindow main_window, MetabolicNetwork graph, GraphObject obj) {
 		super("Node information",
 				true, // resizable
 				true, // closable
@@ -38,7 +42,7 @@ public class InternalFrameNodeInformation extends JInternalFrame {
 			setTitle(obj.getClass().getSimpleName() + ": " + obj.getId());
 		}
 
-
+		this.main_window = main_window;
 
 		this.displayObject = obj;
 		this.graph = graph;
@@ -144,6 +148,7 @@ public class InternalFrameNodeInformation extends JInternalFrame {
 			addTextfield("Additional data", StringUtils.join(";", m.
 					getAdditionalData()));
 		}
+		addRelationshipCombobox("Annotated metabolites", graph.getAnnotations(m));
 	}
 
 	private void displayInformation(Compound c) {
@@ -151,14 +156,10 @@ public class InternalFrameNodeInformation extends JInternalFrame {
 		addTextfield("Name", c.getName());
 		addTextfield("Mass", Float.toString(c.getMass()));
 		addTextfield("Formula", c.getFormula());
-		addTextfield("Num. Reactions", Integer.toString(
-				graph.countRelations(displayObject,
-				RelationshipType.REACTION_HAS_PRODUCT,
-				RelationshipType.REACTION_HAS_SUBSTRATE)));
-		addTextfield("Num. Annotations", Integer.toString(
-				graph.countRelations(displayObject,
-				RelationshipType.MARKER_ANNOTATION_COMPOUND)));
+		addRelationshipCombobox("Metabolic marker", graph.getAnnotatingMarker(c));
+		addRelationshipCombobox("Reactions", graph.getReactions(c));
 		addTextArea("Description", c.getDescription());
+
 	}
 
 	private void displayInformation(Reaction r) {
@@ -166,29 +167,39 @@ public class InternalFrameNodeInformation extends JInternalFrame {
 		addTextfield("Name", r.getName());
 		addTextArea("Equation", r.getEquation());
 		addTextArea("Description", r.getDescription());
+		addRelationshipCombobox("Substrates", graph.getSubstrates(r));
+		addRelationshipCombobox("Products", graph.getProducts(r));
+		addRelationshipCombobox("Enzymes", graph.getEnzymes(r));
+		addRelationshipCombobox("Pathways", graph.getPathways(r));
 	}
 
 	private void displayInformation(Enzyme e) {
 		addTextfield("Id", e.getId());
 		addTextfield("Name", e.getName());
 		addTextArea("Description", e.getDescription());
+		addRelationshipCombobox("Reactions", graph.getReactions(e));
+		addRelationshipCombobox("Genes", graph.getEncodingGenes(e));
 	}
 
 	private void displayInformation(Gene g) {
 		addTextfield("Id", g.getId());
 		addTextfield("Name", g.getName());
 		addTextArea("Definition", g.getDefinition());
+		addRelationshipCombobox("Transcripts", graph.getTranscripts(g));
+		addRelationshipCombobox("Enzymes", graph.getEncodedEnzymes(g));
 	}
 
 	private void displayInformation(Pathway p) {
 		addTextfield("Id", p.getId());
 		addTextfield("Name", p.getName());
 		addTextArea("Description", p.getDescription());
+		addRelationshipCombobox("Reactions", graph.getReactions(p));
 	}
 
 	private void displayInformation(Transcript t) {
 		addTextfield("Id", t.getId());
 		addTextfield("Weight", "" + t.getWeight());
+		addRelationshipCombobox("Genes", graph.getGenes(t));
 	}
 
 	public GraphObject getObject() {
@@ -262,5 +273,48 @@ public class InternalFrameNodeInformation extends JInternalFrame {
 		InternalFrameNodeInformation other_frame = getClass().cast(other);
 		return getGraph().equals(other_frame.getGraph())
 				&& getGraphObject().equals(other_frame.getGraphObject());
+	}
+
+	private <T extends GraphObject> void addRelationshipCombobox(String label, Collection<T> neighbors) {
+		final JComboBox<GraphObjectItem> cb = new JComboBox<>();
+		for (T n : neighbors) {
+			cb.addItem(new GraphObjectItem(n));
+		}
+
+		cb.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent ae) {
+				GraphObjectItem item = (GraphObjectItem) cb.getSelectedItem();
+				main_window.createGraphobjectVisualization(item.object);
+			}
+		});
+
+		info_panel.add(new JLabel(label + ":"));
+		JPanel panel = new JPanel(new BorderLayout());
+		panel.add(cb, BorderLayout.CENTER);
+		panel.add(new JLabel("(" + neighbors.size() + ")"), BorderLayout.LINE_END);
+		info_panel.add(panel);
+	}
+
+	private static class GraphObjectItem {
+
+		public final GraphObject object;
+
+		public GraphObjectItem(GraphObject o) {
+			this.object = o;
+		}
+
+		@Override
+		public String toString() {
+			if (object.getName() != null && !object.getName().isEmpty()) {
+				String name = object.getName();
+				if (name.length() > 50) {
+					name = name.substring(0, 50) + "...";
+				}
+
+				return name + " (" + object.getId() + ")";
+			}
+			return object.getId();
+		}
 	}
 }
