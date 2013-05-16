@@ -23,7 +23,7 @@ public class NetworkSorterSize extends AbstractGraphScore {
 
 	@Override
 	public Integer calculateScore(MetabolicNetwork graph) {
-		return graph.size();
+		return graph.getReactions().size();
 	}
 
 	@Override
@@ -33,7 +33,7 @@ public class NetworkSorterSize extends AbstractGraphScore {
 
 	@Override
 	public String getDescription() {
-		return "Sort by pure size";
+		return "Sort by number of reactions";
 		
 	}
 
