@@ -198,7 +198,7 @@ public class MarvisGraphMainWindow extends JFrame {
 		if (o == null) {
 			return;
 		}
-		JInternalFrame iframe = new InternalFrameNodeInformation(getMainNetwork(), o);
+		JInternalFrame iframe = new InternalFrameNodeInformation(this, getMainNetwork(), o);
 		desktop.add(iframe);
 		desktop.moveToFront(iframe);
 		iframe.setVisible(true);
