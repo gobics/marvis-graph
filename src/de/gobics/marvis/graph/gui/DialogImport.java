@@ -123,6 +123,7 @@ public abstract class DialogImport extends JPanel {
 						else {
 							excel_sheet.setNumber(reader2.countSheets());
 						}
+						updatePreviewTable();
 					}
 					catch (IOException ex) {
 						Logger.getLogger(DialogImport.class.getName()).log(Level.WARNING, null, ex);
