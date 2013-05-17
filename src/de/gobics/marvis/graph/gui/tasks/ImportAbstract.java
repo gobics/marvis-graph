@@ -1,14 +1,9 @@
 package de.gobics.marvis.graph.gui.tasks;
 
-import de.gobics.marvis.utils.task.AbstractTask;
-import au.com.bytecode.opencsv.CSVReader;
 import de.gobics.marvis.graph.InputObject;
-import de.gobics.marvis.graph.Marker;
 import de.gobics.marvis.graph.MetabolicNetwork;
 import de.gobics.marvis.utils.io.TabularDataReader;
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileReader;
+import de.gobics.marvis.utils.task.AbstractTask;
 import java.io.IOException;
 import java.util.Iterator;
 import java.util.logging.Logger;
@@ -57,8 +52,12 @@ public abstract class ImportAbstract extends AbstractTask<MetabolicNetwork, Void
 			this.annotation_column = null;
 		}
 		else {
-			this.id_column = annotation_column - 1;
+			this.annotation_column = annotation_column - 1;
 		}
+	}
+	
+	public int getAnnotationColumnIndex(){
+		return this.annotation_column;
 	}
 
 	/**
@@ -132,6 +131,7 @@ public abstract class ImportAbstract extends AbstractTask<MetabolicNetwork, Void
 				assertLength(row_counter, annotation_column, data);
 				io.setAnnotation(data[annotation_column].toString());
 			}
+			
 			// Parse the input weight
 			if (weight_column != null) {
 				io.setWeight(assertNumber(row_counter, weight_column, data).doubleValue());
