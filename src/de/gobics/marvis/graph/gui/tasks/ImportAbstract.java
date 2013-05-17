@@ -55,8 +55,8 @@ public abstract class ImportAbstract extends AbstractTask<MetabolicNetwork, Void
 			this.annotation_column = annotation_column - 1;
 		}
 	}
-	
-	public int getAnnotationColumnIndex(){
+
+	public Integer getAnnotationColumnIndex() {
 		return this.annotation_column;
 	}
 
@@ -131,7 +131,7 @@ public abstract class ImportAbstract extends AbstractTask<MetabolicNetwork, Void
 				assertLength(row_counter, annotation_column, data);
 				io.setAnnotation(data[annotation_column].toString());
 			}
-			
+
 			// Parse the input weight
 			if (weight_column != null) {
 				io.setWeight(assertNumber(row_counter, weight_column, data).doubleValue());
@@ -154,10 +154,26 @@ public abstract class ImportAbstract extends AbstractTask<MetabolicNetwork, Void
 
 	protected Number assertNumber(int row, int column, Object[] data) throws IOException {
 		assertLength(row, column, data);
-		if (!(data[column] instanceof Number)) {
+		if ( data[column] == null || !(data[column] instanceof Number)) {
 			throw new IOException("Cell " + column + " in row " + row + " is not a number:" + data[column]);
 		}
 		return (Number) data[column];
+	}
+
+	/**
+	 * May return null
+	 * @param row
+	 * @param column
+	 * @param data
+	 * @return
+	 * @throws IOException 
+	 */
+	protected String assertString(int row, int column, Object[] data) throws IOException {
+		assertLength(row, column, data);
+		if (data[column] == null) {
+			return null;
+		}
+		return data[column].toString();
 	}
 
 	protected void assertLength(int row, int index, Object[] data) throws IOException {
