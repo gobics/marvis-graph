@@ -9,11 +9,16 @@ import de.gobics.marvis.graph.gui.tasks.MetabolicNetworkReport;
 import de.gobics.marvis.graph.gui.tasks.AbstractNetworkCalculation;
 import de.gobics.marvis.graph.gui.tasks.CalculateNetworksPathway;
 import de.gobics.marvis.graph.gui.tasks.CalculateNetworksRWR;
+import de.gobics.marvis.graph.gui.tasks.ImportMetabolicMarker;
+import de.gobics.marvis.graph.gui.tasks.ImportTranscriptomics;
 import de.gobics.marvis.graph.gui.tasks.LoadNetwork;
 import de.gobics.marvis.graph.gui.tasks.ReduceNetwork;
 import de.gobics.marvis.graph.sort.NetworkSorterDiameter;
+import de.gobics.marvis.graph.sort.NetworkSorterSumOfWeights;
 import de.gobics.marvis.utils.HumanReadable;
 import de.gobics.marvis.utils.LoggingUtils;
+import de.gobics.marvis.utils.io.CSVDataReader;
+import de.gobics.marvis.utils.io.ExcelDataReader;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
@@ -39,10 +44,50 @@ public class test {
 
 	public static void main(String[] args) throws Exception, Throwable {
 		LoggingUtils.initLogger(Level.FINER);
+		testTabularDataReader();
+	}
 
-		BiocycCreateNetworkProcess process = new BiocycCreateNetworkProcess(new File("/home/manuel/ara.tar.gz"));
-		process.doTask();
+	private static void listNetworks() throws Exception {
+		MetabolicNetwork network = new LoadNetwork("/home/manuel/marvis-graph-paper-data/graph.aracyc.cut25.cut10.xml.gz").load();
+		CalculateNetworksRWR process = new CalculateNetworksRWR(network);
+		process.setRestartProbability(0.8);
+		process.setThreshold(0.2);
+		process.setCofactorThreshold(10);
+		MetabolicNetwork[] subnetworks = process.calculateNetworks();
 
+		NetworkSorterDiameter dia = new NetworkSorterDiameter(network);
+		NetworkSorterSumOfWeights sow = new NetworkSorterSumOfWeights(network);
+
+		for (MetabolicNetwork n : subnetworks) {
+			String name = n.getName().length() < 112 ? n.getName() : n.getName().substring(12, 100) + "...";
+			System.out.println(name + "\t" + n.getReactions().size() + "\t" + n.getMarkers().size() + "\t" + n.getTranscripts().size() + "\t" + dia.calculateScore(n) + "\t" + sow.calculateScore(n));
+
+		}
+
+	}
+
+	private static void testTabularDataReader() throws Exception {
+		MetabolicNetwork network = new LoadNetwork("/home/manuel/marvis-graph-paper-data/graph.aracyc.cut25.cut10.xml.gz").load();
+
+		// Metabolic data
+		CSVDataReader r1 = new CSVDataReader(new File("/home/manuel/marvis-graph-paper-data/mg-metabolic-data.cut25.csv"));
+		ImportMetabolicMarker process1 = new ImportMetabolicMarker(network, r1);
+		process1.setIdColumn(1);
+		process1.setRetentiontimeColumn(2);
+		process1.setMassColumn(3);
+		process1.setFirstIntensityColumn(4);
+		process1.setIntensityMapping(new String[]{"1", "1", "1", "2"});
+		process1.doTask();
+		
+		// Metabolic data
+		ExcelDataReader r2 = new ExcelDataReader(new File("/home/manuel/marvis-graph-paper-data/e-atmx-9.kw.cut10.aracyc_ids.xls"));
+		ImportTranscriptomics process2 = new ImportTranscriptomics(network, r1);
+		process2.setIdColumn(1);
+		process2.setAnnotationColumn(2);
+		process2.setFirstIntensityColumn(3);
+		process2.setIntensityMapping(new String[]{"1", "1", "1", "2"});
+
+		process2.doTask();
 
 	}
 
@@ -79,8 +124,8 @@ public class test {
 		MetabolicNetworkReport t_ara = new MetabolicNetworkReport(n_ara);
 		MetabolicNetworkReport t_ath = new MetabolicNetworkReport(n_ath);
 
-	//	System.out.println("Compounds : " + n_ara.getCompounds().size() + " with " + t_ara.countCompoundsWithMarker() + " annotated");
-	//	System.out.println("Compounds : " + n_ath.getCompounds().size() + " with " + t_ath.countCompoundsWithMarker() + " annotated");
+		//	System.out.println("Compounds : " + n_ara.getCompounds().size() + " with " + t_ara.countCompoundsWithMarker() + " annotated");
+		//	System.out.println("Compounds : " + n_ath.getCompounds().size() + " with " + t_ath.countCompoundsWithMarker() + " annotated");
 	}
 
 	private static MetabolicNetwork testBiocycImport() throws Exception {
