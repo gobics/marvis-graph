@@ -1,20 +1,19 @@
 package de.gobics.marvis.graph.gui;
 
 import de.gobics.marvis.graph.*;
-import de.gobics.marvis.graph.gui.tasks.MetabolicNetworkReport;
 import de.gobics.marvis.graph.downloader.NetworkDownloaderDialog;
 import de.gobics.marvis.graph.gui.actions.*;
 import de.gobics.marvis.graph.gui.evaluation.TableModelResults;
 import de.gobics.marvis.graph.gui.tasks.*;
 import de.gobics.marvis.graph.sort.AbstractGraphScore;
 import de.gobics.marvis.utils.LoggingUtils;
+import de.gobics.marvis.utils.io.TabularDataReader;
 import de.gobics.marvis.utils.swing.SpringUtilities;
 import de.gobics.marvis.utils.swing.Statusbar;
 import de.gobics.marvis.utils.swing.Statusdialog2;
 import de.gobics.marvis.utils.swing.TaskWrapper;
-import de.gobics.marvis.utils.swing.filechooser.ChooserAbstract;
 import de.gobics.marvis.utils.swing.filechooser.ChooserExcel;
-import de.gobics.marvis.utils.swing.filechooser.FileFilterCef;
+import de.gobics.marvis.utils.swing.filechooser.ChooserTabularData;
 import de.gobics.marvis.utils.task.AbstractTask;
 import de.gobics.marvis.utils.task.AbstractTask.State;
 import de.gobics.marvis.utils.task.AbstractTaskListener;
@@ -25,6 +24,7 @@ import java.awt.Desktop;
 import java.awt.Dimension;
 import java.awt.event.KeyEvent;
 import java.io.File;
+import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Arrays;
@@ -402,32 +402,19 @@ public class MarvisGraphMainWindow extends JFrame {
 	 * select the file to import.
 	 */
 	public void importMetabolites() {
-		ChooserAbstract chooser = FileChooserMetabolicMarker.getInstance();
-		chooser.setMultiSelectionEnabled(true);
+		ChooserTabularData chooser = ChooserTabularData.getInstance();
+		chooser.setMultiSelectionEnabled(false);
 		if (chooser.showOpenDialog(this) != JFileChooser.APPROVE_OPTION) {
 			return;
 		}
-		File[] files = chooser.getSelectedFiles();
-
-		if (files.length == 0) {
-			return;
+		try {
+			TabularDataReader reader = chooser.getDataReader();
+			importMetabolites(reader);
 		}
-
-		if (chooser.getFileFilter() instanceof FileFilterCef) {
-			importMetabolitesCef(files);
+		catch (IOException ex) {
+			logger.log(Level.SEVERE, null, ex);
+			display_error("Can not open file", ex);
 		}
-		else {
-			importMetabolitesCSV(files);
-		}
-	}
-
-	/**
-	 * Import the given input file.
-	 *
-	 * @param input_file
-	 */
-	public void importMetabolitesCSV(final File input_file) {
-		importMetabolitesCSV(new File[]{input_file});
 	}
 
 	/**
@@ -435,27 +422,7 @@ public class MarvisGraphMainWindow extends JFrame {
 	 *
 	 * @param input_files
 	 */
-	public void importMetabolitesCSV(final File[] input_files) {
-		if (input_files.length < 1) {
-			logger.warning("Can not import from an empty file list");
-			return;
-		}
-
-		for (File f : input_files) {
-			if (!f.exists() || !f.canRead()) {
-				logger.severe("File does not exist or is not readable: " + f.
-						getAbsolutePath());
-				display_error("File does not exist or is not readable:\n" + f.
-						getAbsolutePath());
-			}
-		}
-
-		if (input_files.length > 1) {
-			JOptionPane.showMessageDialog(this, "You like to import several files at once. Please\n"
-					+ "keep in mind that all files have to be formated\n"
-					+ "in the same way!", "Warning", JOptionPane.WARNING_MESSAGE);
-		}
-
+	public void importMetabolites(TabularDataReader reader) {
 		MetabolicNetwork network = getMainNetwork();
 		if (network == null) {
 			display_error("Please load a metabolic network first");
@@ -470,17 +437,16 @@ public class MarvisGraphMainWindow extends JFrame {
 			}
 		}
 
-		DialogImportMetabolicsOptions dialog = new DialogImportMetabolicsOptions(this, input_files[0]);
-		dialog.setVisible(true);
-		if (!dialog.closedWithOk()) {
+		DialogImportMetabolicsOptions dialog = new DialogImportMetabolicsOptions(this, reader);
+		if (!dialog.showDialog()) {
 			return;
 		}
 
-		final ImportMetabolicMarkerCSV process = dialog.getProcess(network);
+		final ImportAbstract process = dialog.createProcess(network);
 		if (process == null) {
 			return;
 		}
-		process.setInputFiles(input_files);
+
 		process.addTaskListener(new TaskResultListener<Void>() {
 			@Override
 			public void taskDone() {
@@ -500,53 +466,6 @@ public class MarvisGraphMainWindow extends JFrame {
 		});
 
 		executeTask(process);
-	}
-
-	/**
-	 * Import metabolic data from Agilent CEF files.
-	 *
-	 * @param input_files
-	 */
-	public void importMetabolitesCef(final File[] input_files) {
-		final MetabolicNetwork network = getMainNetwork();
-		if (network == null) {
-			display_error("Please load a network first");
-			return;
-		}
-
-		if (input_files.length < 1) {
-			logger.warning("Can not import from an empty file list");
-			return;
-		}
-
-		for (File f : input_files) {
-			if (!f.exists() || !f.canRead()) {
-				logger.severe("File does not exist or is not readable: " + f.
-						getAbsolutePath());
-				display_error("File does not exist or is not readable:\n" + f.
-						getAbsolutePath());
-			}
-		}
-
-		final ImportMetabolicMarkerCef process = new ImportMetabolicMarkerCef(network);
-		process.setInputFiles(input_files);
-		process.addTaskListener(new TaskResultListener<Void>() {
-			@Override
-			public void taskDone() {
-				MetabolicNetwork network = process.getTaskResult();
-				if (network == null) {
-					return;
-				}
-
-				if (MarvisGraphMainWindow.this.confirm("Imported " + network.
-						getMarkers().size() + " metabolic marker. Accept?", "Import result")) {
-					setNetwork(network);
-					if (MarvisGraphMainWindow.this.confirm("Perform an annotation of the metabolic marker?")) {
-						annotateMarker();
-					}
-				}
-			}
-		});
 	}
 
 	/**
@@ -605,20 +524,20 @@ public class MarvisGraphMainWindow extends JFrame {
 	}
 
 	public void importTranscripts() {
-		ChooserExcel chooser = ChooserExcel.getInstance();
-		File input_file = chooser.doChooseFileOpen(this);
-		if (input_file == null) {
+		ChooserTabularData chooser = ChooserTabularData.getInstance();
+		if (chooser.showOpenDialog(this) != JFileChooser.APPROVE_OPTION) {
 			return;
 		}
-		importTranscripts(input_file);
+		try {
+			importTranscripts(chooser.getDataReader());
+		}
+		catch (IOException ex) {
+			logger.log(Level.SEVERE, null, ex);
+			display_error("Can not open file for read", ex);
+		}
 	}
 
-	private void importTranscripts(final File input_file) {
-		if (!input_file.exists()) {
-			display_error("Input file does not exist: " + input_file.
-					getAbsolutePath());
-			return;
-		}
+	private void importTranscripts(final TabularDataReader reader) {
 		MetabolicNetwork network = getMainNetwork();
 		if (network == null) {
 			display_error("Please load a metabolic network first");
@@ -635,21 +554,12 @@ public class MarvisGraphMainWindow extends JFrame {
 			}
 		}
 
-		DialogImportTranscriptomicsOptions dialog;
-		try {
-			dialog = new DialogImportTranscriptomicsOptions(this, input_file);
-		}
-		catch (Exception ex) {
-			logger.log(Level.SEVERE, "Can not open dialog for import options: ", ex);
-			display_error("Can not open dialog for import options", ex);
-			return;
-		}
-		dialog.setVisible(true);
-		if (!dialog.closedWithOk()) {
+		DialogImportTranscriptomicsOptions dialog = new DialogImportTranscriptomicsOptions(this, reader);
+		if (!dialog.showDialog()) {
 			return;
 		}
 
-		final ImportTranscriptomicsExcel process = dialog.getProcess(network);
+		final ImportAbstract process = dialog.getProcess(network);
 		if (process == null) {
 			return;
 		}
@@ -734,15 +644,14 @@ public class MarvisGraphMainWindow extends JFrame {
 	public void displayNetworkReport(MetabolicNetwork network) {
 		final MetabolicNetworkReport tester = new MetabolicNetworkReport(network);
 		tester.addTaskListener(new TaskResultListener<Void>() {
-
 			@Override
 			public void taskDone() {
-				if( tester.isDone()){
-					display_information( tester.getTaskResult());
+				if (tester.isDone()) {
+					display_information(tester.getTaskResult());
 				}
 			}
 		});
-		
+
 		executeTask(tester);
 	}
 
