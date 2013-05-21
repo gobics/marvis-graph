@@ -13,6 +13,7 @@ import java.util.Set;
 import java.util.TreeMap;
 
 /**
+ * Networks score that accumulates the reaction scores to build a network score.
  *
  * @author manuel
  */

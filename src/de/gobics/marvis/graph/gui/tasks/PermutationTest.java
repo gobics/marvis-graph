@@ -20,7 +20,6 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Random;
 import java.util.Set;
-import java.util.TreeSet;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.logging.Level;
@@ -132,7 +131,7 @@ public class PermutationTest extends AbstractTask<Set<PermutationTestResult>, Vo
 		out.close();
 
 		logger.info("Will now calculate the scores for the found subnetworks with permutation scores:");
-		
+
 		// Calculate overall number of detected subnetworks
 		int fdr_divisor = 0;
 		for (Collection<Comparable> cs : permutation_scores) {
@@ -144,10 +143,8 @@ public class PermutationTest extends AbstractTask<Set<PermutationTestResult>, Vo
 		current_scorer.setParent(root_network);
 		for (MetabolicNetwork subnet : subnetworks) {
 			Comparable score = current_scorer.calculateScore(subnet);
-			int fwer_errors = countFamilyWiseErrors(permutation_scores, score);
-			double fwer = ((double) fwer_errors) / NUM_PERMUTES;
-			int fdr_errors = countFalseDiscoveryErrors(permutation_scores, score);
-			double fdr = ((double) fdr_errors) / fdr_divisor;
+			double fwer = countFamilyWiseErrors(permutation_scores, score);
+			double fdr = countFalseDiscoveryErrors(permutation_scores, score);
 
 			PermutationTestResult r = new PermutationTestResult(subnet, score, fdr, fwer);
 			scores.add(r);
@@ -161,13 +158,13 @@ public class PermutationTest extends AbstractTask<Set<PermutationTestResult>, Vo
 		System.gc();
 	}
 
-	public int countFamilyWiseErrors(LinkedList<Collection<Comparable>> counts, Comparable score) {
-		int counter = 0;
+	public double countFamilyWiseErrors(LinkedList<Collection<Comparable>> counts, Comparable score) {
+		double counter = 0;
 		for (Collection<Comparable> cs : counts) {
 			counter += hasHigherEqual(cs, score) ? 1 : 0;
 		}
 
-		return counter;
+		return counter > 0 ? counter / NUM_PERMUTES : 1d / NUM_PERMUTES;
 	}
 
 	/**
@@ -187,19 +184,27 @@ public class PermutationTest extends AbstractTask<Set<PermutationTestResult>, Vo
 		return false;
 	}
 
-	public int countFalseDiscoveryErrors(LinkedList<Collection<Comparable>> counts, Comparable score) {
-		int counter = 0;
+	/**
+	 * Calculates the false-discovery-rate as mean value over all false
+	 * discoveries.
+	 *
+	 * @param counts
+	 * @param score
+	 * @return
+	 */
+	public double countFalseDiscoveryErrors(LinkedList<Collection<Comparable>> counts, Comparable score) {
+		double mean = 0;
 		for (Collection<Comparable> cs : counts) {
+			int counter = 0;
 			for (Comparable c : cs) {
 				if (c.compareTo(score) >= 0) {
 					counter++;
 				}
 			}
+			mean += ((double) counter) / cs.size();
 		}
 
-		return counter;
-
-
+		return mean / counts.size();
 	}
 
 	/**
@@ -216,11 +221,15 @@ public class PermutationTest extends AbstractTask<Set<PermutationTestResult>, Vo
 
 		@Override
 		public void run() {
-			try {
-				toTask();
-			}
-			catch (Throwable ex) {
-				logger.log(Level.SEVERE, null, ex);
+			boolean success = false;
+			while (!success) {
+				try {
+					toTask();
+					success = true;
+				}
+				catch (Throwable ex) {
+					logger.log(Level.SEVERE, "Redo permutation that resulted in exception: ", ex);
+				}
 			}
 			incrementProgress();
 		}
@@ -282,7 +291,7 @@ public class PermutationTest extends AbstractTask<Set<PermutationTestResult>, Vo
 			scorer.setParent(root);
 			Collection<Comparable> dist = new ArrayList<>(networks.length);
 			for (MetabolicNetwork n : networks) {
-				
+
 				Comparable score = curscorer.calculateScore(n);
 				//logger.finer("Score for "+n.getName()+": "+score);
 				dist.add(score);
