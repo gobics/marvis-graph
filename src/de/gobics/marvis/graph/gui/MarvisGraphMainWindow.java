@@ -8,12 +8,14 @@ import de.gobics.marvis.graph.gui.tasks.*;
 import de.gobics.marvis.graph.sort.AbstractGraphScore;
 import de.gobics.marvis.utils.LoggingUtils;
 import de.gobics.marvis.utils.io.TabularDataReader;
+import de.gobics.marvis.utils.io.TabularDataWriter;
 import de.gobics.marvis.utils.swing.SpringUtilities;
 import de.gobics.marvis.utils.swing.Statusbar;
 import de.gobics.marvis.utils.swing.Statusdialog2;
 import de.gobics.marvis.utils.swing.TaskWrapper;
 import de.gobics.marvis.utils.swing.filechooser.ChooserExcel;
 import de.gobics.marvis.utils.swing.filechooser.ChooserTabularData;
+import de.gobics.marvis.utils.swing.io.TableModelWriter;
 import de.gobics.marvis.utils.task.AbstractTask;
 import de.gobics.marvis.utils.task.AbstractTask.State;
 import de.gobics.marvis.utils.task.AbstractTaskListener;
@@ -806,10 +808,34 @@ public class MarvisGraphMainWindow extends JFrame {
 	 */
 	public void displayPermutationResults(Set<PermutationTestResult> results) {
 		logger.log(Level.FINE, "Will now display {0} permutation results", results.size());
-		JTable table = new JTable(new TableModelResults(results));
+		TableModelResults results_table_model = new TableModelResults(results);
+		JTable table = new JTable(results_table_model);
 		table.setAutoCreateRowSorter(true);
 		JScrollPane spane = new JScrollPane(table);
 		spane.setPreferredSize(new Dimension(500, 400));
-		JOptionPane.showMessageDialog(this, spane, "Results from permutation test", JOptionPane.INFORMATION_MESSAGE);
+		//JOptionPane.showMessageDialog(this, spane, "Results from permutation test", JOptionPane.INFORMATION_MESSAGE);
+		Object[] options = {"Close", "Export"};
+		int res = JOptionPane.showOptionDialog(this, spane, "Permutation test results", JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE, null, options, options[0]);
+		if (res != 1) {
+			return;
+		}
+
+		ChooserTabularData chooser = ChooserTabularData.getInstance();
+		res = chooser.showSaveDialog(this);
+		if (res != JFileChooser.APPROVE_OPTION) {
+			return;
+		}
+		try {
+			TableModelWriter writer = chooser.getTablemodelWriter();
+			writer.writeModel(results_table_model, true);
+		}
+		catch (IOException ex) {
+			logger.log(Level.SEVERE, null, ex);
+			display_error("Can not write to file", ex);
+		}
+
+
+
+
 	}
 }

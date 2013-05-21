@@ -6,7 +6,7 @@ package de.gobics.marvis.graph.gui;
 
 import de.gobics.marvis.graph.MetabolicNetwork;
 import de.gobics.marvis.graph.gui.tasks.ImportAbstract;
-import de.gobics.marvis.utils.io.CSVDataReader;
+import de.gobics.marvis.utils.io.CsvDataReader;
 import de.gobics.marvis.utils.io.ExcelDataReader;
 import de.gobics.marvis.utils.io.TabularDataReader;
 import de.gobics.marvis.utils.swing.SpringUtilities;
@@ -80,7 +80,7 @@ public abstract class DialogImport extends JPanel {
 		// Initialize the options
 
 
-		if (reader instanceof CSVDataReader) {
+		if (reader instanceof CsvDataReader) {
 			csv_separator = addStringOption("CSV Separator", true, ",");
 			// ... more CSV options?
 			csv_separator.addDocumentListener(new DocumentListener() {
@@ -89,7 +89,7 @@ public abstract class DialogImport extends JPanel {
 					if (csv_separator.getString().isEmpty()) {
 						return;
 					}
-					((CSVDataReader) reader).setSeparator(csv_separator.getString().charAt(0));
+					((CsvDataReader) reader).setSeparator(csv_separator.getString().charAt(0));
 					updatePreviewTable();
 				}
 
@@ -103,7 +103,7 @@ public abstract class DialogImport extends JPanel {
 					if (csv_separator.getString().isEmpty()) {
 						return;
 					}
-					((CSVDataReader) reader).setSeparator(csv_separator.getString().charAt(0));
+					((CsvDataReader) reader).setSeparator(csv_separator.getString().charAt(0));
 					updatePreviewTable();
 				}
 			});
