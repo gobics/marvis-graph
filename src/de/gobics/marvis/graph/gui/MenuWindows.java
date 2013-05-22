@@ -1,7 +1,3 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
 package de.gobics.marvis.graph.gui;
 
 import java.awt.event.*;
@@ -10,6 +6,12 @@ import javax.swing.*;
 import javax.swing.event.*;
 
 /**
+ * Subclassing of a {@link JMenu} to display a dynamic list of opened windows
+ * in the {@link MarvisGraphMainWindow}. 
+ * 
+ * The menu uses the {@link MenuListener} to get a notification when the menu is
+ * selected (a.k.a. opened). The menu is then dynamicaly generated via the
+ * {@link #menuSelected(javax.swing.event.MenuEvent) menuSelected() method}.
  *
  * @author manuel
  */
@@ -25,14 +27,16 @@ public class MenuWindows extends JMenu implements MenuListener, ActionListener {
 
 	@Override
 	public void menuSelected(MenuEvent me) {
-		// Sort Arrays by the name of their class
 		JInternalFrame[] frames = parent.getDesktop().getAllFrames();
-		if (frames.length < 1) {
+		if (frames == null || frames.length < 1) {
+			JMenuItem i = new JMenuItem("No windows opened");
+			i.setEnabled(false);
+			add(i);
 			return;
 		}
 
+		// Sort Arrays by the name of their class
 		Arrays.sort(frames, new Comparator<JInternalFrame>() {
-
 			@Override
 			public int compare(JInternalFrame t, JInternalFrame t1) {
 				int c = t.getClass().getName().compareTo(t1.getClass().getName());
@@ -46,13 +50,13 @@ public class MenuWindows extends JMenu implements MenuListener, ActionListener {
 			}
 		});
 
-		String old_class_name = null;
+		Class<? extends JInternalFrame> old_class = null;
 		JMenu submenu = null;
-		
+
 		for (JInternalFrame iframe : frames) {
-			if (!iframe.getClass().getName().equals(old_class_name)) {
-				old_class_name = iframe.getClass().getSimpleName();
-				submenu = new JMenu(old_class_name);
+			if (!iframe.getClass().equals(old_class)) {
+				old_class = iframe.getClass();
+				submenu = new JMenu(toName(iframe));
 				add(submenu);
 			}
 			InternalFrameMenuItem item = new InternalFrameMenuItem(iframe);
@@ -68,6 +72,7 @@ public class MenuWindows extends JMenu implements MenuListener, ActionListener {
 
 	@Override
 	public void menuCanceled(MenuEvent me) {
+		removeAll();
 	}
 
 	@Override
@@ -76,26 +81,47 @@ public class MenuWindows extends JMenu implements MenuListener, ActionListener {
 			parent.getDesktop().moveToFront(((InternalFrameMenuItem) ae.getSource()).getFrame());
 		}
 	}
-}
 
-class InternalFrameMenuItem extends JMenuItem implements ActionListener {
-
-	private JInternalFrame view;
-
-	public InternalFrameMenuItem(JInternalFrame view) {
-		super(view.getTitle());
-		this.view = view;
-		this.addActionListener(this);
-	}
-
-	@Override
-	public void actionPerformed(ActionEvent ae) {
-		if (ae.getSource().equals(this)) {
-			view.toFront();
+	/**
+	 * Transforms a {@link JInternalFrame} instance into a name depending on the
+	 * instances true class, e.g. {@link InternalFrameGraph}.
+	 *
+	 * @param frame
+	 * @return the name of the type
+	 */
+	private String toName(JInternalFrame frame) {
+		if (frame instanceof InternalFrameGraph) {
+			return "Network";
 		}
+		if (frame instanceof InternalFrameNodeInformation) {
+			return "Entity";
+		}
+		return frame.getClass().getSimpleName();
 	}
 
-	public JInternalFrame getFrame() {
-		return this.view;
+	private static class InternalFrameMenuItem extends JMenuItem implements ActionListener {
+
+		private JInternalFrame view;
+
+		public InternalFrameMenuItem(JInternalFrame view) {
+			super(view.getTitle());
+			this.view = view;
+			this.addActionListener(this);
+
+			if (view.getTitle().length() > 100) {
+				setText(view.getTitle().substring(0, 100) + "...");
+			}
+		}
+
+		@Override
+		public void actionPerformed(ActionEvent ae) {
+			if (ae.getSource().equals(this)) {
+				view.toFront();
+			}
+		}
+
+		public JInternalFrame getFrame() {
+			return this.view;
+		}
 	}
 }
