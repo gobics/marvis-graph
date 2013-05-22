@@ -1,21 +1,20 @@
 package de.gobics.marvis.graph.gui;
 
-import de.gobics.marvis.utils.swing.SpringUtilities;
-import java.awt.*;
-import java.net.URI;
-import javax.swing.*;
 import de.gobics.marvis.graph.*;
 import de.gobics.marvis.utils.StringUtils;
 import de.gobics.marvis.utils.swing.ButtonBrowseUri;
-import de.gobics.marvis.utils.swing.Histogram;
+import de.gobics.marvis.utils.swing.SpringUtilities;
+import de.gobics.marvis.utils.swing.TextPopupMenu;
+import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Collection;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.*;
 import org.jfree.chart.ChartPanel;
-import org.jfree.chart.JFreeChart;
 
 public class InternalFrameNodeInformation extends JInternalFrame {
 
@@ -248,6 +247,8 @@ public class InternalFrameNodeInformation extends JInternalFrame {
 		editorPane.setLineWrap(true);
 		editorPane.setWrapStyleWord(true);
 		editorPane.setEditable(false);
+
+		TextPopupMenu.create(editorPane);
 		JScrollPane spane = new JScrollPane(editorPane);
 		spane.setPreferredSize(defaultDimensionForDescription);
 		info_panel.add(spane);
@@ -262,6 +263,7 @@ public class InternalFrameNodeInformation extends JInternalFrame {
 		field.setPreferredSize(dimension);
 		field.setScrollOffset(0);
 		field.setCaretPosition(0);
+		TextPopupMenu.create(field);
 		info_panel.add(field);
 	}
 
