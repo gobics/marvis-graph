@@ -5,6 +5,7 @@
 package de.gobics.marvis.graph.gui.actions;
 
 import de.gobics.marvis.graph.gui.MarvisGraphMainWindow;
+import de.gobics.marvis.utils.swing.SilkIcon;
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
 import javax.swing.KeyStroke;
@@ -16,7 +17,7 @@ import javax.swing.KeyStroke;
 public class ActionExit extends AbstractMarvisAction {
 
 	public ActionExit(MarvisGraphMainWindow window) {
-		super(window, "Exit");
+		super(window, "Exit", SilkIcon.getExit());
 		putValue(MNEMONIC_KEY, KeyEvent.VK_X);
 		putValue(SHORT_DESCRIPTION, "Exit this window");
 		putValue(ACCELERATOR_KEY, KeyStroke.getKeyStroke(KeyEvent.VK_X, KeyEvent.CTRL_MASK));

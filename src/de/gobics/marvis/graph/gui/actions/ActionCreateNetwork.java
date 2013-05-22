@@ -5,6 +5,7 @@
 package de.gobics.marvis.graph.gui.actions;
 
 import de.gobics.marvis.graph.gui.MarvisGraphMainWindow;
+import de.gobics.marvis.utils.swing.SilkIcon;
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
 import javax.swing.KeyStroke;
@@ -16,7 +17,7 @@ import javax.swing.KeyStroke;
 public class ActionCreateNetwork extends AbstractMarvisAction {
 
 	public ActionCreateNetwork(final MarvisGraphMainWindow window) {
-		super(window, "Create new network");
+		super(window, "Create new network", SilkIcon.getNew());
 		putValue(SHORT_DESCRIPTION, "Load/create a new network from different sources");
 		putValue(MNEMONIC_KEY, KeyEvent.VK_N);
 		putValue(ACCELERATOR_KEY, KeyStroke.getKeyStroke(KeyEvent.VK_N, KeyEvent.CTRL_MASK));

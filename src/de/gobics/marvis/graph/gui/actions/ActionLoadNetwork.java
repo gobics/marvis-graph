@@ -5,6 +5,7 @@
 package de.gobics.marvis.graph.gui.actions;
 
 import de.gobics.marvis.graph.gui.MarvisGraphMainWindow;
+import de.gobics.marvis.utils.swing.SilkIcon;
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
 import javax.swing.KeyStroke;
@@ -16,7 +17,8 @@ import javax.swing.KeyStroke;
 public class ActionLoadNetwork extends AbstractMarvisAction {
 
 	public ActionLoadNetwork(MarvisGraphMainWindow window){
-		super(window, "Load network");
+		super(window, "Load network", SilkIcon.getLoad());
+		
 		putValue(SHORT_DESCRIPTION, "Load a metabolic network");
 		putValue(MNEMONIC_KEY, KeyEvent.VK_L);
 		putValue(ACCELERATOR_KEY, KeyStroke.getKeyStroke(KeyEvent.VK_L, ActionEvent.CTRL_MASK));
