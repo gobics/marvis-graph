@@ -9,6 +9,7 @@ import de.gobics.marvis.graph.gui.actions.ActionDisplayNetworkInKegg;
 import de.gobics.marvis.graph.gui.actions.ActionDrawNetwork;
 import de.gobics.marvis.graph.gui.actions.ActionReportOnNetwork;
 import de.gobics.marvis.graph.gui.actions.ActionSaveNetwork;
+import de.gobics.marvis.utils.swing.TextPopupMenu;
 import java.awt.Point;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -18,6 +19,7 @@ import javax.swing.JFrame;
 import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JPopupMenu;
+import javax.swing.JTextField;
 import javax.swing.JTree;
 import javax.swing.SwingUtilities;
 import javax.swing.tree.TreePath;
@@ -42,7 +44,6 @@ public class PopupMenuNetworksTree extends JPopupMenu {
 		JMenuItem menuitem = new JMenuItem("Rename");
 		add(menuitem);
 		menuitem.addActionListener(new ActionListener() {
-
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				renameNetwork();
@@ -54,7 +55,6 @@ public class PopupMenuNetworksTree extends JPopupMenu {
 		menuitem = new JMenuItem("Open in a new window");
 		add(menuitem);
 		menuitem.addActionListener(new ActionListener() {
-
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				openNewWindow();
@@ -66,7 +66,6 @@ public class PopupMenuNetworksTree extends JPopupMenu {
 
 		// Add the mouselistener to the menu to detect the popup request
 		tree.addMouseListener(new MouseListener() {
-
 			@Override
 			public void mouseClicked(MouseEvent e) {
 				if (e.isPopupTrigger()) {
@@ -123,17 +122,26 @@ public class PopupMenuNetworksTree extends JPopupMenu {
 		show(tree, (int) point.getX(), (int) point.getY());
 	}
 
+	/**
+	 * Renames the network
+	 */
 	private void renameNetwork() {
 		if (current_network == null) {
 			return;
 		}
 
-		String name = current_network.getName();
-		String new_name = JOptionPane.showInputDialog(tree, "Please insert new name:", name);
-		if (new_name != null && !new_name.isEmpty() && !new_name.equals(name)) {
-			current_network.setName(new_name);
+		JTextField field = new JTextField(current_network.getName());
+		TextPopupMenu.create(field);
+
+		int res = JOptionPane.showConfirmDialog(tree, field, "Rename network", JOptionPane.OK_CANCEL_OPTION, JOptionPane.QUESTION_MESSAGE);
+		if (res != JOptionPane.OK_OPTION) {
+			return;
 		}
 
+		String new_name = field.getText();
+		if (new_name != null && !new_name.isEmpty() && !new_name.equals(current_network.getName())) {
+			current_network.setName(new_name);
+		}
 		tree.updateUI();
 	}
 
@@ -143,7 +151,6 @@ public class PopupMenuNetworksTree extends JPopupMenu {
 			new_network.detachFromParent();
 
 			SwingUtilities.invokeLater(new Runnable() {
-
 				@Override
 				public void run() {
 					MarvisGraphMainWindow main = new MarvisGraphMainWindow();
