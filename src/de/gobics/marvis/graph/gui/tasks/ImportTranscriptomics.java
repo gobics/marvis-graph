@@ -17,22 +17,6 @@ public class ImportTranscriptomics extends ImportAbstract {
 
 	@Override
 	protected ExperimentalMarker createObject(int row, String id, Object[] data) throws IOException {
-		Transcript t = getNetwork().createTranscript(id);
-
-		Integer idx = getAnnotationColumnIndex();
-		if (idx != null && idx >= 0) {
-			String gid = assertString(row, idx, data);
-			System.out.print("Annotation string is: " + gid);
-			if (gid != null) {
-				Gene g = getNetwork().getGene(gid);
-				System.out.print(" => " + gid.toString());
-				if (g != null) {
-					getNetwork().isFrom(t, g);
-				}
-			}
-			System.out.println();
-		}
-
-		return t;
+		return getNetwork().createTranscript(id);
 	}
 }
