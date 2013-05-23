@@ -125,7 +125,7 @@ public abstract class ImportAbstract extends AbstractTask<MetabolicNetwork, Void
 				for (int j = first_intensity_column; j < first_intensity_column + condition_names.length; j++) {
 					intensity_data[j - first_intensity_column] = assertNumber(row_counter, j, data).floatValue();
 				}
-				System.out.println("Setting intensity information: " + Arrays.toString(condition_names) + " " + Arrays.toString(intensity_data));
+				//System.out.println("Setting intensity information: " + Arrays.toString(condition_names) + " " + Arrays.toString(intensity_data));
 				io.setIntensity(condition_names, intensity_data);
 			}
 			
