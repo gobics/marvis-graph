@@ -31,7 +31,6 @@ public class DialogCalculateNetworks extends DialogAbstract {
 	private static final SpinnerNumberModel sm_cofactor = new SpinnerNumberModel(10, 1, Integer.MAX_VALUE, 1);
 	private static final SpinnerNumberModel sm_rwr = new SpinnerNumberModel(0.8, 0, 1, 0.1);
 	private static final SpinnerNumberModel sm_rwr_threshold = new SpinnerNumberModel(0.2, 0, 1, 0.1);
-	private static final JCheckBox use_input_weights = new JCheckBox("", false);
 	private final JPanel options_panel = new JPanel(new BorderLayout());
 	private final JPanel options_rwr = new OptionsRWR();
 	private final JPanel options_reaction = new OptionsReaction();
@@ -74,7 +73,6 @@ public class DialogCalculateNetworks extends DialogAbstract {
 			process.setRestartProbability(sm_rwr.getNumber().doubleValue());
 			process.setThreshold(sm_rwr_threshold.getNumber().doubleValue());
 			process.setCofactorThreshold(sm_cofactor.getNumber().intValue());
-			process.useInputWeights(use_input_weights.isSelected());
 			return process;
 		}
 		if (cb_algorithm.getSelectedIndex() == 1) {
@@ -102,7 +100,7 @@ public class DialogCalculateNetworks extends DialogAbstract {
 			super(new SpringLayout());
 			add(new JLabel("Maximum gaps:"));
 			add(new JSpinner(sm_gaps));
-			add(new JLabel("Cofactor treshold:"));
+			add(new JLabel("Hub metabolite treshold:"));
 			add(new JSpinner(sm_cofactor));
 			SpringUtilities.makeCompactGrid(this);
 		}
@@ -116,10 +114,8 @@ public class DialogCalculateNetworks extends DialogAbstract {
 			add(new JSpinner(sm_rwr));
 			add(new JLabel("Score threshold:"));
 			add(new JSpinner(sm_rwr_threshold));
-			add(new JLabel("Cofactor treshold:"));
+			add(new JLabel("Hub metabolite treshold:"));
 			add(new JSpinner(sm_cofactor));
-			//add(new JLabel("Use input weights for initial scoring:"));
-			//add(use_input_weights);
 			SpringUtilities.makeCompactGrid(this);
 		}
 	}

@@ -20,7 +20,7 @@ public class DialogImportMetabolicsOptions extends DialogImport {
 		super(parent, reader);
 
 		column_rt = addNumberOption("Retention time column", false, option_colum_rt);
-		column_mass = addNumberOption("Mass column", false, option_colum_mass);
+		column_mass = addNumberOption("Mass column", true, option_colum_mass);
 	}
 
 	@Override

@@ -108,7 +108,13 @@ public abstract class ExperimentalMarker extends GraphObject implements HasInten
 		this.annotation_id = annotation_id;
 	}
 
+	/**
+	 * Returns true if this marker has an annotation given. That is, there is an
+	 * not-empty annotation string given.
+	 *
+	 * @return
+	 */
 	public boolean hasAnnotation() {
-		return annotation_id != null;
+		return annotation_id != null && !annotation_id.isEmpty();
 	}
 }

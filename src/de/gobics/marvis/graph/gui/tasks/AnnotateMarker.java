@@ -1,69 +1,80 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
 package de.gobics.marvis.graph.gui.tasks;
 
 import de.gobics.marvis.graph.*;
-import de.gobics.marvis.utils.task.AbstractTask;
 import java.util.Collection;
-import java.util.logging.Logger;
+import java.util.Map;
+import java.util.Set;
+import java.util.TreeMap;
+import java.util.TreeSet;
 
 /**
+ * Annotates the metabolic marker of a network either by their external
+ * annotation or on a mass comparison.
  *
  * @author manuel
  */
-public class AnnotateMarker extends AbstractTask<MetabolicNetwork, Void> {
+public class AnnotateMarker extends AnnotateAbstract<Marker> {
 
-	private static final Logger logger = Logger.getLogger(AnnotateMarker.class.
-			getName());
-	private final MetabolicNetwork network;
 	private double mass_range = 0.005;
+	private final Map<Integer, Set<Compound>> mass_cache = new TreeMap<>();
 
 	public AnnotateMarker(MetabolicNetwork graph) {
-		this.network = graph.clone();
-		setTaskTitle("Annotate compounds with marker candidates");
+		super(graph);
+		setTaskDescription("Annotate compounds with marker candidates");
 	}
 
 	public void setMassRange(double new_range) {
 		mass_range = Math.abs(new_range);
 	}
 
-	public MetabolicNetwork annotate() throws Exception {
-		Collection<Marker> markers = network.getMarkers();
-		Collection<Compound> compounds = network.getCompounds();
-
-		setTaskDescription("Annotating marker");
-
-		if (markers.isEmpty()) {
-			return null;
-		}
-
-		if (compounds.isEmpty()) {
-			return null;
-		}
-
-		setProgressMax(markers.size());
-
-		for (Marker m : markers) {
-			for (Compound c : compounds) {
-				if (Math.abs(m.getMass() - c.getMass()) <= mass_range) {
-					network.annotates(m, c);
-				}
-			}
-
-			incrementProgress();
-			
-			if(isCanceled()){
-				return null;
-			}
-		}
-
-		return network;
+	public double getMassRange() {
+		return mass_range;
 	}
 
 	@Override
-	protected MetabolicNetwork doTask() throws Exception {
-		return annotate();
+	protected void annotate(Marker marker) {
+		if (marker.hasAnnotation()) {
+			addAnnotations(RelationshipType.MARKER_ANNOTATION_COMPOUND, marker, getAnnotations(Compound.class, marker));
+		}
+		else {
+			addAnnotations(RelationshipType.MARKER_ANNOTATION_COMPOUND, marker, getMassAnnotations(marker));
+		}
+	}
+
+	private Set<Compound> getMassAnnotations(Marker m) {
+		// Build a cache containing the rounded mass values as keys and the corresponding
+		// compounds as values
+		if (mass_cache.isEmpty()) {
+			for (Compound c : getNetwork().getCompounds()) {
+				Integer rounded = ((Float) c.getMass()).intValue();
+				if (!mass_cache.containsKey(rounded)) {
+					mass_cache.put(rounded, new TreeSet<Compound>());
+				}
+				mass_cache.get(rounded).add(c);
+			}
+
+			System.out.println(mass_cache);
+		}
+
+		Set<Compound> targets = new TreeSet<>();
+		int from = (int) Math.floor(m.getMass() - mass_range - 1);
+		int to = (int) Math.ceil(m.getMass() + mass_range + 1);
+
+		for (int rounded_mass = from; rounded_mass <= to; rounded_mass++) {
+			System.out.println("Search mass " + rounded_mass + ": " + mass_cache.get(rounded_mass));
+			if (mass_cache.containsKey(rounded_mass)) {
+				for (Compound c : mass_cache.get(rounded_mass)) {
+					if (Math.abs(c.getMass() - m.getMass()) <= mass_range) {
+						targets.add(c);
+					}
+				}
+			}
+		}
+		return targets;
+	}
+
+	@Override
+	protected Collection<Marker> getExperimentalMarker() {
+		return getNetwork().getMarkers();
 	}
 }

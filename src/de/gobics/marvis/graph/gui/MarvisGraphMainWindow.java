@@ -512,10 +512,24 @@ public class MarvisGraphMainWindow extends JFrame {
 				if (network == null) {
 					return;
 				}
-				int count_annotations = network.getRelations(RelationshipType.MARKER_ANNOTATION_COMPOUND).
-						size();
+				Collection<Marker> marker = network.getMarkers();
+				Set<Compound> compounds = new TreeSet<>();
+				Set<Reaction> reactions = new TreeSet<>();
+				int count_annotating_marker = 0;
+				for (Marker m : marker) {
+					if (!network.getAnnotations(m).isEmpty()) {
+						count_annotating_marker++;
+					}
+					for (Compound c : network.getAnnotations(m)) {
+						compounds.add(c);
+						reactions.addAll(network.getReactions(c));
+					}
+				}
 
-				if (confirm("Found " + count_annotations + " annotations. Accept?", "Check annotations")) {
+				String message = count_annotating_marker + " of " + marker.size() + " metabolic marker annotate "
+						+ compounds.size() + " different compounds\n and are related to "
+						+ reactions.size() + " distinct reactions. Accept annotation?";
+				if (confirm(message, "Check annotations")) {
 					setNetwork(network);
 				}
 			}
@@ -571,21 +585,67 @@ public class MarvisGraphMainWindow extends JFrame {
 					return;
 				}
 
-				int counter_transcripts = 0;
-				TreeSet<Reaction> reactions = new TreeSet<Reaction>();
-				for (Transcript t : network.getTranscripts()) {
-					counter_transcripts++;
+				int counter_transcripts = network.getTranscripts().size();
+				if (confirm("Imported " + counter_transcripts + " transcript marker.\nAccept?", "Accept import")) {
+					setNetwork(network);
+				}
+
+				if (confirm("Annotate genes with new transcript marker?", "Perform annotation")) {
+					annotateTranscriptMarker();
+				}
+			}
+		});
+
+		executeTask(process);
+	}
+
+	public void annotateTranscriptMarker() {
+		MetabolicNetwork network = getMainNetwork();
+		if (network == null) {
+			display_error("Please load a network first");
+			return;
+		}
+
+		// Remove existing annotations
+		if (!network.getRelations(RelationshipType.TRANSCRIPT_ISFROM_GENE).isEmpty()) {
+			if (!confirm("There are already transcript marker annotated. This\n"
+					+ "annotations will be removed. Accept?", "Remove existing annotation?")) {
+				return;
+			}
+			for (Relation r : network.getRelations(RelationshipType.TRANSCRIPT_ISFROM_GENE)) {
+				network.removeRelation(r);
+			}
+		}
+
+		final AnnotateTranscripts process = new AnnotateTranscripts(network);
+		process.addTaskListener(new TaskResultListener<Void>() {
+			@Override
+			public void taskDone() {
+				MetabolicNetwork network = process.getTaskResult();
+				if (network == null) {
+					return;
+				}
+
+				// Count statistics
+				Collection<Transcript> transcripts = network.getTranscripts();
+				Set<Gene> genes = new TreeSet<>();
+				Set<Reaction> reactions = new TreeSet<>();
+				for (Transcript t : transcripts) {
 					for (Gene g : network.getGenes(t)) {
+						genes.add(g);
 						for (Enzyme e : network.getEncodedEnzymes(g)) {
 							reactions.addAll(network.getReactions(e));
 						}
 					}
 				}
 
-				String message = "New network will contain " + counter_transcripts + " transcripts\n(" + reactions.
-						size() + " with associated reaction). Accept?";
-				if (MarvisGraphMainWindow.this.confirm(message, "Accept import")) {
-					MarvisGraphMainWindow.this.setNetwork(network);
+				int counter_transcripts = transcripts.size();
+				int counter_genes = genes.size();
+				int counter_reactions = reactions.size();
+				String message = counter_transcripts + " transcript marker annoate " + counter_genes + " different genes and\nare related to " + counter_reactions + " distinct reactions. Accept?";
+
+				if (confirm(message, "Accept annotation?")) {
+					setNetwork(network);
 				}
 			}
 		});

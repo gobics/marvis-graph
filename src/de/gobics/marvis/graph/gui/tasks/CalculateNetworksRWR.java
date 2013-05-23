@@ -1,15 +1,12 @@
 package de.gobics.marvis.graph.gui.tasks;
 
 import de.gobics.marvis.graph.*;
-import de.gobics.marvis.graph.graphview.ReactionGraph;
 import de.gobics.marvis.utils.RandomWalkWithRestart;
 import de.gobics.marvis.utils.RandomWalkWithRestartDense;
 import de.gobics.marvis.utils.RandomWalkWithRestartSparse;
-import de.gobics.marvis.utils.matrix.DenseDoubleMatrix1D;
 import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.jblas.DoubleMatrix;
 
 /**
  *
@@ -27,7 +24,6 @@ public class CalculateNetworksRWR extends AbstractNetworkCalculation {
 	 */
 	private double restart_probability = 0.8;
 	private double weight_threshold = 1 - restart_probability;
-	private boolean use_input_weights;
 	private boolean use_sparse_algorithm = true;
 
 	public CalculateNetworksRWR(MetabolicNetwork network) {
@@ -47,7 +43,6 @@ public class CalculateNetworksRWR extends AbstractNetworkCalculation {
 		clone.setCofactorThreshold(getCofactorThreshold());
 		clone.setRestartProbability(restart_probability);
 		clone.setThreshold(weight_threshold);
-		clone.useInputWeights(use_input_weights);
 		return clone;
 	}
 
@@ -108,7 +103,7 @@ public class CalculateNetworksRWR extends AbstractNetworkCalculation {
 
 		for (Marker marker : getRootNetwork().getMarkers()) {
 			LinkedList<Compound> compounds = getRootNetwork().getAnnotations(marker);
-			double score_per_compound = getInitialScore(marker) / compounds.size();
+			double score_per_compound = marker.getScore() / compounds.size();
 
 
 			for (Compound compound : compounds) {
@@ -131,7 +126,7 @@ public class CalculateNetworksRWR extends AbstractNetworkCalculation {
 
 		for (Transcript transcript : getRootNetwork().getTranscripts()) {
 			LinkedList<Gene> genes = getRootNetwork().getGenes(transcript);
-			double score_for_gene = getInitialScore(transcript) / genes.size();
+			double score_for_gene = transcript.getScore() / genes.size();
 
 			for (Gene gene : genes) {
 				LinkedList<Enzyme> enzymes = getRootNetwork().getEncodedEnzymes(gene);
@@ -162,13 +157,5 @@ public class CalculateNetworksRWR extends AbstractNetworkCalculation {
 		}
 
 		return reaction_scores;
-	}
-
-	public void useInputWeights(boolean use_input_weights) {
-		this.use_input_weights = use_input_weights;
-	}
-
-	private double getInitialScore(ExperimentalMarker io) {
-		return use_input_weights ? io.getScore() : 1;
 	}
 }
