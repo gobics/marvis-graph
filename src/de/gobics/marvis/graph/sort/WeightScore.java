@@ -1,7 +1,7 @@
 package de.gobics.marvis.graph.sort;
 
 import de.gobics.marvis.graph.GraphObject;
-import de.gobics.marvis.graph.InputObject;
+import de.gobics.marvis.graph.ExperimentalMarker;
 import de.gobics.marvis.graph.MetabolicNetwork;
 
 /**
@@ -23,10 +23,10 @@ public class WeightScore extends AbstractGraphScore {
 		double score = 0d;
 		double counter = 0;
 		for (GraphObject o : graph.getAllObjects()) {
-			if (o instanceof InputObject && ((InputObject) o).getWeight() >= 0) {
+			if (o instanceof ExperimentalMarker && ((ExperimentalMarker) o).getScore() >= 0) {
 				//System.out.println(score +" mal "+Math.log(((InputObject)o).getWeight()));
 				//score *= Math.log(((InputObject)o).getWeight());
-				score += ((InputObject) o).getWeight();
+				score += ((ExperimentalMarker) o).getScore();
 				counter++;
 			}
 		}

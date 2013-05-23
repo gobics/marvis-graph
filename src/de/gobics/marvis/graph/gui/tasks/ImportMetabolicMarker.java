@@ -1,6 +1,6 @@
 package de.gobics.marvis.graph.gui.tasks;
 
-import de.gobics.marvis.graph.InputObject;
+import de.gobics.marvis.graph.ExperimentalMarker;
 import de.gobics.marvis.graph.Marker;
 import de.gobics.marvis.graph.MetabolicNetwork;
 import de.gobics.marvis.utils.io.TabularDataReader;
@@ -50,7 +50,7 @@ public class ImportMetabolicMarker extends ImportAbstract {
 	}
 
 	@Override
-	protected InputObject createObject(int row, String id, Object[] data) throws IOException{
+	protected ExperimentalMarker createObject(int row, String id, Object[] data) throws IOException{
 		Marker m = getNetwork().createMarker(id);
 		
 		if( mass_column >= 0 ){

@@ -1,6 +1,6 @@
 package de.gobics.marvis.graph.gui.intensityprofilehistogram;
 
-import de.gobics.marvis.graph.InputObject;
+import de.gobics.marvis.graph.ExperimentalMarker;
 import de.gobics.marvis.graph.IntensityProfile;
 import de.gobics.marvis.utils.ArrayUtils;
 import java.util.Arrays;
@@ -23,16 +23,16 @@ public class IOHeatmapDataset implements XYZDataset {
 	private static final Logger logger = Logger.getLogger(IOHeatmapDataset.class.
 			getName());
 	public final static Double DEFAULT_VALUE = Double.NaN;
-	public final InputObject[] objects;
+	public final ExperimentalMarker[] objects;
 	public final String[] raw_condition_names;
 	private DatasetGroup group = new DatasetGroup();
 
-	public IOHeatmapDataset(final InputObject[] objects) {
+	public IOHeatmapDataset(final ExperimentalMarker[] objects) {
 		this.objects = objects;
 
 		// Calculate the needed size for the heatmap (raw conditions)
 		TreeMap<String, Integer> names = new TreeMap<String, Integer>();
-		for (InputObject o : objects) {
+		for (ExperimentalMarker o : objects) {
 			IntensityProfile ip = o.getIntensityProfile();
 			for (String condition_name : ip.getConditionNames()) {
 				if (!names.containsKey(condition_name)) {

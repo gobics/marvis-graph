@@ -6,7 +6,7 @@ package de.gobics.marvis.graph;
  * @author Manuel Landesfeind <manuel@gobics.de>
  */
 
-public class Marker extends InputObject {
+public class Marker extends ExperimentalMarker {
 	
 	/**
 	 * The mass/weight obtained from mass spectrometry analysis

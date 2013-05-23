@@ -139,7 +139,7 @@ public class InternalFrameNodeInformation extends JInternalFrame {
 	private void displayInformation(Marker m) {
 		addTextfield("Id", m.getId());
 		addTextfield("Mass", m.getMass().toString());
-		addTextfield("Weight", m.getWeight().toString());
+		addTextfield("Weight", m.getScore().toString());
 		addTextfield("Retentiontime", Float.toString(m.getRetentionTime()));
 		addTextfield("Annotations", Integer.toString(graph.getAnnotations(m).
 				size()));
@@ -197,7 +197,7 @@ public class InternalFrameNodeInformation extends JInternalFrame {
 
 	private void displayInformation(Transcript t) {
 		addTextfield("Id", t.getId());
-		addTextfield("Weight", "" + t.getWeight());
+		addTextfield("Weight", "" + t.getScore());
 		addRelationshipCombobox("Genes", graph.getGenes(t));
 	}
 
@@ -211,8 +211,8 @@ public class InternalFrameNodeInformation extends JInternalFrame {
 		boolean display_conditions = true;
 
 
-		if (displayObject instanceof InputObject) {
-			ip = ((InputObject) displayObject).getIntensityProfile();
+		if (displayObject instanceof ExperimentalMarker) {
+			ip = ((ExperimentalMarker) displayObject).getIntensityProfile();
 			colors[0] = Color.YELLOW;
 			display_conditions = false;
 		}

@@ -109,10 +109,10 @@ public class SaveNetwork extends AbstractTask<Void, Void> {
 			e.addContent(elt);
 		}
 
-		if (o instanceof InputObject) {
-			InputObject inputObject = (InputObject) o;
-			if (inputObject.getWeight() != null) {
-				e.setAttribute("weight", inputObject.getWeight().toString());
+		if (o instanceof ExperimentalMarker) {
+			ExperimentalMarker inputObject = (ExperimentalMarker) o;
+			if (inputObject.getScore() != null) {
+				e.setAttribute("weight", inputObject.getScore().toString());
 			}
 
 			// Store intensity

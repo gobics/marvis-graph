@@ -17,7 +17,7 @@ import de.gobics.marvis.graph.sort.NetworkSorterDiameter;
 import de.gobics.marvis.graph.sort.NetworkSorterSumOfWeights;
 import de.gobics.marvis.utils.HumanReadable;
 import de.gobics.marvis.utils.LoggingUtils;
-import de.gobics.marvis.utils.io.CSVDataReader;
+import de.gobics.marvis.utils.io.CsvDataReader;
 import de.gobics.marvis.utils.io.ExcelDataReader;
 import java.io.BufferedReader;
 import java.io.File;
@@ -70,7 +70,7 @@ public class test {
 		MetabolicNetwork network = new LoadNetwork("/home/manuel/marvis-graph-paper-data/graph.aracyc.cut25.cut10.xml.gz").load();
 
 		// Metabolic data
-		CSVDataReader r1 = new CSVDataReader(new File("/home/manuel/marvis-graph-paper-data/mg-metabolic-data.cut25.csv"));
+		CsvDataReader r1 = new CsvDataReader(new File("/home/manuel/marvis-graph-paper-data/mg-metabolic-data.cut25.csv"));
 		ImportMetabolicMarker process1 = new ImportMetabolicMarker(network, r1);
 		process1.setIdColumn(1);
 		process1.setRetentiontimeColumn(2);

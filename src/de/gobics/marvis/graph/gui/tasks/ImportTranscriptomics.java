@@ -1,7 +1,7 @@
 package de.gobics.marvis.graph.gui.tasks;
 
 import de.gobics.marvis.graph.Gene;
-import de.gobics.marvis.graph.InputObject;
+import de.gobics.marvis.graph.ExperimentalMarker;
 import de.gobics.marvis.graph.MetabolicNetwork;
 import de.gobics.marvis.graph.Transcript;
 import de.gobics.marvis.utils.io.TabularDataReader;
@@ -16,7 +16,7 @@ public class ImportTranscriptomics extends ImportAbstract {
 	}
 
 	@Override
-	protected InputObject createObject(int row, String id, Object[] data) throws IOException {
+	protected ExperimentalMarker createObject(int row, String id, Object[] data) throws IOException {
 		Transcript t = getNetwork().createTranscript(id);
 
 		Integer idx = getAnnotationColumnIndex();

@@ -15,6 +15,7 @@ import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.Iterator;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -53,7 +54,7 @@ public abstract class DialogImport extends JPanel {
 	private final NumberOption column_annotations;
 	private final NumberOption intensity_firstcolumn;
 	private final NumberOption intensity_lastcolumn;
-	private final NumberOption column_weight;
+	private final NumberOption column_score;
 	// CSV Specific
 	protected StringOption csv_separator = null;
 	// Excel Specific
@@ -117,8 +118,8 @@ public abstract class DialogImport extends JPanel {
 					try {
 						ExcelDataReader reader2 = (ExcelDataReader) reader;
 						int sheet = excel_sheet.getNumber();
-						if( sheet <= reader2.countSheets()){
-							reader2.setSheet(sheet-1);
+						if (sheet <= reader2.countSheets()) {
+							reader2.setSheet(sheet - 1);
 						}
 						else {
 							excel_sheet.setNumber(reader2.countSheets());
@@ -128,8 +129,8 @@ public abstract class DialogImport extends JPanel {
 					catch (IOException ex) {
 						Logger.getLogger(DialogImport.class.getName()).log(Level.WARNING, null, ex);
 					}
-					
-					
+
+
 				}
 			});
 		}
@@ -139,7 +140,7 @@ public abstract class DialogImport extends JPanel {
 		column_annotations = addNumberOption("Annotation column", false, 2);
 		intensity_firstcolumn = addNumberOption("First intensity column", false, 4);
 		intensity_lastcolumn = addNumberOption("Last intensity column", false, 75);
-		column_weight = addNumberOption("Weight column", false, 76);
+		column_score = addNumberOption("Score column", false, 76);
 
 
 		SwingUtilities.invokeLater(new Runnable() {
@@ -156,14 +157,16 @@ public abstract class DialogImport extends JPanel {
 	 * @param network
 	 * @return
 	 */
-	protected ImportAbstract getProcess(MetabolicNetwork network) {
+	public ImportAbstract getProcess(MetabolicNetwork network) {
 		ImportAbstract process = createProcess(network);
 		process.setIdColumn(getIdColumn());
 		process.setAnnotationColumn(getAnnotationColumn());
-		process.setWeightColumn(getWeightColumn());
+		process.setScoreColumn(getScoreColum());
 		process.setFirstRow(getFirstRow());
 
 		if (!intensity_firstcolumn.isSelected() || !intensity_lastcolumn.isSelected()) {
+			System.out.println("First: "+intensity_firstcolumn.isSelected());
+			System.out.println("Second: "+intensity_lastcolumn.isSelected());
 			return process;
 		}
 
@@ -184,21 +187,25 @@ public abstract class DialogImport extends JPanel {
 			row_iter.next();
 		}
 
-		Object[] data = row_iter.next();
-		String[] header_names = new String[getIntensityLastColumn() - getIntensityFirstColumn() + 1];
-		for (int i = 0; i < header_names.length; i++) {
-			header_names[i] = data[getIntensityFirstColumn() + i - 1].toString();
-		}
+		Integer start = getIntensityFirstColumn();
+		Integer end = getIntensityLastColumn();
+		System.out.println("Intensity start: " + start);
+		System.out.println("Intensity end: " + end);
+		if (start != null && start >= 0 && end != null && end >= start) {
+			Object[] data = row_iter.next();
+			String[] header_names = new String[end - start + 1];
+			for (int i = 0; i < header_names.length; i++) {
+				header_names[i] = data[start + i - 1].toString();
+			}
 
-		DialogIntensityMapper im = new DialogIntensityMapper(main_window, network, header_names);
-		im.setVisible(true);
-		if (im.closedWithOk()) {
+			System.out.println("Display intensity mapper dialog for: " + Arrays.toString(header_names));
+			DialogIntensityMapper im = new DialogIntensityMapper(network, header_names);
+			if (!im.showDialog(main_window)) {
+				return null;
+			}
 			header_names = im.getConditionMapping();
+			process.setIntensityMapping(header_names);
 		}
-		else {
-			return null;
-		}
-		process.setIntensityMapping(header_names);
 
 		return process;
 	}
@@ -221,8 +228,8 @@ public abstract class DialogImport extends JPanel {
 		return res == JOptionPane.OK_OPTION;
 	}
 
-	private Integer getWeightColumn() {
-		return column_weight.getNumber();
+	private Integer getScoreColum() {
+		return column_score.getNumber();
 	}
 
 	private Integer getAnnotationColumn() {

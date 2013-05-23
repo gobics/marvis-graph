@@ -1,6 +1,6 @@
 package de.gobics.marvis.graph.gui;
 
-import de.gobics.marvis.graph.InputObject;
+import de.gobics.marvis.graph.ExperimentalMarker;
 import de.gobics.marvis.graph.IntensityProfile;
 import de.gobics.marvis.graph.gui.intensityprofilehistogram.IOHeatmapDataset;
 import de.gobics.marvis.graph.gui.intensityprofilehistogram.IOHeatmapDatasetConditions;
@@ -73,7 +73,7 @@ public class IntensityProfileHistogram {
 		return new ChartPanel(chart);
 	}
 
-	public static ChartPanel createHeatmap(InputObject[] objects) {
+	public static ChartPanel createHeatmap(ExperimentalMarker[] objects) {
 		IOHeatmapDataset dataset = new IOHeatmapDataset(objects);
 		SymbolAxis yAxis = new SymbolAxis("Condition", dataset.raw_condition_names);
 		SymbolAxis xAxis = new SymbolAxis("Marker/Transcripts", ArrayUtils.
@@ -91,7 +91,7 @@ public class IntensityProfileHistogram {
 
 		double min = Double.MAX_VALUE;
 		double max = Double.MIN_VALUE;
-		for (InputObject o : objects) {
+		for (ExperimentalMarker o : objects) {
 			for (float f : o.getRawIntensities()) {
 				min = Math.min(min, f);
 				max = Math.max(max, f);
@@ -151,7 +151,7 @@ public class IntensityProfileHistogram {
 		private final IOHeatmapDataset dataset;
 		private final XYPlot plot;
 
-		public ActionDisplayNormal(InputObject[] objects, XYPlot plot) {
+		public ActionDisplayNormal(ExperimentalMarker[] objects, XYPlot plot) {
 			super("Display all samples");
 			this.dataset = new IOHeatmapDataset(objects);
 			this.plot = plot;
@@ -169,7 +169,7 @@ public class IntensityProfileHistogram {
 		private final IOHeatmapDatasetConditions dataset;
 		private final XYPlot plot;
 
-		public ActionDisplayMean(InputObject[] objects, XYPlot plot) {
+		public ActionDisplayMean(ExperimentalMarker[] objects, XYPlot plot) {
 			super("Display condition mean");
 			this.dataset = new IOHeatmapDatasetConditions(objects);
 			this.plot = plot;

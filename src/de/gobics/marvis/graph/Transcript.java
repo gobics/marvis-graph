@@ -4,7 +4,7 @@ package de.gobics.marvis.graph;
  * gene in the metabolic network, e.g. from mirco-array, EST or RNA-Seq.
  * @author Manuel Landesfein &lt;manuel@gobics.de&gt;
  */
-public class Transcript extends InputObject {
+public class Transcript extends ExperimentalMarker {
 
 	/**
 	 * Construction of transcripts should be done using {@link MetabolicNetwork#createTranscript(java.lang.String) }.

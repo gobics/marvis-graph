@@ -12,7 +12,7 @@ import de.gobics.marvis.graph.*;
 import java.awt.event.ActionListener;
 import java.util.logging.Logger;
 
-public class DialogIntensityMapper extends DialogAbstract {
+public class DialogIntensityMapper extends JPanel {
 
 	private static final Logger logger = Logger.getLogger(DialogIntensityMapper.class.
 			getName());
@@ -20,12 +20,10 @@ public class DialogIntensityMapper extends DialogAbstract {
 	private final JComboBox[] use_known_condition;
 	private final JTextField[] use_new_condition;
 
-	public DialogIntensityMapper(MarvisGraphMainWindow parent, MetabolicNetwork network, String[] header_names) {
-		super(parent, "Map conditions of "+header_names.length+" samples", ModalityType.DOCUMENT_MODAL);
+	public DialogIntensityMapper(MetabolicNetwork network, String[] header_names) {
 		orignalName = new JLabel[header_names.length];
 		use_known_condition = new JComboBox[header_names.length];
 		use_new_condition = new JTextField[header_names.length];
-
 
 		String[] sorted_condition_names = network.getConditionNames();
 		Arrays.sort(sorted_condition_names);
@@ -39,9 +37,6 @@ public class DialogIntensityMapper extends DialogAbstract {
 		GridBagConstraints gbc = new GridBagConstraints();
 		gbc.fill = GridBagConstraints.HORIZONTAL;
 
-		JScrollPane spane = new JScrollPane(options);
-		spane.setPreferredSize(new Dimension(600, 400));
-		addOptions(spane);
 		Dimension textfield_dimension = new JTextField().getPreferredSize();
 		textfield_dimension.width = 250;
 
@@ -95,8 +90,11 @@ public class DialogIntensityMapper extends DialogAbstract {
 			gbc.gridx++;
 			options.add(b, gbc);
 		}
-
-		pack();
+		
+		
+		JScrollPane spane = new JScrollPane(options);
+		spane.setPreferredSize(new Dimension(600, 400));
+		add(spane);
 	}
 
 	public String[] getConditionMapping() {
@@ -112,6 +110,10 @@ public class DialogIntensityMapper extends DialogAbstract {
 			}
 		}
 		return conditionNames;
+	}
+
+	public boolean showDialog(MarvisGraphMainWindow parent) {
+		return JOptionPane.showConfirmDialog(parent, this, "Map condition names", JOptionPane.OK_CANCEL_OPTION, JOptionPane.QUESTION_MESSAGE) == JOptionPane.OK_OPTION;
 	}
 }
 
@@ -132,7 +134,6 @@ class ButtonLastConditionName extends JButton {
 		this.next_field = next_field;
 
 		addActionListener(new ActionListener() {
-
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				if (last_box.getSelectedIndex() >= 0) {
@@ -162,7 +163,6 @@ class ButtonDistributeConditionName extends JButton {
 		this.fields = fields;
 
 		addActionListener(new ActionListener() {
-
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				int selection_index = boxes[index].getSelectedIndex();

@@ -138,7 +138,7 @@ public class LoadNetwork extends AbstractTask<MetabolicNetwork, Void> {
 			}
 
 			if (o.getAttribute("weight") != null) {
-				m.setWeight(new Double(o.getAttributeValue("weight")).
+				m.setScore(new Double(o.getAttributeValue("weight")).
 						doubleValue());
 			}
 			if (o.getAttribute("retentiontime") != null) {
@@ -263,7 +263,7 @@ public class LoadNetwork extends AbstractTask<MetabolicNetwork, Void> {
 					createTranscript(id);
 
 			if (o.getAttribute("weight") != null) {
-				transcript.setWeight(new Double(o.getAttributeValue("weight")).
+				transcript.setScore(new Double(o.getAttributeValue("weight")).
 						doubleValue());
 			}
 

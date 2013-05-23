@@ -1,19 +1,21 @@
 package de.gobics.marvis.graph;
 
 /**
- * An InputObject is an abstract subclass of the {@link GraphObject}. An input
- * object is some entity that has been measured from experimental context. All
- * input object contain an {@link IntensityProfile} and a weight.
+ * An {@link ExperimentalMarker} is an abstract subclass of the
+ * {@link GraphObject}. An experimental marker is some entity that has been
+ * measured in experimental context. All marker contain an
+ * {@link IntensityProfile} and a score.
  *
  * @author Manuel Landesfeind <manuel@gobics.de>
  */
-public abstract class InputObject extends GraphObject implements HasIntensity {
+public abstract class ExperimentalMarker extends GraphObject implements HasIntensity {
 
 	/**
-	 * The weight of this input object. The weight can be any type of double
-	 * value and indicates some preprocessed value. It can be e.g. a p-Value.
+	 * The score of this input object. The score can be any type of double value
+	 * and indicates some preprocessed value. It can be e.g.
+	 * <code>1 - p-Value</code>.
 	 */
-	private double weight = 0.0;
+	private double score = 1d;
 	/**
 	 * The intensity profile for this input object.
 	 */
@@ -27,33 +29,31 @@ public abstract class InputObject extends GraphObject implements HasIntensity {
 	 * @see GraphObject
 	 * @param id the id of this object.
 	 */
-	public InputObject(String id) {
+	public ExperimentalMarker(String id) {
 		super(id);
 	}
 
 	/**
-	 * Set the weight of this object. Weight has to be a double value from the
-	 * interval 0 to 1 (both including).
+	 * Set the score of this object. Score has to be a double value greater than
+	 * 0. The higher the score is the more qualitative or important this
+	 * experimental marker is.
 	 *
-	 * @param weight the new weight
+	 * @param new_score the new score
 	 */
-	public void setWeight(Double weight) {
-		if (weight == null || weight < 0) {
-			weight = 0d;
+	public void setScore(Double new_score) {
+		if (new_score == null || new_score < 0) {
+			new_score = 0d;
 		}
-		if (weight > 1) {
-			weight = 1d;
-		}
-		this.weight = weight;
+		this.score = new_score;
 	}
 
 	/**
-	 * Returns the weight
+	 * Returns the score
 	 *
-	 * @return the weight
+	 * @return the score
 	 */
-	public Double getWeight() {
-		return this.weight;
+	public Double getScore() {
+		return this.score;
 	}
 
 	/**

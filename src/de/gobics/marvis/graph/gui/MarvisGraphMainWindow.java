@@ -442,7 +442,7 @@ public class MarvisGraphMainWindow extends JFrame {
 			return;
 		}
 
-		final ImportAbstract process = dialog.createProcess(network);
+		final ImportAbstract process = dialog.getProcess(network);
 		if (process == null) {
 			return;
 		}

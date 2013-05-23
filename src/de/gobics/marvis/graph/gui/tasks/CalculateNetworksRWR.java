@@ -168,7 +168,7 @@ public class CalculateNetworksRWR extends AbstractNetworkCalculation {
 		this.use_input_weights = use_input_weights;
 	}
 
-	private double getInitialScore(InputObject io) {
-		return use_input_weights ? io.getWeight() : 1;
+	private double getInitialScore(ExperimentalMarker io) {
+		return use_input_weights ? io.getScore() : 1;
 	}
 }
