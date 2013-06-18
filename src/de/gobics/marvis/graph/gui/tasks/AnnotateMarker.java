@@ -6,6 +6,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
+import java.util.logging.Logger;
 
 /**
  * Annotates the metabolic marker of a network either by their external
@@ -15,6 +16,7 @@ import java.util.TreeSet;
  */
 public class AnnotateMarker extends AnnotateAbstract<Marker> {
 
+	private static final Logger logger = Logger.getLogger(AnnotateMarker.class.getName());
 	private double mass_range = 0.005;
 	private final Map<Integer, Set<Compound>> mass_cache = new TreeMap<>();
 
@@ -34,9 +36,11 @@ public class AnnotateMarker extends AnnotateAbstract<Marker> {
 	@Override
 	protected void annotate(Marker marker) {
 		if (marker.hasAnnotation()) {
+			//logger.finer("Annotationg " + marker + " by given annotations");
 			addAnnotations(RelationshipType.MARKER_ANNOTATION_COMPOUND, marker, getAnnotations(Compound.class, marker));
 		}
 		else {
+			//logger.finer("Annotationg " + marker + " by mass");
 			addAnnotations(RelationshipType.MARKER_ANNOTATION_COMPOUND, marker, getMassAnnotations(marker));
 		}
 	}
@@ -53,7 +57,7 @@ public class AnnotateMarker extends AnnotateAbstract<Marker> {
 				mass_cache.get(rounded).add(c);
 			}
 
-			System.out.println(mass_cache);
+			//System.out.println(mass_cache);
 		}
 
 		Set<Compound> targets = new TreeSet<>();
@@ -61,7 +65,7 @@ public class AnnotateMarker extends AnnotateAbstract<Marker> {
 		int to = (int) Math.ceil(m.getMass() + mass_range + 1);
 
 		for (int rounded_mass = from; rounded_mass <= to; rounded_mass++) {
-			System.out.println("Search mass " + rounded_mass + ": " + mass_cache.get(rounded_mass));
+			//System.out.println("Search mass " + rounded_mass + ": " + mass_cache.get(rounded_mass));
 			if (mass_cache.containsKey(rounded_mass)) {
 				for (Compound c : mass_cache.get(rounded_mass)) {
 					if (Math.abs(c.getMass() - m.getMass()) <= mass_range) {

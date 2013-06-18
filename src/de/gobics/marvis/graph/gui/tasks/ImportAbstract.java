@@ -10,7 +10,7 @@ import java.util.Iterator;
 import java.util.logging.Logger;
 
 public abstract class ImportAbstract extends AbstractTask<MetabolicNetwork, Void> {
-	
+
 	private static final Logger logger = Logger.getLogger(ImportAbstract.class.
 			getName());
 	private MetabolicNetwork network;
@@ -21,7 +21,7 @@ public abstract class ImportAbstract extends AbstractTask<MetabolicNetwork, Void
 	private int first_intensity_column = 0;
 	private String[] condition_names = new String[0];
 	private final TabularDataReader reader;
-	
+
 	public ImportAbstract(final MetabolicNetwork graph, TabularDataReader reader) {
 		this.network = graph.clone();
 		this.reader = reader;
@@ -56,7 +56,7 @@ public abstract class ImportAbstract extends AbstractTask<MetabolicNetwork, Void
 			this.annotation_column = annotation_column - 1;
 		}
 	}
-	
+
 	public Integer getAnnotationColumnIndex() {
 		return this.annotation_column;
 	}
@@ -92,15 +92,15 @@ public abstract class ImportAbstract extends AbstractTask<MetabolicNetwork, Void
 	public void setFirstIntensityColumn(int column) {
 		this.first_intensity_column = column - 1;
 	}
-	
+
 	public void setIntensityMapping(String[] condition_names) {
 		this.condition_names = condition_names;
 	}
-	
+
 	protected MetabolicNetwork getNetwork() {
 		return network;
 	}
-	
+
 	public MetabolicNetwork importData() throws IOException {
 		setProgressMax(reader.getRowCount() - start_row);
 		Iterator<Object[]> row_iter = reader.getRowIterator();
@@ -109,13 +109,13 @@ public abstract class ImportAbstract extends AbstractTask<MetabolicNetwork, Void
 		for (int i = 1; i <= start_row && row_iter.hasNext(); i++) {
 			row_iter.next();
 		}
-		
+
 		logger.finer("Will now import marker data");
 		int row_counter = start_row;
 		while (row_iter.hasNext()) {
 			row_counter++;
 			Object[] data = row_iter.next();
-			
+
 			assertLength(row_counter, id_column, data);
 			ExperimentalMarker io = createObject(row_counter, data[id_column].toString(), data);
 
@@ -128,8 +128,9 @@ public abstract class ImportAbstract extends AbstractTask<MetabolicNetwork, Void
 				//System.out.println("Setting intensity information: " + Arrays.toString(condition_names) + " " + Arrays.toString(intensity_data));
 				io.setIntensity(condition_names, intensity_data);
 			}
-			
+
 			if (annotation_column != null) {
+				System.out.println("Setting annotation data to: data[" + annotation_column + "]: " + data[annotation_column].toString());
 				assertLength(row_counter, annotation_column, data);
 				io.setAnnotation(data[annotation_column].toString());
 			}
@@ -138,22 +139,22 @@ public abstract class ImportAbstract extends AbstractTask<MetabolicNetwork, Void
 			if (score_column != null) {
 				io.setScore(assertNumber(row_counter, score_column, data).doubleValue());
 			}
-			
+
 			incrementProgress();
 			if (isCanceled()) {
 				return null;
 			}
 		}
-		
+
 		logger.finer("Read marker data");
 		return network;
 	}
-	
+
 	@Override
 	public MetabolicNetwork doTask() throws Exception {
 		return importData();
 	}
-	
+
 	protected Number assertNumber(int row, int column, Object[] data) throws IOException {
 		assertLength(row, column, data);
 		if (data[column] == null || !(data[column] instanceof Number)) {
@@ -178,12 +179,12 @@ public abstract class ImportAbstract extends AbstractTask<MetabolicNetwork, Void
 		}
 		return data[column].toString();
 	}
-	
+
 	protected void assertLength(int row, int index, Object[] data) throws IOException {
 		if (data.length < index) {
 			throw new IOException("Row " + row + " is to short: expected at least " + (index + 1) + " cells but got " + data.length);
 		}
 	}
-	
+
 	protected abstract ExperimentalMarker createObject(int row, String id, Object[] data) throws IOException;
 }

@@ -160,13 +160,16 @@ public abstract class DialogImport extends JPanel {
 	public ImportAbstract getProcess(MetabolicNetwork network) {
 		ImportAbstract process = createProcess(network);
 		process.setIdColumn(getIdColumn());
-		process.setAnnotationColumn(getAnnotationColumn());
+
+		if (column_annotations.isSelected()) {
+			process.setAnnotationColumn(getAnnotationColumn());
+		}
 		process.setScoreColumn(getScoreColum());
 		process.setFirstRow(getFirstRow());
 
 		if (!intensity_firstcolumn.isSelected() || !intensity_lastcolumn.isSelected()) {
-			System.out.println("First: "+intensity_firstcolumn.isSelected());
-			System.out.println("Second: "+intensity_lastcolumn.isSelected());
+			//System.out.println("First: "+intensity_firstcolumn.isSelected());
+			//System.out.println("Second: "+intensity_lastcolumn.isSelected());
 			return process;
 		}
 
@@ -189,8 +192,8 @@ public abstract class DialogImport extends JPanel {
 
 		Integer start = getIntensityFirstColumn();
 		Integer end = getIntensityLastColumn();
-		System.out.println("Intensity start: " + start);
-		System.out.println("Intensity end: " + end);
+		//System.out.println("Intensity start: " + start);
+		//System.out.println("Intensity end: " + end);
 		if (start != null && start >= 0 && end != null && end >= start) {
 			Object[] data = row_iter.next();
 			String[] header_names = new String[end - start + 1];
@@ -198,7 +201,7 @@ public abstract class DialogImport extends JPanel {
 				header_names[i] = data[start + i - 1].toString();
 			}
 
-			System.out.println("Display intensity mapper dialog for: " + Arrays.toString(header_names));
+			//System.out.println("Display intensity mapper dialog for: " + Arrays.toString(header_names));
 			DialogIntensityMapper im = new DialogIntensityMapper(network, header_names);
 			if (!im.showDialog(main_window)) {
 				return null;
@@ -314,7 +317,7 @@ public abstract class DialogImport extends JPanel {
 		optionPanel.add(spinner);
 		SpringUtilities.makeCompactGrid(optionPanel, 3);
 
-		return new NumberOption(model);
+		return new NumberOption(model, cb_active);
 	}
 
 	protected final StringOption addStringOption(String name, boolean required, String default_value) {
@@ -352,12 +355,15 @@ public abstract class DialogImport extends JPanel {
 			this(model, null);
 		}
 
+		/**
+		 * Create a new number option.
+		 * 
+		 * @param model the model for user input
+		 * @param cb_active  might be null
+		 */
 		public NumberOption(SpinnerNumberModel model, JCheckBox cb_active) {
 			this.model = model;
 			this.cb = cb_active;
-
-			if (cb != null) {
-			}
 		}
 
 		public boolean isSelected() {
