@@ -35,8 +35,8 @@ public abstract class AbstractNetworkCalculation extends AbstractTask<MetabolicN
 	public void setCofactorThreshold(int cofactor_threshold) {
 		reactions_view = new ReactionGraph(getRootNetwork(), false, cofactor_threshold);
 	}
-	
-	public int getCofactorThreshold(){
+
+	public int getCofactorThreshold() {
 		return reactions_view.getCofactorThreshold();
 	}
 
@@ -98,8 +98,9 @@ public abstract class AbstractNetworkCalculation extends AbstractTask<MetabolicN
 
 	/**
 	 * Generates a metabolic network based on the given reactions. T
+	 *
 	 * @param neighbor_nodes
-	 * @return 
+	 * @return
 	 */
 	final protected MetabolicNetwork generate_network(Collection<Reaction> neighbor_nodes) {
 		MetabolicNetwork network = new MetabolicNetwork(root_network);
@@ -111,27 +112,38 @@ public abstract class AbstractNetworkCalculation extends AbstractTask<MetabolicN
 			}
 		}
 
-		Iterator<Reaction> iter = neighbor_nodes.iterator();
-		while (network.getName() == null && iter.hasNext()) {
-			Reaction next = iter.next();
-			if (next.getName() != null) {
-				network.setName("Subnetwork: " + next.getName());
-				break;
-			}
-		}
-
-		if (network.getName() == null && ! neighbor_nodes.isEmpty()) {
-			network.setName("Subnetwork: " + neighbor_nodes.iterator().next().getId());
-		}
+		network.setName("Subnetwork: " + getNetworkName(network));
 
 		return network;
 	}
-	
-	
+
 	@Override
 	protected MetabolicNetwork[] doTask() throws Exception {
 		return calculateNetworks();
 	}
-	
+
 	abstract public MetabolicNetwork[] calculateNetworks() throws Exception;
+
+	/**
+	 * Generate a name for the network that consists of the given reactions.
+	 * This is generally the alphanumerical first name found in the list of the
+	 * reactions.
+	 *
+	 * @param reactions
+	 * @return a name for the network
+	 */
+	protected String getNetworkName(MetabolicNetwork network) {
+		Iterator<Reaction> iter = network.getReactions().iterator();
+
+		// Try to find a reaction with a name
+		while (iter.hasNext()) {
+			Reaction next = iter.next();
+			if (next.getName() != null) {
+				return next.getName();
+			}
+		}
+
+		// Otherwise use first reactions ID
+		return network.getReactions().iterator().next().getId();
+	}
 }

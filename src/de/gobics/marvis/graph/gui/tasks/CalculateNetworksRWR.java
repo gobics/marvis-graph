@@ -1,6 +1,7 @@
 package de.gobics.marvis.graph.gui.tasks;
 
 import de.gobics.marvis.graph.*;
+import de.gobics.marvis.utils.ArrayUtils;
 import de.gobics.marvis.utils.RandomWalkWithRestart;
 import de.gobics.marvis.utils.RandomWalkWithRestartDense;
 import de.gobics.marvis.utils.RandomWalkWithRestartSparse;
@@ -25,6 +26,8 @@ public class CalculateNetworksRWR extends AbstractNetworkCalculation {
 	private double restart_probability = 0.8;
 	private double weight_threshold = 1 - restart_probability;
 	private boolean use_sparse_algorithm = true;
+	private List<Reaction> result_vertices;
+	private double[] result_weights;
 
 	public CalculateNetworksRWR(MetabolicNetwork network) {
 		this(network, true);
@@ -73,18 +76,17 @@ public class CalculateNetworksRWR extends AbstractNetworkCalculation {
 		RandomWalkWithRestart process = use_sparse_algorithm
 				? new RandomWalkWithRestartSparse(getReactionView(), restart_probability, 0.0000001)
 				: new RandomWalkWithRestartDense(getReactionView(), restart_probability, 0.0000001);
-		List<GraphObject> vertices = process.getVertices();
-		logger.log(Level.FINER, "Perfoming random walk process with {0} initial nodes of {2} and {1} edges on network: {3}", new Object[]{initial.size(), getReactionView().getEdgeCount(), vertices.size(), getRootNetwork().getName()});
-		double[] result = process.walk(initial);
+		result_vertices = process.getVertices();
+		logger.log(Level.FINER, "Perfoming random walk process with {0} initial nodes of {2} and {1} edges on network: {3}", new Object[]{initial.size(), getReactionView().getEdgeCount(), result_vertices.size(), getRootNetwork().getName()});
+		result_weights = process.walk(initial);
 		// Build list of reactions above the threshold
 		incrementProgress();
 		//logger.finer("Filtering for threshold "+weight_threshold+": " + Arrays.toString(result));
 		TreeSet<Reaction> reactions_for_networks = new TreeSet<>();
-		for (int i = 0; i < result.length; i++) {
-			if (result[i] >= weight_threshold) {
-				reactions_for_networks.add((Reaction) vertices.get(i));
+		for (int i = 0; i < result_weights.length; i++) {
+			if (result_weights[i] >= weight_threshold) {
+				reactions_for_networks.add((Reaction) result_vertices.get(i));
 			}
-			
 		}
 		logger.log(Level.FINER, "Found {0} reactions for the subnetworks", reactions_for_networks.size());
 
@@ -157,5 +159,44 @@ public class CalculateNetworksRWR extends AbstractNetworkCalculation {
 		}
 
 		return reaction_scores;
+	}
+
+	/**
+	 * Overrides the
+	 * {@link AbstractNetworkCalculation#getNetworkName(de.gobics.marvis.graph.MetabolicNetwork)}
+	 * method to sort the reactions according to their scores and use the "best"
+	 * reaction.
+	 *
+	 * @see
+	 * AbstractNetworkCalculation#getNetworkName(de.gobics.marvis.graph.MetabolicNetwork)
+	 */
+	@Override
+	protected String getNetworkName(MetabolicNetwork network) {
+		Collection<Reaction> rcol = network.getReactions();
+		Reaction[] reactions = rcol.toArray(new Reaction[rcol.size()]);
+		double[] scores = new double[reactions.length];
+
+		for (int i = 0; i < scores.length; i++) {
+			int idx = result_vertices.indexOf(reactions[i]);
+			if (idx < 0) {
+				throw new RuntimeException("Can not find reaction in result scores: " + reactions[i]);
+			}
+			scores[i] = result_weights[idx];
+		}
+
+		ArrayUtils.sortMulti(scores, reactions);
+
+		// Try to find a reaction with a name
+		int idx = reactions.length - 1;
+		while (idx >= 0) {
+			if (reactions[idx].getName() != null) {
+				return reactions[idx].getName();
+			}
+			idx--;
+		}
+
+		// Otherwise use first reactions ID
+		return reactions[reactions.length - 1].getId();
+
 	}
 }

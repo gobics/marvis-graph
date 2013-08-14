@@ -5,20 +5,17 @@ import de.gobics.marvis.graph.gui.tasks.AbstractNetworkCalculation;
 import de.gobics.marvis.graph.gui.tasks.CalculateNetworksPathway;
 import de.gobics.marvis.graph.gui.tasks.CalculateNetworksRWR;
 import de.gobics.marvis.graph.gui.tasks.CalculateNetworksReaction;
-import de.gobics.marvis.utils.swing.AbstractTask;
 import de.gobics.marvis.utils.swing.SpringUtilities;
 import java.awt.BorderLayout;
 import java.awt.Frame;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JSpinner;
 import javax.swing.SpinnerNumberModel;
 import javax.swing.SpringLayout;
-import javax.swing.SwingWorker;
 
 /**
  *
