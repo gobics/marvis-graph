@@ -1,0 +1,16 @@
+<shortcuts>
+	<defaultCurrentUser/>
+	<skipIfNotSupported/>
+	<lateShortcutInstall/>
+
+	<programGroup defaultName="MarVis-Graph" />
+
+	<shortcut name="Start MarVis-Graph" programGroup="true" desktop="false"
+		target="${INSTALL_PATH}/marvis-graph.jar"
+		description="Start MarVis-Graph" />
+
+	<shortcut name="Uninstall MarVis-Graph" programGroup="true" desktop="false"
+		target="${INSTALL_PATH}/Uninstaller/uninstaller.jar" 
+		description="Uninstall MarVis-Graph from your computer" />
+
+</shortcuts>

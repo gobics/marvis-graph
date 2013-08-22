@@ -71,4 +71,24 @@
     nbproject/build-impl.xml file. 
 
     -->
+	<path id="installer.classpath">
+		<fileset dir="${user.home}/lib/izpack">
+            <include name="lib/*.jar" />
+        </fileset>
+    </path>
+    <taskdef name="izpack" classpathref="installer.classpath" classname="com.izforge.izpack.ant.IzPackTask" />
+ 
+    <target name="installer" depends="jar">
+		<property file="nbproject/project.properties"/>
+		<izpack input="izpack/install.xml"
+				output="${application.title}-installer.jar"
+                installerType="standard"
+                basedir="${basedir}"
+                izPackDir="${user.home}/IzPack/" />
+    </target>
+
+	<target name="pack" depends="jar">
+		<property file="nbproject/project.properties"/>
+		<zip destfile="hivi.zip" basedir="dist/" excludes="README*" />
+	</target>
 </project>
