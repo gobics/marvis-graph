@@ -44,7 +44,7 @@ public class test {
 
 	public static void main(String[] args) throws Exception, Throwable {
 		LoggingUtils.initLogger(Level.FINER);
-		testTabularDataReader();
+		listNetworks();
 	}
 
 	private static void listNetworks() throws Exception {
@@ -60,7 +60,7 @@ public class test {
 
 		for (MetabolicNetwork n : subnetworks) {
 			String name = n.getName().length() < 112 ? n.getName() : n.getName().substring(12, 100) + "...";
-			System.out.println(name + "\t" + n.getReactions().size() + "\t" + n.getMarkers().size() + "\t" + n.getTranscripts().size() + "\t" + dia.calculateScore(n) + "\t" + sow.calculateScore(n));
+			System.out.println(name + "\t" + n.getReactions().size() + "\t" + n.getMarkers().size() + "\t" + n.getTranscripts().size() + "\t" +n.getReactions().size() +"\t" + dia.calculateScore(n) + "\t" + sow.calculateScore(n));
 
 		}
 
