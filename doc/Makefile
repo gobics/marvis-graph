@@ -1,6 +1,7 @@
 
 IMAGES= $(shell find images/ -iname '*.svg' | sed 's/\.svg/\.pdf/');
 
+.SECONDARY:
 
 images/%.pdf: images/%.svg
 	inkscape --export-area-drawing --export-dpi=900 --export-pdf=$@ $<
