@@ -32,6 +32,10 @@
 			<fileset dir="dist/lib" targetdir="${INSTALL_PATH}/lib" override="true"/>
 			<file src="dist/marvis-graph.jar" targetdir="${INSTALL_PATH}" override="true"/>
 		</pack>
+		<pack name="Documentation" required="yes">
+			<description>Documentation for MarVis Graph</description>
+			<file src="doc/marvis_graph.pdf" targetdir="${INSTALL_PATH}" override="true"/>
+		</pack>
 	</packs>
 
 	<resources>

@@ -1,17 +1,32 @@
-\documentclass[titlepage,a4paper,twoside]{article}
+\documentclass[titlepage,a4paper,twoside,9pt]{article}
 \usepackage{prettyref}
 \usepackage{hyperref}
 \usepackage{graphicx}
+\usepackage{multicol}
+\usepackage{xcolor}
 \usepackage{caption}
 \usepackage{subcaption}
+\usepackage{setspace}
 \usepackage{xspace}
 \usepackage[left=3cm,right=2cm,top=3cm,bottom=5cm,includeheadfoot]{geometry}
+
+\onehalfspacing 
 
 \title{MarVis-Graph User Manual}
 \author{Manuel Landesfeind}
 
+\newcommand{\mg}{Mar\-Vis--Graph\xspace}
+\newcommand{\organism}[1]{\textit{#1}\xspace}
+\newcommand{\ath}{\organism{A. thaliana}}
+\newcommand{\excel}{Microsoft\textsuperscript{\textregistered} Excel\textsuperscript{\textregistered}\xspace}
+\newcommand{\mgap}{\ensuremath{g_\text{max}}}
+\newcommand{\mcofactor}{\ensuremath{c_\text{cofactor}}}
+\newcommand{\rwr}{\textit{random walk with restart}}
+\newcommand{\name}[1]{\textit{#1}}
+\newcommand{\aclink}[2][ARA]{\url{http://pmn.plantcyc.org/#1/NEW-IMAGE?&object=#2}, accessed May 14th 2013}
+\newcommand{\mm}{metabolite marker\xspace}
+\newcommand{\mms}{metabolite markers\xspace}
 
-\newcommand{\mg}{MarVis--Graph\xspace}
 \newrefformat{fig}{Figure \ref{#1} ``\nameref{#1}''}
 \newrefformat{tab}{Table \ref{#1} ``\nameref{#1}''}
 \newrefformat{sec}{Section \ref{#1} ``\nameref{#1}''}
@@ -19,6 +34,9 @@
 \newrefformat{sssec}{Subsection \ref{#1} ``\nameref{#1}''}
 \newcommand{\pref}[1]{\prettyref{#1}}
 
+\newcommand{\menu}[3]{``#1'' $\rightarrow$ ``#2'' (Shortkey: Ctrl+#3)}
+
+\usepackage{arev}
 
 \begin{document}
 \maketitle
@@ -73,7 +91,8 @@ is updated.
 
 \section{Using \mg}
 
-\subsection{Building a new network from the database sources}
+\subsection{Building a new network from the database
+sources}\label{ssec:newnetwork}
 
 Before experimental data can be imported into \mg, a metabolic network model
 has to be created. \mg currently supports the KEGG and BioCyc database
@@ -169,7 +188,7 @@ $\rightarrow$ ``Load network'' (shortkey Crtl + L). After selecting a valid
 network tree. Hereby, a previously loaded or created network will be removed
 without notification.
 
-\subsection{Importing experimental data}
+\subsection{Importing experimental data}\label{ssec:import_experimental_data}
 
 When a metabolic network model is loaded or created in \mg, experimental
 data can be added. \mg loads them from tabular data files. Currently, the
@@ -178,25 +197,237 @@ following file formats are supported:
 	\item[Comma--Separated--Values (*.csv)\footnote{\url{http://en.wikipedia.org/wiki/Comma-separated_values}}]
 		This text file format is the simplest. On import, several additional
 		parameters need to be given, e.g. the cell separator and quote
-		character.
-	\item[Microsoft Excel (*.xls, *.xls)\footnote{\url{http://office.microsoft.com}}]
+		character (see \pref{fig:dialog_import_1}).
+	\item[Microsoft Excel (*.xls, *.xlsx)\footnote{\url{http://office.microsoft.com}}]
 		\mg can directly import data from the Excel spreadsheet file format.
-		On import, the sheet to be imported needs to be specified.
+		On import, the sheet to be imported needs to be specified (see
+		\pref{fig:dialog_import_2}).
+\end{description}
+
+\begin{figure}
+	\begin{subfigure}{\textwidth}
+		\includegraphics[width=\textwidth]{images/dialog_import.png}
+		\caption{Import metabolite markers from a CSV file.\label{fig:dialog_import_1}}
+	\end{subfigure}
+	
+	\vfill
+
+	\begin{subfigure}{\textwidth}
+		\includegraphics[width=\textwidth]{images/dialog_import2.png}
+		\caption{Import transcriptomics markers from an Excel file.\label{fig:dialog_import_2}}
+	\end{subfigure}
+	\caption[Experimental data import]{The experimental data import dialog
+		shows a preview of the data to be imported on the left side and
+		specific options on the right side. This dialog is from CSV import
+		while during an import from Excel files, instead of a ''Separator``
+		the sheet to be imported has to be specified. The options are
+	explained in \pref{ssec:import_experimental_data}}
+	\label{fig:import_dialog}
+\end{figure}
+
+After selection of the file to import, options for the import have to be set.
+The set of general options is:
+\begin{description}
+	\item[CSV Separator] (only on CSV import) Specifies the character that is
+		used to split a line into its different cells (see
+		\pref{fig:dialog_import_1}). When changed, the
+		preview on the left side is updated automatically.
+	\item[Excel sheet] (only on Excel import) Specifies the sheet from which
+		the data is imported (see \pref{fig:dialog_import_2}). When changed, the
+		preview on the left side is updated automatically.
+	\item[Header row] (mandatory) specifies the row that contains the head of the table,
+		i.e. the description of the columns. In \pref{fig:import_dialog} the
+		header row is 1.
+	\item[ID column] (mandatory) is the column containing the IDs of the experimental
+		marker. Please note that \mg distinquishes between \mms and transcript
+		markers but within this groups, all experimental need to have distinct
+		IDs. Otherwise, the previous experimental marker will be overwritten.
+	\item[Annotation column] (optional) A column containing the annotation of the
+		experimental marker. For \mms, this has to be the ID of the compound
+		while for transcript markers, this needs to be the ID of the
+		corresponding gene. For each experimental marker only one annotation
+		is supported.
+	\item[First intensity column] (optional) The first column that contains
+		abundance/intensity information.
+	\item[Last intensity column] (optional) The last column that contains
+		abundance/intensity information.
+	\item[Score column] (optional) This column contains the score for each experimental
+		marker. If not given, a default score of $1$ is assumed for all
+		experimental marker.
 \end{description}
 
 \subsubsection{Metabolite Marker}
 
-\subsubsection{Transcript Marker}
+For \mms import more columns can be specified.
+\begin{description}
+	\item[Retention time column] (optional) The column containing the
+		retention time measured by a gas or liquid chromatography. This data
+		is not used but displayed.
+	\item[Mass column] (mandatory) Specifies the column containing the
+		measured masses (corrected mass--to--charge ratios) or the
+		experimental marker. This mass is used to relate \mms
+		with their metabolites if no annotation is given separately.
+\end{description}
 
 \subsection{Calculating sub--networks}\label{ssec:calculate}
 
+To analyse the metabolic network, sub--networks need to be identified. The
+menu item \menu{File}{Calculate networks}{C} becomes available when a
+metabolic network is loaded. 
+
+On activation, a dialog requests for the method of extraction and the specific
+parameters. Currently, two methods are supported:
+
+\paragraph{Pathways} Here, \mg simply extracts all reactions per pathway and
+creates a new sub--network from them. 
+
+\paragraph{Random Walk Based} This is the proposed method for the analysis
+using \mg as described in \cite{landesfeind2013marvisgraph}. The scores of the
+experimental markers is equally distributed to the reactions associated with
+an experimental marker. The accumulated scores of the reactions are used as
+initial scores to the \rwr algorithm as described in \cite{glaab2012nsea}
+using the user--defined ``Restart probability'' (see
+\pref{fig:dialog_calculate}) ignoring metabolites that are connected to more
+than reactions than specified by the ``Hub metabolite threshold''.
+Finally, \mg removes all reactions with a score lower than the ``Score
+threshold''. Here, the metabolic network is decomposed into different
+components from which each is a resulting sub--network.
+These are displayed in the main windows network tree (see \pref{fig:main}).
+
+\begin{figure}
+	\begin{center}
+		\includegraphics[scale=0.7]{images/dialog_calculate.png}
+	\end{center}
+	\caption[Calculate sub--networks]{For the calculation of the
+		sub--networks a method needs to be choosen and specific parameters can
+	be set to tune the method depending on the input data.}
+	\label{fig:dialog_calculate}
+\end{figure}
+
+
+\subsubsection{Scoring sub--networks}\label{sssec:scoring}
+
+The sub--networks identified are presented as ranked list. The ranking method
+can be changed using the box above the network list in the main window.
+
+\begin{description}
+	\item[Size] The score equals the number of reactions within the
+		sub--network.
+	\item[Sum of weights] Sums up the weights of the \mms and transcripts
+		makers per sub--network.
+	\item[Diameter]\footnote{\url{http://en.wikipedia.org/wiki/Distance\_\%28graph\_theory\%29}}
+		Calculates the shortest paths between all reactions and uses the
+		length of the longest path as score.
+\end{description}
+
 \subsubsection{Perform a random permutation test}
+
+The ranking of the identified sub--networks can be evaluated using a random
+permutation test via the menu \menu{File}{Permutation Test}{P}. This menu item
+is only available when sub--networks have been identified. 
+
+On selection, a dialog requests for the number of permutations to be performed
+and the number of CPUs that may be used in parallel to speed up the
+calculation process. Even with parallel calculation, this may take a long
+time for a high number of permutations.
+
+Finally, the results are displayed as table containing the sub--network name,
+its score, and the family wise error rate (FWER) and false discovery rate
+(FDR) during the permutation test. The results can be exported into tabular
+data files (CSV or \excel).
 
 \subsection{Visualizing and inspecting networks}
 
-\subsubsection{Scoring and ranking} \ref{sssec:scoring}
+The sub--networks are visualized using the Java Universal Network/Graph
+Framework 2 (JUNG \footnote{\url{http://jung.sourceforge.net}}). After
+selection of a sub--network from the list of networks (marked by ``1'' in
+\pref{fig:main}), basic statistics of the sub--network contents are shown
+below (marked by ``2''). With a click on the ``Draw network'' button, the
+network is visualized in the right side of the main window. Depending on the
+size of the network the calculation of the layout may take some time.
 
-\subsubsection{Chancing the layout}
+\begin{figure}
+	\includegraphics[width=\textwidth]{images/network_visualization.png}
+	\caption[Network visualization window]{Separate windows with the \mg main
+		window display the identified sub--networks. The layout may be redrawn
+		or changed using the short buttons. Also heatmaps of the experimental
+		markers are available.}
+	\label{fig:network_visualization}
+\end{figure}
+
+A visualization of the network is displayed as separate windo within the \mg
+main window (see \pref{fig:network_visualization}). The colored nodes in the
+visualiation represent the different entities of the network:
+\begin{multicols}{2}
+	{\bf
+	\begin{itemize}
+		\item \textcolor{gray}{\mms: gray}
+		\item \textcolor{pink}{transcript markers: pink}
+		\item \textcolor{red}{Metabolites: red}
+		\item \textcolor{blue}{Reactions: blues}
+		\item \textcolor{green}{Enzymes: green}
+		\item \textcolor{yellow}{Genes: yellow}
+		\item \textcolor{cyan}{Pathways: cyan}
+	\end{itemize}}
+\end{multicols}
+
+The computer mouse may be used to adjust the visualization:
+\begin{itemize}
+	\item Zooming\\
+		The visualization may be zoomed in and out via the mouse wheel.
+	\item Panning\\
+		To pan the complete network, a right--click on the visualization while
+		moving the mouse is used.
+	\item Selecting a group of nodes\\
+		Keeping the left mouse button clicked while moving the mouse selects a
+		group of nodes. A rectangle showing the area of selecting and
+		afterwards, the labels of the selected nodes are displayed in
+		\textcolor{blue}{blue}.
+	\item Moving nodes\\
+		All nodes in the networks can be moved by clicking on them and
+		dragging them to a new location. The nodes can be either moved
+		individually or as group when selected before.
+	\item Node information\\
+		A double left--click on a node opens a window showing additional
+		information, e.g. description or abundance/intensity
+		profile.
+\end{itemize}
+	
+
+\subsubsection{Chancing the layout}\label{sssec:layout}
+
+The visualization can be adapted by hiding specific types of nodes. For
+example, when only \mms are imported the genes and enzymes may be less
+interesting. A click on the ``E?'' button (see \pref{fig:network_visualization})
+opens a dialog to specify the types to display.
+\begin{itemize}
+	\item \textbf{None}\\
+		No nodes of this kind are displayed.
+	\item \textbf{With marker}\\
+		Nodes are only displayed when experimental marker are somehow
+		associated with them.
+	\item \textbf{All} (default)\\
+		All nodes are displayed.
+\end{itemize}
+
+Additionally a ``hub metabolite threshold'' can be used to hide nodes
+associated with many nodes. These are often co--factors as water, ATP, or
+NAD(H)/NADP(H).
+
+\begin{figure}
+	\begin{center}
+		\includegraphics[scale=0.5]{images/network_visualization_types.png}
+	\end{center}
+	\caption[Settings for visualization]{Settings for network visualization
+		allows to show/hide nodes depending on their experimental evidence or
+		completely. The settings are explained in \pref{sssec:layout}.}
+\end{figure}
+
+\subsubsection{Exporting the graphic}
+
+A right--click on the visualization opens a menu that includes a menu item for
+graphic export. Here, only an export into the Scalable Vector Graphics format
+(*.svg)\footnote{\url{http://de.wikipedia.org/wiki/Scalable_Vector_Graphics}}.
 
 \section{Contact}
 \mg has been developed at the Department for Bioinformatics at the

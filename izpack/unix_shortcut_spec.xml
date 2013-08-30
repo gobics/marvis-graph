@@ -10,8 +10,14 @@
 		categories="Science" tryexec="java"
 		target="java" commandLine="-jar ${INSTALL_PATH}/marvis-graph.jar"
 		description="Start MarVis-Graph" />
+	
+	<shortcut name="MarVis-Graph Documentation" programGroup="true" desktop="false"
+		type="application" encoding="UTF-8" createForAll="true"
+		categories="Science" tryexec="xdg-open"
+		target="xdg-open" commandLine="${INSTALL_PATH}/marvis_graph.pdf"
+		description="Read the MarVis-Graph documentation" />
 
-	<shortcut name="Uninstall" programGroup="true" desktop="false"
+	<shortcut name="Uninstall MarVis-Graph" programGroup="true" desktop="false"
 		type="application" encoding="UTF-8" createForAll="true"
 		categories="Science" tryexec="java"
 		target="java" commandLine="-jar ${INSTALL_PATH}/Uninstaller/uninstaller.jar" 
