@@ -50,7 +50,7 @@ public class MarvisGraphMainWindow extends JFrame {
 	private AbstractNetworkCalculation calculate_network_task = null;
 
 	public MarvisGraphMainWindow() {
-		super("MarVis-Graph v0.2");
+		super("MarVis-Graph v1.0");
 		logger.finer("Initializing new window");
 		getContentPane().setLayout(new BorderLayout());
 		JSplitPane main_split = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT);

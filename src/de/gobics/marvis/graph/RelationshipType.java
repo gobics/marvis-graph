@@ -13,7 +13,7 @@ package de.gobics.marvis.graph;
  * <li> REACTION_HAPPENSIN_PATHWAY
  * <li> ENZYME_USEDIN_PATHWAY
  * </ul>
- * @author Manuel Landesfeind {@link mailto:manuel@gobics.de}
+ * @author <a href="mailto:manuel@gobics.de">Manuel Landesfeind</a>
  */
 public enum RelationshipType {
 		MARKER_ANNOTATION_COMPOUND, 

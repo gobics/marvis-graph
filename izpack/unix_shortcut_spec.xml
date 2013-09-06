@@ -6,19 +6,19 @@
 	<programGroup name="MarVis-Graph" location="applications" />
 
 	<shortcut name="Start MarVis-Graph" programGroup="true" desktop="false"
-		type="application" encoding="UTF-8" createForAll="true"
+		type="application" encoding="UTF-8" createForAll="false"
 		categories="Science" tryexec="java"
 		target="java" commandLine="-jar ${INSTALL_PATH}/marvis-graph.jar"
 		description="Start MarVis-Graph" />
 	
 	<shortcut name="MarVis-Graph Documentation" programGroup="true" desktop="false"
-		type="application" encoding="UTF-8" createForAll="true"
+		type="application" encoding="UTF-8" createForAll="false"
 		categories="Science" tryexec="xdg-open"
 		target="xdg-open" commandLine="${INSTALL_PATH}/marvis_graph.pdf"
 		description="Read the MarVis-Graph documentation" />
 
 	<shortcut name="Uninstall MarVis-Graph" programGroup="true" desktop="false"
-		type="application" encoding="UTF-8" createForAll="true"
+		type="application" encoding="UTF-8" createForAll="false"
 		categories="Science" tryexec="java"
 		target="java" commandLine="-jar ${INSTALL_PATH}/Uninstaller/uninstaller.jar" 
 		description="Uninstall MarVis-Graph from your computer" />

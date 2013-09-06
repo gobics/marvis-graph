@@ -123,8 +123,8 @@ public class Compound extends GraphObject {
 	}
 
 	/**
-	 * Returns the InChI.See
-	 * {@link http://en.wikipedia.org/wiki/International_Chemical_Identifier}
+	 * Returns the 
+	 * <a href="http://en.wikipedia.org/wiki/International_Chemical_Identifier">InChI</a>.
 	 *
 	 * @return
 	 */
