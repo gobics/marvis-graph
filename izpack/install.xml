@@ -8,7 +8,6 @@
 		<appversion>1.0</appversion>
 		<appsubpath>marvis-graph</appsubpath>
 		<javaversion>$SYSTEM_java_version</javaversion>
-		<pack200 />
 	</info>
 	
 	<locale>

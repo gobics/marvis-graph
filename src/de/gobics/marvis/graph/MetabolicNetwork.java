@@ -438,6 +438,13 @@ public class MetabolicNetwork {
 		return list;
 	}
 
+	synchronized public int countMarkers() {
+		if (!vertices.containsKey(Marker.class)) {
+			return 0;
+		}
+		return vertices.get(Marker.class).size();
+	}
+
 	synchronized public String getName() {
 		return this.name;
 	}
@@ -576,6 +583,13 @@ public class MetabolicNetwork {
 			list.add((Transcript) o);
 		}
 		return list;
+	}
+
+	synchronized public int countTranscripts() {
+		if (!vertices.containsKey(Transcript.class)) {
+			return 0;
+		}
+		return vertices.get(Transcript.class).size();
 	}
 
 	synchronized public LinkedList<Transcript> getTranscripts(Gene gene) {

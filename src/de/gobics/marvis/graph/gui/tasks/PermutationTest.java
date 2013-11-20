@@ -237,7 +237,7 @@ public class PermutationTest extends AbstractTask<Set<PermutationTestResult>, Vo
 		private void toTask() throws Throwable {
 			logger.log(Level.FINE, "Thread for permutation {0} started", permutation_number);
 			long curtime = System.currentTimeMillis();
-			MetabolicNetwork permuted_network = permuteNetwork();
+			MetabolicNetwork permuted_network = permuteNetwork(permutation_number);
 			MetabolicNetwork[] networks = calculator.like(permuted_network).perform();
 			Collection<Comparable> score_dist = calculateScores(permuted_network, networks);
 			addPermutationScore(score_dist);
@@ -249,15 +249,25 @@ public class PermutationTest extends AbstractTask<Set<PermutationTestResult>, Vo
 		 *
 		 * @param network
 		 */
-		private MetabolicNetwork permuteNetwork() {
+		private MetabolicNetwork permuteNetwork(int permutation_number) {
 			MetabolicNetwork network = root_network.clone();
-			network.setName("Permutation of " + root_network.getName() + " " + rand.nextInt());
-			List<Marker> markers = new ArrayList<>(network.getMarkers());
-			Collection<Transcript> transcripts = network.getTranscripts();
+			network.setName("Permutation " + permutation_number + " of " + root_network.getName());
+			// Remove marker and 
+			List<Marker> markers = new ArrayList<>(network.countMarkers());
+			for (Marker m : network.getMarkers()) {
+				if (!network.getAnnotations(m).isEmpty()) {
+					markers.add(m);
+				}
+			}
+			List<Transcript> transcripts = new ArrayList<>(network.countTranscripts());
+			for (Transcript t : network.getTranscripts()) {
+				if (!network.getGenes(t).isEmpty()) {
+					transcripts.add(t);
+				}
+			}
 			List<Compound> compounds = new ArrayList<>(network.getCompounds());
 			List<Gene> genes = new ArrayList<>(network.getGenes());
 			int num_annotations;
-
 
 			// Permute marker annotations
 			num_annotations = 0;
@@ -265,17 +275,17 @@ public class PermutationTest extends AbstractTask<Set<PermutationTestResult>, Vo
 				network.removeRelation(r);
 				num_annotations++;
 			}
-			//logger.log(Level.FINER, "Will now add {0} from marker to compound", num_annotations);
 			for (int idx = 0; idx < num_annotations; idx++) {
 				network.addRelation(new Relation(RelationshipType.MARKER_ANNOTATION_COMPOUND, random(markers), random(compounds)));
 			}
 
+			
+			// Permute transcripts annotations
 			num_annotations = 0;
 			for (Relation r : network.getRelations(RelationshipType.TRANSCRIPT_ISFROM_GENE)) {
 				network.removeRelation(r);
 				num_annotations++;
 			}
-			//logger.log(Level.FINER, "Will now add {0} from transcript to gene", num_annotations);
 			Iterator<Transcript> titer = transcripts.iterator();
 			for (int idx = 0; idx < num_annotations; idx++) {
 				Transcript t = titer.next(); // Transcript is always only connected to one gene, therefore we just use the next one.

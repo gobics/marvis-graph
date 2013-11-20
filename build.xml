@@ -89,6 +89,8 @@
 
 	<target name="pack" depends="jar">
 		<property file="nbproject/project.properties"/>
-		<zip destfile="hivi.zip" basedir="dist/" excludes="README*" />
+		<copy file="start.bat" todir="dist/" />
+		<copy file="start.sh" todir="dist/" />
+		<zip destfile="marvis-graph.zip" update="false" basedir="dist/" excludes="README*" />
 	</target>
 </project>
