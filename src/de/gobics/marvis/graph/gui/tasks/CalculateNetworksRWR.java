@@ -6,6 +6,7 @@ import de.gobics.marvis.utils.RandomWalkWithRestart;
 import de.gobics.marvis.utils.RandomWalkWithRestartDense;
 import de.gobics.marvis.utils.RandomWalkWithRestartSparse;
 import java.util.*;
+import java.io.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -70,6 +71,7 @@ public class CalculateNetworksRWR extends AbstractNetworkCalculation {
 		incrementProgress();
 		logger.finer("Calculating reaction start probabilities");
 		Map<Reaction, Double> initial = calculateInitialScores(true);
+		//export(initial, "/tmp/mg_initial.csv");
 
 		setTaskDescription("Performing random walk for reaction scoring");
 		incrementProgress();
@@ -198,5 +200,18 @@ public class CalculateNetworksRWR extends AbstractNetworkCalculation {
 		// Otherwise use first reactions ID
 		return reactions[reactions.length - 1].getId();
 
+	}
+	
+	private void export(Map<Reaction, Double> scores, String filename){
+		try {
+		PrintWriter writer = new PrintWriter(filename, "UTF-8");
+		
+		for(Reaction r : scores.keySet()){
+			writer.println(r.getId() +"\t"+scores.get(r));
+		}
+		writer.close();
+		} catch (Exception e){
+			e.printStackTrace();
+		}
 	}
 }
