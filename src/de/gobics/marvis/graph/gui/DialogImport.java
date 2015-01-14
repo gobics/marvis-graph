@@ -60,7 +60,7 @@ public abstract class DialogImport extends JPanel {
 	// Excel Specific
 	protected NumberOption excel_sheet = null;
 
-	protected DialogImport(MarvisGraphMainWindow parent, TabularDataReader input_reader) {
+	protected DialogImport(final MarvisGraphMainWindow parent, TabularDataReader input_reader) {
 		super(new BorderLayout());
 		this.reader = input_reader;
 		this.main_window = parent;
@@ -90,7 +90,24 @@ public abstract class DialogImport extends JPanel {
 					if (csv_separator.getString().isEmpty()) {
 						return;
 					}
-					((CsvDataReader) reader).setSeparator(csv_separator.getString().charAt(0));
+					String s = csv_separator.getString();
+					if( s.charAt(0) == '\\' ){
+						if( s.charAt(1) == 't' ){
+							((CsvDataReader) reader).setSeparator('\t');
+						}
+						else if( s.charAt(1) == 'n' ){
+							((CsvDataReader) reader).setSeparator('\n');
+						}
+						else if( s.charAt(1) == '\\' ){
+							((CsvDataReader) reader).setSeparator('\\');
+						}
+						else {
+							parent.display_error("Unkown escape character: "+s);
+						}
+					}
+					else {
+						((CsvDataReader) reader).setSeparator(s.charAt(0));
+					}
 					updatePreviewTable();
 				}
 
