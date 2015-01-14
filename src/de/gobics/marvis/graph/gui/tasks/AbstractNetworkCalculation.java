@@ -134,6 +134,8 @@ public abstract class AbstractNetworkCalculation extends AbstractTask<MetabolicN
 	 */
 	protected String getNetworkName(MetabolicNetwork network) {
 		Iterator<Reaction> iter = network.getReactions().iterator();
+		if( ! iter.hasNext() )
+			return "Unkown";
 
 		// Try to find a reaction with a name
 		while (iter.hasNext()) {
