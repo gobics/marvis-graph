@@ -1,11 +1,12 @@
 # marvis-graph
+
 Detection of novel pathways through integrative analysis of metabolic and transcriptomic data
 
 # Installation
 
 Installer are available on [the MarVis-Graph homepage](http://marvis.gobics.de/marvis-graph).
 
-For compilation we recommend the *with_utils* branch that includes additional source. For running a bunch of libaries is required which are also available on the [the MarVis-Graph homepage](http://marvis.gobics.de/marvis-graph). Note that these libraries probably may have different license models.
+For compilation we recommend the *with_utils* branch that includes additional source. Additionally, a bunch of 3rd Party libaries is required that are available on the [the MarVis-Graph homepage](http://marvis.gobics.de/marvis-graph). Note that these libraries probably may have different license models.
 
 # Publication
 
